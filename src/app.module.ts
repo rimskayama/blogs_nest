@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { UsersController } from './users/users.controller';
 import { BlogsController } from './blogs/blogs.controller';
 import { BlogsService } from './blogs/blogs.service';
@@ -28,8 +26,8 @@ import { UsersQueryRepository } from './users/users.query.repository';
 	MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
 	MongooseModule.forFeature([{ name: PostLike.name, schema: PostLikeSchema }]),
   ],
-	controllers: [AppController, BlogsController, PostsController, UsersController],
-	providers: [AppService, BlogsService, BlogsRepository, BlogsQueryRepository,
+	controllers: [BlogsController, PostsController, UsersController],
+	providers: [BlogsService, BlogsRepository, BlogsQueryRepository,
 				PostsService, PostsRepository, PostsQueryRepository,
 				UsersService, UsersRepository, UsersQueryRepository]
 })
