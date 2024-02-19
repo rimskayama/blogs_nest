@@ -18,6 +18,7 @@ import { PostLike, PostLikeSchema } from './likes/likes.entity';
 import { UsersService } from './users/users.service';
 import { UsersRepository } from './users/users.repository';
 import { UsersQueryRepository } from './users/users.query.repository';
+import { TestingController } from './testing/testing.controller';
 
 @Module({
   imports: [
@@ -28,7 +29,7 @@ import { UsersQueryRepository } from './users/users.query.repository';
 	MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
 	MongooseModule.forFeature([{ name: PostLike.name, schema: PostLikeSchema }]),
   ],
-	controllers: [BlogsController, PostsController, UsersController],
+	controllers: [BlogsController, PostsController, UsersController, TestingController],
 	providers: [BlogsService, BlogsRepository, BlogsQueryRepository,
 				PostsService, PostsRepository, PostsQueryRepository,
 				UsersService, UsersRepository, UsersQueryRepository]
