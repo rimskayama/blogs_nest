@@ -1,9 +1,9 @@
 import { UsersService } from "./users.service";
 import { UsersQueryRepository } from "./users.query.repository";
-import {getPagination} from "../functions/pagination";
-import {ObjectId} from "mongodb";
+import { getPagination } from "../functions/pagination";
+import { ObjectId } from "mongodb";
 import { 
-    Body,
+  Body,
   Controller,  
   Delete,  
   Get, 

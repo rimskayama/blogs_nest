@@ -5,7 +5,7 @@ import { BlogsController } from './blogs/blogs.controller';
 import { BlogsService } from './blogs/blogs.service';
 import { BlogsRepository } from './blogs/blogs.repository';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Blog } from './blogs/blogs.entity';;
+import { Blog } from './blogs/blogs.entity';
 import { BlogSchema } from './blogs/blogs.entity';
 import { BlogsQueryRepository } from './blogs/blogs.query.repository';
 import { Post, PostSchema } from './posts/posts.entity';

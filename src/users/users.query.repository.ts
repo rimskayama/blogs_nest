@@ -1,4 +1,4 @@
-import {ObjectId, SortDirection} from "mongodb";
+import { ObjectId, SortDirection } from "mongodb";
 import { UsersPaginationDto } from "./users.types";
 import { InjectModel } from "@nestjs/mongoose";
 import { User, UserDocument } from "./users.entity";
