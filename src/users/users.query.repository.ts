@@ -5,7 +5,7 @@ import { User, UserDocument } from "./users.entity";
 import { Model } from 'mongoose';
 import { Injectable } from "@nestjs/common";
 import { UserDto } from "./users.types";
-import { usersMapping } from "src/functions/mapping";
+import { usersMapping } from "../functions/mapping";
 
 @Injectable()
 export class UsersQueryRepository {

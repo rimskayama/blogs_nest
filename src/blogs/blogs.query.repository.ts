@@ -1,6 +1,6 @@
 import { BlogDto } from "./blogs.types";
 import { ObjectId, SortDirection } from "mongodb";
-import { blogsMapping } from "src/functions/mapping";
+import { blogsMapping } from "../functions/mapping";
 import { BlogsPaginationDto } from "./blogs.types";
 import { Injectable } from "@nestjs/common";
 import { Blog, BlogDocument } from "./blogs.entity";

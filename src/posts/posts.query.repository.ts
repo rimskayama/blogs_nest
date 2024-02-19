@@ -6,7 +6,7 @@ import { PostLike, PostLikeDocument } from "src/likes/likes.entity";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from 'mongoose';
 import { Injectable } from "@nestjs/common";
-import { postsMapping } from "src/functions/mapping";
+import { postsMapping } from "../functions/mapping";
 
 
 @Injectable()
