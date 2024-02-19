@@ -26,10 +26,10 @@ export class UsersController {
     @Get()
     @HttpCode(200)
     async getUsers (@Query() query: {term: string}) {
-    const {page, limit, sortDirection, sortBy, 
+    const {page, limit, sortDirection, sortByUsers, 
         skip, searchLoginTerm, searchEmailTerm} = getPagination(query);
     const allUsers = await this.usersQueryRepository.findUsers(
-        page, limit, sortDirection, sortBy, skip, searchLoginTerm, searchEmailTerm)
+        page, limit, sortDirection, sortByUsers, skip, searchLoginTerm, searchEmailTerm)
         return allUsers
     }
 
