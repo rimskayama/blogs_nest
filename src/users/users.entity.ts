@@ -19,7 +19,7 @@ export class accountData {
     @Prop({ require: true })
     passwordSalt: string;
 
-    @Prop({ require: true, default: Date.now })
+    @Prop({ require: true, default: new Date().toISOString() })
     createdAt: string;
 }
 

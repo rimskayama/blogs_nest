@@ -22,7 +22,7 @@ export class UsersService {
             email: inputModel.email, 
             passwordHash: passwordHash, 
             passwordSalt: passwordSalt, 
-            createdAt: Date.now.toString()
+            createdAt: new Date().toISOString()
         },
         emailConfirmation: {
             confirmationCode: uuidv4(), 

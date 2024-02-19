@@ -18,7 +18,7 @@ export class BlogsService {
             name: inputModel.name,
             description: inputModel.description,
             websiteUrl: inputModel.websiteUrl,
-            createdAt: Date.now.toString(),
+            createdAt: new Date().toISOString(),
             isMembership: false
         }
 

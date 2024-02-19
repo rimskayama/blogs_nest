@@ -14,26 +14,29 @@ export class PostsService {
     ) {
     }
 
-    async createPost (inputModel: PostInputDto): Promise<PostDto> {
+    async createPost (inputModel: PostInputDto): Promise<PostDto | boolean> {
 
         let foundBlog = await this.blogsQueryRepository.findBlogByBlogId(inputModel.blogId);
 
-        const newPost = {
-            _id: new ObjectId(),
-            title: inputModel.title, 
-            shortDescription: inputModel.shortDescription,
-            content: inputModel.content,
-            blogId: inputModel.blogId, 
-            blogName: foundBlog.name,
-            createdAt: Date.now.toString(),
-            extendedLikesInfo: {
-            likesCount: 0,
-            dislikesCount: 0,
-                myStatus: "None",
-                newestLikes: []
+        if (foundBlog) {
+            const newPost = {
+                _id: new ObjectId(),
+                title: inputModel.title, 
+                shortDescription: inputModel.shortDescription,
+                content: inputModel.content,
+                blogId: inputModel.blogId, 
+                blogName: foundBlog.name,
+                createdAt: new Date().toISOString(),
+                extendedLikesInfo: {
+                likesCount: 0,
+                dislikesCount: 0,
+                    myStatus: "None",
+                    newestLikes: []
+                    }
                 }
-            }
             return await this.postsRepository.createPost(newPost);
+        } 
+        else return false
     }
 
     async updatePost(id: string, inputModel: PostInputDto):

@@ -58,7 +58,7 @@ export class Post {
     @Prop({ required: true })
     blogName: string;
 
-    @Prop({ default: Date.now.toString() })
+    @Prop({ default: new Date().toISOString() })
     createdAt: string;
 
     @Prop({ default: [] })

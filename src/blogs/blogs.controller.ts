@@ -76,7 +76,9 @@ export class BlogsController {
     async createPostForSpecifiedBlog(
       @Body() inputModel: PostInputDto,
       @Param('id') blogId : string) {
-        inputModel.blogId = blogId;
+        if (blogId) {
+            inputModel.blogId = blogId;
+        }
         const newPost = await this.postsService.createPost(inputModel);
         if (newPost) {
             return newPost
