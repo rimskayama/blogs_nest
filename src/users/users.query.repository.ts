@@ -11,7 +11,7 @@ import { usersMapping } from "../functions/mapping";
 export class UsersQueryRepository {
     constructor (
         @InjectModel(User.name)
-        private UserModel: Model<UserDocument>) {}
+        private userModel: Model<UserDocument>) {}
 
     async findUsers(
         page: number, limit: number, sortDirection: SortDirection,
@@ -19,7 +19,7 @@ export class UsersQueryRepository {
         Promise<UsersPaginationDto>
     {
 
-        let allUsers = await this.UserModel.find(
+        let allUsers = await this.userModel.find(
             {$or:
                     [{"accountData.login": {$regex: searchLoginTerm, $options: 'i'}},
                      {"accountData.email": {$regex: searchEmailTerm, $options: 'i'}}]}
@@ -29,12 +29,13 @@ export class UsersQueryRepository {
             .sort( {[sortBy]: sortDirection})
             .skip(skip)
             .lean()
+            .exec()
 
-        const total = await this.UserModel.countDocuments(
+        const total = await this.userModel.countDocuments(
             {$or:
                     [{"accountData.login": {$regex: searchLoginTerm, $options: 'i'}},
                         {"accountData.email": {$regex: searchEmailTerm, $options: 'i'}}]}
-        )
+        ).exec()
 
         const pagesCount = Math.ceil(total / limit)
 
@@ -49,7 +50,7 @@ export class UsersQueryRepository {
 
     async findUserById (
         _id: ObjectId): Promise<UserDto | null> {
-        const user: User | null = await this.UserModel.findOne({_id});
+        const user: User | null = await this.userModel.findOne({_id});
         if (!user) {
             return null
         }
