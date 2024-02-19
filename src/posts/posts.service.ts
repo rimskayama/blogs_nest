@@ -25,7 +25,7 @@ export class PostsService {
             content: inputModel.content,
             blogId: inputModel.blogId, 
             blogName: foundBlog.name,
-            createdAt: new Date().toString(),
+            createdAt: Date.now.toString(),
             extendedLikesInfo: {
             likesCount: 0,
             dislikesCount: 0,

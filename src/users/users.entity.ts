@@ -19,8 +19,8 @@ export class accountData {
     @Prop({ require: true })
     passwordSalt: string;
 
-    @Prop({ require: true })
-    createdAt: Date;
+    @Prop({ require: true, default: Date.now })
+    createdAt: string;
 }
 
 //export const accountDataSchema = SchemaFactory.createForClass(accountData);
