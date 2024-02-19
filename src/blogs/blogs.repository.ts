@@ -51,7 +51,7 @@ export class BlogsRepository {
     }
 
     async deleteAll() {
-        return this.blogModel.deleteMany({},{});
+        return this.blogModel.deleteMany({});
     }
 
 }

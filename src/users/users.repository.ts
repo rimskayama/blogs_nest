@@ -105,7 +105,7 @@ export class UsersRepository {
     }
 
     async deleteAll() {
-        return this.userModel.deleteMany({}, {});
+        return this.userModel.deleteMany({});
     }
 
 }

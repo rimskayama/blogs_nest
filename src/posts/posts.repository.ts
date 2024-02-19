@@ -47,7 +47,7 @@ export class PostsRepository {
     }
 
     async deleteAll() {
-        return this.postModel.deleteMany({}, {});
+        return this.postModel.deleteMany({});
     }
 
 }
