@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { UsersController } from './users/users.controller';
 import { BlogsController } from './blogs/blogs.controller';
 import { BlogsService } from './blogs/blogs.service';
@@ -20,7 +21,8 @@ import { UsersQueryRepository } from './users/users.query.repository';
 
 @Module({
   imports: [
-	MongooseModule.forRoot(process.env.MONGO_URL || `mongodb://0.0.0.0:27017/Nest`),
+	ConfigModule.forRoot(),
+	MongooseModule.forRoot(process.env.MONGO_URL),
 	MongooseModule.forFeature([{ name: Blog.name, schema: BlogSchema }]),
 	MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
 	MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
