@@ -18,8 +18,8 @@ export class BlogsService {
             name: inputModel.name,
             description: inputModel.description,
             websiteUrl: inputModel.websiteUrl,
-            createdAt: new Date().toString(),
-            isMembership: true
+            createdAt: Date.now.toString(),
+            isMembership: false
         }
 
         return await this.blogsRepository.createBlog(newBlog);
