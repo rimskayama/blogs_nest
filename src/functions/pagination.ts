@@ -6,8 +6,10 @@ export const getPagination = (query: QueryParameters) => {
         let limit: number = Number(query.pageSize) || 10;
         let sortDirection : Sort = query.sortDirection === 'asc' ? 1 : -1;
         let sortBy = query.sortBy || 'createdAt';
-        let sortByUsers = 'accountData.' + query.sortBy || 'accountData.createdAt';
-
+        let sortByUsers: string
+        if (query.sortBy) { 
+            sortByUsers = 'accountData.' + query.sortBy }
+            else sortByUsers = 'accountData.createdAt';
         let searchNameTerm = query.searchNameTerm || '';
         let searchLoginTerm = query.searchLoginTerm || '';
         let searchEmailTerm = query.searchEmailTerm || '';

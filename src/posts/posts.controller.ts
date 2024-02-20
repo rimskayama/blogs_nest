@@ -1,6 +1,8 @@
 import { PostsService } from "./posts.service";
 import { PostsQueryRepository } from "./posts.query.repository";
-import {getPagination} from "../functions/pagination";
+import { getPagination } from "../functions/pagination";
+import { PostInputDto } from "./posts.types";
+import { QueryParameters } from "src/users/users.types";
 import { 
     Body,
   Controller,  
@@ -15,8 +17,6 @@ import {
   Put, 
   Query
 } from '@nestjs/common';
-import { PostInputDto } from "./posts.types";
-import { UsersQueryParameters } from "src/users/users.types";
 
 @Controller('posts')
 export class PostsController {
@@ -27,7 +27,7 @@ export class PostsController {
     
     @Get()
     @HttpCode(200)
-    async getPosts (@Query() query: UsersQueryParameters) {
+    async getPosts (@Query() query: QueryParameters) {
     const {page, limit, sortDirection, sortBy, skip} = getPagination(query);
     //authorization to get likeStatus
     const allPosts = await this.postsQueryRepository.findPosts(
