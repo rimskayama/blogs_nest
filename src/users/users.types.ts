@@ -1,3 +1,5 @@
+import { Sort } from "mongodb"
+
 export type UserDto = {
     id: string,
     login: string,
@@ -17,4 +19,16 @@ export type UsersPaginationDto = {
     pageSize: number;
     totalCount: number;
     items: UserDto[]
+}
+
+export class QueryParameters {
+    pageNumber: number;
+    pageSize: number;
+    sortDirection: Sort;
+    sortBy: string;
+    sortByUsers: string;
+    searchNameTerm: string;
+    searchLoginTerm: string;
+    searchEmailTerm: string;
+    skip: number;
 }

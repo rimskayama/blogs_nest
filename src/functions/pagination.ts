@@ -1,11 +1,12 @@
 import {Sort} from "mongodb";
+import { QueryParameters } from "src/users/users.types";
 
-export const getPagination = (query: any) => {
+export const getPagination = (query: QueryParameters) => {
         let page: number = Number(query.pageNumber) || 1;
         let limit: number = Number(query.pageSize) || 10;
         let sortDirection : Sort = query.sortDirection === 'asc' ? 1 : -1;
         let sortBy = query.sortBy || 'createdAt';
-        let sortByUsers = query.sortBy || 'accountData.createdAt';
+        let sortByUsers = ('accountData.') + query.sortBy || 'createdAt';
 
         let searchNameTerm = query.searchNameTerm || '';
         let searchLoginTerm = query.searchLoginTerm || '';

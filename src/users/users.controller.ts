@@ -2,6 +2,7 @@ import { UsersService } from "./users.service";
 import { UsersQueryRepository } from "./users.query.repository";
 import { getPagination } from "../functions/pagination";
 import { ObjectId } from "mongodb";
+import { UserInputDto, QueryParameters } from "./users.types";
 import { 
   Body,
   Controller,  
@@ -13,9 +14,8 @@ import {
   Inject, 
   Param, 
   Post, 
-  Query
+  Query,
 } from '@nestjs/common';
-import { UserInputDto } from "./users.types";
 
 @Controller('users')
 export class UsersController {
@@ -25,9 +25,9 @@ export class UsersController {
 
     @Get()
     @HttpCode(200)
-    async getUsers (@Query() query: {term: string}) {
+    async getUsers (@Query() query: QueryParameters) {
     const {page, limit, sortDirection, sortByUsers, 
-        skip, searchLoginTerm, searchEmailTerm} = getPagination(query);
+        searchLoginTerm, searchEmailTerm, skip} = getPagination(query);
     const allUsers = await this.usersQueryRepository.findUsers(
         page, limit, sortDirection, sortByUsers, skip, searchLoginTerm, searchEmailTerm)
         return allUsers

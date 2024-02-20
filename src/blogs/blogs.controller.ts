@@ -4,6 +4,8 @@ import { PostsService } from "src/posts/posts.service";
 import { BlogsQueryRepository } from "./blogs.query.repository";
 import { BlogInputDto } from "./blogs.types";
 import { PostsQueryRepository } from '../posts/posts.query.repository';
+import { PostInputDto } from "src/posts/posts.types";
+import { QueryParameters } from "src/users/users.types";
 import { 
     Body,
   Controller,  
@@ -18,7 +20,6 @@ import {
   Put, 
   Query
 } from '@nestjs/common';
-import { PostInputDto } from "src/posts/posts.types";;
 
 @Controller('blogs')
 export class BlogsController {
@@ -31,7 +32,7 @@ export class BlogsController {
 
     @Get()
     @HttpCode(200)
-    async getBlogs (@Query() query: {term: string}) {
+    async getBlogs (@Query() query: QueryParameters) {
         const {page, limit, sortDirection, sortBy, searchNameTerm, skip} = getPagination(query);
         //authorization to get likeStatus to send to Query
         const allBlogs = await this.blogsQueryRepository.findBlogs(page, limit, sortDirection, sortBy, searchNameTerm, skip)
@@ -51,7 +52,7 @@ export class BlogsController {
     @HttpCode(200)
     async getPostsOfBlog(
       @Param('id') blogId: string,
-      @Query() query: {term: string}) {
+      @Query() query: QueryParameters) {
         let checkBlog = await this.blogsQueryRepository.findBlogByBlogId(blogId);
         const {page, limit, sortDirection, sortBy, skip} =  getPagination(query);
 
