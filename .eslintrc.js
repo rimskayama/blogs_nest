@@ -6,7 +6,7 @@ module.exports = {
 		'no-console': 'warn',
 		'no-undef': 'off',
 		'no-unused-vars': 'off',
-		'prettier/prettier': [[2, { useTabs: true }], ['error', {endOfLine: 'auto'}]],
+		'prettier/prettier': [2, { useTabs: true, endOfLine: 'auto' }],
 		'@typescript-eslint/explicit-module-boundary-types': 'off',
 		'@typescript-eslint/explicit-function-return-type': 'off',
 		'@typescript-eslint/no-explicit-any': 'error',
