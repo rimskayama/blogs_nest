@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
-import { StatusCode } from './exceptions.constants';
+import { StatusCode } from './exception.constants';
 
 export const exceptionHandler = (code: StatusCode, message?: string, field?: string) => {
 	const exceptionObject = {

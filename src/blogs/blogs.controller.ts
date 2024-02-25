@@ -7,7 +7,7 @@ import { PostsQueryRepository } from '../posts/posts.query.repository';
 import { PostInputDto } from 'src/posts/posts.types';
 import { QueryParameters } from 'src/users/users.types';
 import { exceptionHandler } from 'src/exceptions/exception.handler';
-import { StatusCode, blogIdField, blogNotFound } from 'src/exceptions/exceptions.constants';
+import { StatusCode, blogIdField, blogNotFound } from 'src/exceptions/exception.constants';
 import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, Put, Query } from '@nestjs/common';
 
 @Controller('blogs')
