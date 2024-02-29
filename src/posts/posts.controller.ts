@@ -1,11 +1,11 @@
 import { PostsService } from './posts.service';
 import { PostsQueryRepository } from './posts.query.repository';
-import { getPagination } from 'src/utils/pagination';
+import { getPagination } from '../utils/pagination';
 import { PostInputDto } from './posts.types';
-import { QueryParameters } from 'src/users/users.types';
+import { QueryParameters } from '../users/users.types';
 import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, Put, Query } from '@nestjs/common';
-import { exceptionHandler } from 'src/exceptions/exception.handler';
-import { StatusCode, blogIdField, blogNotFound, postIdField, postNotFound } from 'src/exceptions/exception.constants';
+import { exceptionHandler } from '../exceptions/exception.handler';
+import { StatusCode, blogIdField, blogNotFound, postIdField, postNotFound } from '../exceptions/exception.constants';
 
 @Controller('posts')
 export class PostsController {
@@ -42,7 +42,6 @@ export class PostsController {
 
 	// getCommentsOfPost
 	// createCommentByPostId
-
 	@Put(':id')
 	@HttpCode(204)
 	async updatePost(@Body() inputModel: PostInputDto, @Param('id') id: string) {
@@ -52,7 +51,6 @@ export class PostsController {
 	}
 
 	// updateLikeStatus
-
 	@Delete(':id')
 	@HttpCode(204)
 	async deletePost(@Param('id') postId: string) {

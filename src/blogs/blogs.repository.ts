@@ -1,7 +1,7 @@
 import { BlogDto, BlogInputDto } from './blogs.types';
 import { Injectable } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
-import { Blog, BlogDocument } from './blogs.entity';
+import { Blog, BlogDocument } from './blog.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -35,11 +35,11 @@ export class BlogsRepository {
 		} else return false;
 	}
 
-	async deleteBlog(_id: ObjectId): Promise<BlogDocument | boolean> {
-		const blog = await this.blogModel.findOne({ _id }, { projection: { _id: 0 } });
-
+	async deleteBlog(_id: ObjectId): Promise<boolean> {
+		const blog = await this.blogModel.findById({ _id }, { projection: { _id: 0 } });
 		if (blog) {
-			return this.blogModel.deleteOne({ _id }).lean();
+			await this.blogModel.deleteOne({ _id });
+			return true;
 		}
 		return null;
 	}

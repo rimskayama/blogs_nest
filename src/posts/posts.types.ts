@@ -15,6 +15,18 @@ export class PostInputDto {
 	blogId: string;
 }
 
+export class SpecifiedPostInputDto {
+	@IsString()
+	@Length(1, 30)
+	title: string;
+	@IsString()
+	@Length(1, 100)
+	shortDescription: string;
+	@IsString()
+	@Length(1, 1000)
+	content: string;
+}
+
 export type PostDto = {
 	id: string;
 	title: string;

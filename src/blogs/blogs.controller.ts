@@ -1,13 +1,13 @@
 import { getPagination } from '../utils/pagination';
 import { BlogsService } from './blogs.service';
-import { PostsService } from 'src/posts/posts.service';
+import { PostsService } from '../posts/posts.service';
 import { BlogsQueryRepository } from './blogs.query.repository';
 import { BlogInputDto } from './blogs.types';
 import { PostsQueryRepository } from '../posts/posts.query.repository';
-import { PostInputDto } from 'src/posts/posts.types';
-import { QueryParameters } from 'src/users/users.types';
-import { exceptionHandler } from 'src/exceptions/exception.handler';
-import { StatusCode, blogIdField, blogNotFound } from 'src/exceptions/exception.constants';
+import { SpecifiedPostInputDto } from '../posts/posts.types';
+import { QueryParameters } from '../users/users.types';
+import { exceptionHandler } from '../exceptions/exception.handler';
+import { StatusCode, blogIdField, blogNotFound } from '../exceptions/exception.constants';
 import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, Put, Query } from '@nestjs/common';
 
 @Controller('blogs')
@@ -32,7 +32,7 @@ export class BlogsController {
 	@HttpCode(200)
 	async getBlog(@Param('id') blogId: string) {
 		//authorization to get likeStatus
-		const result = await this.blogsQueryRepository.findBlogByBlogId(blogId);
+		const result = await this.blogsQueryRepository.findBlogById(blogId);
 		if (result) {
 			return result;
 		} else return exceptionHandler(StatusCode.NotFound, blogNotFound, blogIdField);
@@ -41,7 +41,7 @@ export class BlogsController {
 	@Get(':id/posts')
 	@HttpCode(200)
 	async getPostsOfBlog(@Param('id') blogId: string, @Query() query: QueryParameters) {
-		const blog = await this.blogsQueryRepository.findBlogByBlogId(blogId);
+		const blog = await this.blogsQueryRepository.findBlogById(blogId);
 		const { page, limit, sortDirection, sortBy, skip } = getPagination(query);
 
 		//authorization to set likeStatus
@@ -68,11 +68,12 @@ export class BlogsController {
 
 	@Post(':id/posts')
 	@HttpCode(201)
-	async createPostForSpecifiedBlog(@Body() inputModel: PostInputDto, @Param('id') blogId: string) {
-		if (blogId) {
-			inputModel.blogId = blogId;
-		}
-		const result = await this.postsService.createPost(inputModel);
+	async createPostForSpecifiedBlog(@Body() inputModel: SpecifiedPostInputDto, @Param('id') blogId: string) {
+		const postModel = {
+			...inputModel,
+			blogId: blogId,
+		};
+		const result = await this.postsService.createPost(postModel);
 		if (result) {
 			return result;
 		} else return exceptionHandler(StatusCode.NotFound, blogNotFound, blogIdField);
@@ -90,7 +91,6 @@ export class BlogsController {
 	@HttpCode(204)
 	async deleteBlog(@Param('id') blogId: string) {
 		const result = await this.blogsService.deleteBlog(blogId);
-		if (result) return;
-		else return exceptionHandler(StatusCode.NotFound, blogNotFound, blogIdField);
+		if (!result) return exceptionHandler(StatusCode.NotFound, blogNotFound, blogIdField);
 	}
 }

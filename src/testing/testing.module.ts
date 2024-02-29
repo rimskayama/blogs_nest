@@ -2,19 +2,19 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TestingController } from './testing.controller';
-import { BlogsService } from 'src/blogs/blogs.service';
-import { BlogsRepository } from 'src/blogs/blogs.repository';
-import { BlogsQueryRepository } from 'src/blogs/blogs.query.repository';
-import { PostsService } from 'src/posts/posts.service';
-import { PostsRepository } from 'src/posts/posts.repository';
-import { PostsQueryRepository } from 'src/posts/posts.query.repository';
-import { UsersService } from 'src/users/users.service';
-import { UsersRepository } from 'src/users/users.repository';
-import { UsersQueryRepository } from 'src/users/users.query.repository';
-import { Blog, BlogSchema } from 'src/blogs/blogs.entity';
-import { Post, PostSchema } from 'src/posts/posts.entity';
-import { PostLike, PostLikeSchema } from 'src/likes/likes.entity';
-import { User, UserSchema } from 'src/users/users.entity';
+import { BlogsService } from '../blogs/blogs.service';
+import { BlogsRepository } from '../blogs/blogs.repository';
+import { BlogsQueryRepository } from '../blogs/blogs.query.repository';
+import { PostsService } from '../posts/posts.service';
+import { PostsRepository } from '../posts/posts.repository';
+import { PostsQueryRepository } from '../posts/posts.query.repository';
+import { UsersService } from '../users/users.service';
+import { UsersRepository } from '../users/users.repository';
+import { UsersQueryRepository } from '../users/users.query.repository';
+import { Blog, BlogSchema } from '../blogs/blog.entity';
+import { Post, PostSchema } from '../posts/post.entity';
+import { PostLike, PostLikeSchema } from '../likes/like.entity';
+import { User, UserSchema } from '../users/user.entity';
 
 @Module({
 	imports: [

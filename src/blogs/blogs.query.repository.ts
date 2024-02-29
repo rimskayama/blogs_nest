@@ -1,9 +1,9 @@
 import { BlogDto } from './blogs.types';
 import { ObjectId, SortDirection } from 'mongodb';
-import { blogsMapping } from 'src/utils/mapping';
+import { blogsMapping } from '../utils/mapping';
 import { BlogsPaginationDto } from './blogs.types';
 import { Injectable } from '@nestjs/common';
-import { Blog, BlogDocument } from './blogs.entity';
+import { Blog, BlogDocument } from './blog.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -41,10 +41,10 @@ export class BlogsQueryRepository {
 		};
 	}
 
-	async findBlogByBlogId(blogId: string): Promise<BlogDto | null> {
+	async findBlogById(blogId: string): Promise<BlogDto | null> {
 		try {
-			const result = await this.blogModel.findOne({ _id: new ObjectId(blogId) });
-			return Blog.getViewBlog(result);
+			const result = await this.blogModel.findById({ _id: new ObjectId(blogId) });
+			if (result) return Blog.getViewBlog(result);
 		} catch (e) {
 			console.error(e);
 			return null;

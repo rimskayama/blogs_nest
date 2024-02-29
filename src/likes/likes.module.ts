@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { PostLike, PostLikeSchema } from './likes.entity';
+import { PostLike, PostLikeSchema } from './like.entity';
 
 @Module({
 	imports: [

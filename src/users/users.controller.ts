@@ -1,11 +1,11 @@
 import { UsersService } from './users.service';
 import { UsersQueryRepository } from './users.query.repository';
-import { getPagination } from 'src/utils/pagination';
+import { getPagination } from '../utils/pagination';
 import { ObjectId } from 'mongodb';
 import { UserInputDto, QueryParameters } from './users.types';
 import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, Query } from '@nestjs/common';
-import { exceptionHandler } from 'src/exceptions/exception.handler';
-import { StatusCode, userIdField, userNotFound } from 'src/exceptions/exception.constants';
+import { exceptionHandler } from '../exceptions/exception.handler';
+import { StatusCode, userIdField, userNotFound } from '../exceptions/exception.constants';
 
 //@UseGuards(AuthGuard)
 @Controller('users')
