@@ -6,7 +6,7 @@ import {
 	emailExistsRule,
 	loginExistsRule,
 	recoveryCodeExistsRule,
-} from 'src/auth/authentification';
+} from '../auth/authentification';
 const loginPattern = /^[a-zA-Z0-9_-]*$/;
 
 export class UserInputDto {

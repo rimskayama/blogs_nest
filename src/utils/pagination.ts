@@ -1,5 +1,5 @@
 import { Sort } from 'mongodb';
-import { QueryParameters } from 'src/users/users.types';
+import { QueryParameters } from '../users/users.types';
 
 export const getPagination = (query: QueryParameters) => {
 	const page: number = Number(query.pageNumber) || 1;

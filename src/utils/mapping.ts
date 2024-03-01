@@ -1,7 +1,7 @@
-import { Blog } from 'src/blogs/blogs.entity';
-import { PostLike } from 'src/likes/likes.entity';
-import { Post, likeDetails } from 'src/posts/posts.entity';
-import { User } from 'src/users/users.entity';
+import { Blog } from '../blogs/blog.entity';
+import { PostLike } from '../likes/like.entity';
+import { Post, likeDetails } from '../posts/post.entity';
+import { User } from '../users/user.entity';
 
 export const blogsMapping = (array: Blog[]) => {
 	return array.map((b: Blog) => Blog.getViewBlog(b));

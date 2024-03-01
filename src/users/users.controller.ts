@@ -7,7 +7,6 @@ import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, Query } f
 import { exceptionHandler } from '../exceptions/exception.handler';
 import { StatusCode, userIdField, userNotFound } from '../exceptions/exception.constants';
 
-//@UseGuards(AuthGuard)
 @Controller('users')
 export class UsersController {
 	constructor(
