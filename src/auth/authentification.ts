@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
-import { UsersRepository } from 'src/users/users.repository';
+import { UsersRepository } from '../users/users.repository';
 
 @ValidatorConstraint({ name: 'EmailExists', async: true })
 @Injectable()
@@ -9,12 +9,13 @@ export class emailExistsRule implements ValidatorConstraintInterface {
 
 	async validate(email: string) {
 		try {
-			await this.usersRepository.findByLoginOrEmail(email);
+			const user = await this.usersRepository.findByLoginOrEmail(email);
+			if (!user) {
+				return true;
+			} else return false;
 		} catch (e) {
 			return true;
 		}
-
-		return false;
 	}
 
 	defaultMessage() {
@@ -29,12 +30,12 @@ export class loginExistsRule implements ValidatorConstraintInterface {
 
 	async validate(login: string) {
 		try {
-			await this.usersRepository.findByLoginOrEmail(login);
+			const user = await this.usersRepository.findByLoginOrEmail(login);
+			if (!user) return true;
+			else return false;
 		} catch (e) {
 			return true;
 		}
-
-		return false;
 	}
 
 	defaultMessage() {
@@ -49,12 +50,16 @@ export class emailConfirmedRule implements ValidatorConstraintInterface {
 
 	async validate(email: string) {
 		try {
-			await this.usersRepository.findByLoginOrEmail(email);
+			const user = await this.usersRepository.findByLoginOrEmail(email);
+
+			if (user.emailConfirmation.isConfirmed === true) {
+				return true;
+			} else {
+				return false;
+			}
 		} catch (e) {
 			return false;
 		}
-
-		return true;
 	}
 
 	defaultMessage() {
