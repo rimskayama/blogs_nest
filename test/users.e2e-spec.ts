@@ -112,6 +112,7 @@ describe('UsersController (e2e)', () => {
 
 		await request(httpServer)
 			.get('/users/' + createdUser1.id)
+			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.expect(404);
 
 		await request(httpServer).get('/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').expect(200, {
