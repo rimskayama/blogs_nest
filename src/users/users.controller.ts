@@ -1,11 +1,12 @@
 import { UsersService } from './users.service';
 import { UsersQueryRepository } from './users.query.repository';
 import { getPagination } from '../utils/pagination';
-import { ObjectId } from 'mongodb';
 import { UserInputDto, QueryParameters } from './users.types';
-import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { exceptionHandler } from '../exceptions/exception.handler';
 import { StatusCode, userIdField, userNotFound } from '../exceptions/exception.constants';
+import { ObjectId } from 'mongodb';
+import { BasicAuthGuard } from '../auth/guards/basic-auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -14,6 +15,7 @@ export class UsersController {
 		@Inject(UsersQueryRepository) protected usersQueryRepository: UsersQueryRepository
 	) {}
 
+	@UseGuards(BasicAuthGuard)
 	@Get()
 	@HttpCode(200)
 	async getUsers(@Query() query: QueryParameters) {
@@ -30,6 +32,7 @@ export class UsersController {
 		return result;
 	}
 
+	@UseGuards(BasicAuthGuard)
 	@Get(':id')
 	@HttpCode(200)
 	async getUser(@Param('id') userId: string) {
@@ -38,6 +41,7 @@ export class UsersController {
 		else return exceptionHandler(StatusCode.NotFound, userNotFound, userIdField);
 	}
 
+	@UseGuards(BasicAuthGuard)
 	@Post()
 	@HttpCode(201)
 	async createUser(@Body() inputModel: UserInputDto) {
@@ -45,6 +49,7 @@ export class UsersController {
 		return result;
 	}
 
+	@UseGuards(BasicAuthGuard)
 	@Delete(':id')
 	@HttpCode(204)
 	async deleteUser(@Param('id') userId: string) {
