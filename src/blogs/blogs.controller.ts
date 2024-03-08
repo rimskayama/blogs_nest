@@ -8,7 +8,8 @@ import { SpecifiedPostInputDto } from '../posts/posts.types';
 import { QueryParameters } from '../users/users.types';
 import { exceptionHandler } from '../exceptions/exception.handler';
 import { StatusCode, blogIdField, blogNotFound } from '../exceptions/exception.constants';
-import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { BasicAuthGuard } from '../auth/guards/basic-auth.guard';
 
 @Controller('blogs')
 export class BlogsController {
@@ -59,6 +60,7 @@ export class BlogsController {
 		} else return exceptionHandler(StatusCode.NotFound, blogNotFound, blogIdField);
 	}
 
+	@UseGuards(BasicAuthGuard)
 	@Post()
 	@HttpCode(201)
 	async createBlog(@Body() inputModel: BlogInputDto) {
@@ -66,6 +68,7 @@ export class BlogsController {
 		return result;
 	}
 
+	@UseGuards(BasicAuthGuard)
 	@Post(':id/posts')
 	@HttpCode(201)
 	async createPostForSpecifiedBlog(@Body() inputModel: SpecifiedPostInputDto, @Param('id') blogId: string) {
@@ -79,6 +82,7 @@ export class BlogsController {
 		} else return exceptionHandler(StatusCode.NotFound, blogNotFound, blogIdField);
 	}
 
+	@UseGuards(BasicAuthGuard)
 	@Put(':id')
 	@HttpCode(204)
 	async updateBlog(@Body() inputModel: BlogInputDto, @Param('id') blogId: string) {
@@ -87,6 +91,7 @@ export class BlogsController {
 		else return exceptionHandler(StatusCode.NotFound, blogNotFound, blogIdField);
 	}
 
+	@UseGuards(BasicAuthGuard)
 	@Delete(':id')
 	@HttpCode(204)
 	async deleteBlog(@Param('id') blogId: string) {
