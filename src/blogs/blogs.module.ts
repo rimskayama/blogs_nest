@@ -12,7 +12,6 @@ import { BlogsQueryRepository } from './blogs.query.repository';
 import { PostsService } from '../posts/posts.service';
 import { PostsRepository } from '../posts/posts.repository';
 import { PostsQueryRepository } from '../posts/posts.query.repository';
-import { BasicStrategy } from '../auth/strategies/basic-strategy';
 
 @Module({
 	imports: [
@@ -23,14 +22,6 @@ import { BasicStrategy } from '../auth/strategies/basic-strategy';
 		MongooseModule.forFeature([{ name: PostLike.name, schema: PostLikeSchema }]),
 	],
 	controllers: [BlogsController],
-	providers: [
-		BlogsService,
-		BlogsRepository,
-		BlogsQueryRepository,
-		PostsService,
-		PostsRepository,
-		PostsQueryRepository,
-		BasicStrategy,
-	],
+	providers: [BlogsService, BlogsRepository, BlogsQueryRepository, PostsService, PostsRepository, PostsQueryRepository],
 })
 export class BlogsModule {}
