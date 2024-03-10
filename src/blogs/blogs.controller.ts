@@ -8,16 +8,16 @@ import { SpecifiedPostInputDto } from '../posts/posts.types';
 import { QueryParameters } from '../users/users.types';
 import { exceptionHandler } from '../exceptions/exception.handler';
 import { StatusCode, blogIdField, blogNotFound } from '../exceptions/exception.constants';
-import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { BasicAuthGuard } from '../auth/guards/basic-auth.guard';
 
 @Controller('blogs')
 export class BlogsController {
 	constructor(
-		@Inject(BlogsService) protected blogsService: BlogsService,
-		@Inject(PostsService) protected postsService: PostsService,
-		@Inject(BlogsQueryRepository) protected blogsQueryRepository: BlogsQueryRepository,
-		@Inject(PostsQueryRepository) protected postsQueryRepository: PostsQueryRepository
+		private readonly blogsService: BlogsService,
+		private readonly postsService: PostsService,
+		private readonly blogsQueryRepository: BlogsQueryRepository,
+		private readonly postsQueryRepository: PostsQueryRepository
 	) {}
 
 	@Get()
