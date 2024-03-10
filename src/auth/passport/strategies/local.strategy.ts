@@ -3,14 +3,12 @@ import { AuthService } from '../../auth.service';
 import { Strategy } from 'passport-local';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { User } from 'src/users/user.entity';
-import { jwtConstants } from '../../constants';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
 	constructor(private readonly authService: AuthService) {
 		super({
 			usernameField: 'loginOrEmail',
-			secretOrKey: jwtConstants.accessTokenSecret,
 		});
 	}
 	async validate(loginOrEmail: string, password: string): Promise<UnauthorizedException | User> {

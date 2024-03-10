@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from '../users/users.module';
 import { jwtConstants } from './constants';
@@ -12,6 +12,12 @@ import { User, UserSchema } from '../users/user.entity';
 import { UsersQueryRepository } from '../users/users.query.repository';
 import { LocalStrategy } from './passport/strategies/local.strategy';
 import { PassportModule } from '@nestjs/passport';
+import { Device, DeviceSchema } from '../devices/device.entity';
+import { DevicesService } from '../devices/devices.service';
+import { DevicesRepository } from '../devices/devices.repository';
+import { DevicesQueryRepository } from '../devices/devices.query.repository';
+import { JwtBearerStrategy } from './passport/strategies/jwt-bearer.strategy';
+import { JwtRefreshTokenStrategy } from './passport/strategies/jwt-refresh.strategy';
 
 @Module({
 	imports: [
@@ -19,17 +25,22 @@ import { PassportModule } from '@nestjs/passport';
 		MongooseModule.forRoot(process.env.MONGO_URL),
 		MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
 		UsersModule,
+		MongooseModule.forFeature([{ name: Device.name, schema: DeviceSchema }]),
 		PassportModule,
-		JwtModule.register({
-			secret: jwtConstants.accessTokenSecret,
-			signOptions: { expiresIn: jwtConstants.accessTokenExpirationTime },
-		}),
-		JwtModule.register({
-			secret: jwtConstants.refreshTokenSecret,
-			signOptions: { expiresIn: jwtConstants.refreshTokenExpirationTime },
-		}),
 	],
 	controllers: [AuthController],
-	providers: [AuthService, UsersService, UsersRepository, UsersQueryRepository, LocalStrategy],
+	providers: [
+		JwtService,
+		AuthService,
+		UsersService,
+		DevicesService,
+		UsersRepository,
+		UsersQueryRepository,
+		DevicesRepository,
+		DevicesQueryRepository,
+		LocalStrategy,
+		JwtBearerStrategy,
+		JwtRefreshTokenStrategy,
+	],
 })
 export class AuthModule {}
