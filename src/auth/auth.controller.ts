@@ -10,6 +10,7 @@ import { DevicesService } from '../devices/devices.service';
 import { Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { JwtBearerGuard } from './passport/guards/jwt-bearer.guard';
+import { JwtRefreshGuard } from './passport/guards/jwt-refresh.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -46,7 +47,7 @@ export class AuthController {
 		};
 	}
 
-	@UseGuards(JwtBearerGuard)
+	@UseGuards(JwtBearerGuard, JwtRefreshGuard)
 	@Get('me')
 	@HttpCode(200)
 	async getProfile(@Request() req) {
@@ -62,6 +63,31 @@ export class AuthController {
 			login: user.login,
 			userId: userId.toString(),
 		};
+	}
+
+	@UseGuards(JwtRefreshGuard)
+	@Post('refresh-token')
+	@HttpCode(200)
+	async getRefreshToken(@Request() req, @Res({ passthrough: true }) res: Response) {
+		const userId = req.user.id;
+		const deviceId = req.user.deviceId;
+		const result = await this.authService.login(userId, deviceId);
+		const lastActiveDate = Math.floor(Date.now() / 1000);
+		await this.devicesService.updateLastActiveDate(deviceId, lastActiveDate);
+		res.cookie('refreshToken', result.refreshToken, { httpOnly: true, secure: true });
+		return {
+			accessToken: result.accessToken,
+		};
+	}
+
+	@UseGuards(JwtRefreshGuard)
+	@Post('logout')
+	@HttpCode(204)
+	async logout(@Request() req, @Res({ passthrough: true }) res: Response) {
+		const deviceId = req.user.deviceId;
+		await this.devicesService.terminateSession(deviceId);
+		res.clearCookie('refreshToken');
+		return;
 	}
 
 	@Post('registration-confirmation')
