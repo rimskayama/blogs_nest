@@ -6,6 +6,7 @@ import { UsersService } from './users.service';
 import { UsersRepository } from './users.repository';
 import { UsersQueryRepository } from './users.query.repository';
 import { User, UserSchema } from './user.entity';
+import { BasicStrategy } from '../auth/passport/strategies/basic-strategy';
 
 @Module({
 	imports: [
@@ -14,6 +15,6 @@ import { User, UserSchema } from './user.entity';
 		MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
 	],
 	controllers: [UsersController],
-	providers: [UsersService, UsersRepository, UsersQueryRepository],
+	providers: [UsersService, UsersRepository, UsersQueryRepository, BasicStrategy],
 })
 export class UsersModule {}
