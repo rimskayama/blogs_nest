@@ -6,7 +6,7 @@ import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, Query, Us
 import { exceptionHandler } from '../exceptions/exception.handler';
 import { StatusCode, userIdField, userNotFound } from '../exceptions/exception.constants';
 import { ObjectId } from 'mongodb';
-import { BasicAuthGuard } from '../auth/guards/basic-auth.guard';
+import { BasicAuthGuard } from '../auth/passport/guards/basic-auth.guard';
 
 @Controller('users')
 export class UsersController {

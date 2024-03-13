@@ -3,16 +3,16 @@ import { PostsQueryRepository } from './posts.query.repository';
 import { getPagination } from '../utils/pagination';
 import { PostInputDto } from './posts.types';
 import { QueryParameters } from '../users/users.types';
-import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { exceptionHandler } from '../exceptions/exception.handler';
 import { StatusCode, blogIdField, blogNotFound, postIdField, postNotFound } from '../exceptions/exception.constants';
-import { BasicAuthGuard } from '../auth/guards/basic-auth.guard';
+import { BasicAuthGuard } from '../auth/passport/guards/basic-auth.guard';
 
 @Controller('posts')
 export class PostsController {
 	constructor(
-		@Inject(PostsService) protected postsService: PostsService,
-		@Inject(PostsQueryRepository) protected postsQueryRepository: PostsQueryRepository
+		private readonly postsService: PostsService,
+		private readonly postsQueryRepository: PostsQueryRepository
 	) {}
 
 	@Get()
