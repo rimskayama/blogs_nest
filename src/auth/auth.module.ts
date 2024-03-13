@@ -17,6 +17,13 @@ import { DevicesRepository } from '../devices/devices.repository';
 import { DevicesQueryRepository } from '../devices/devices.query.repository';
 import { JwtBearerStrategy } from './passport/strategies/jwt-bearer.strategy';
 import { JwtRefreshTokenStrategy } from './passport/strategies/jwt-refresh.strategy';
+import {
+	confirmationCodeExistsRule,
+	emailConfirmedRule,
+	emailExistsRule,
+	loginExistsRule,
+	recoveryCodeExistsRule,
+} from './authentification';
 
 @Module({
 	imports: [
@@ -40,6 +47,11 @@ import { JwtRefreshTokenStrategy } from './passport/strategies/jwt-refresh.strat
 		LocalStrategy,
 		JwtBearerStrategy,
 		JwtRefreshTokenStrategy,
+		emailExistsRule,
+		loginExistsRule,
+		emailConfirmedRule,
+		confirmationCodeExistsRule,
+		recoveryCodeExistsRule,
 	],
 })
 export class AuthModule {}
