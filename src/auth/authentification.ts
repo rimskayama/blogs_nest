@@ -10,9 +10,11 @@ export class emailExistsRule implements ValidatorConstraintInterface {
 	async validate(email: string) {
 		try {
 			const user = await this.usersRepository.findByLoginOrEmail(email);
-			if (!user) {
+			if (user) {
+				return false;
+			} else {
 				return true;
-			} else return false;
+			}
 		} catch (e) {
 			return true;
 		}
@@ -31,8 +33,11 @@ export class loginExistsRule implements ValidatorConstraintInterface {
 	async validate(login: string) {
 		try {
 			const user = await this.usersRepository.findByLoginOrEmail(login);
-			if (!user) return true;
-			else return false;
+			if (user) {
+				return false;
+			} else {
+				return true;
+			}
 		} catch (e) {
 			return true;
 		}
@@ -51,11 +56,14 @@ export class emailConfirmedRule implements ValidatorConstraintInterface {
 	async validate(email: string) {
 		try {
 			const user = await this.usersRepository.findByLoginOrEmail(email);
+			if (!user) {
+				return false;
+			}
 
 			if (user.emailConfirmation.isConfirmed === true) {
-				return true;
-			} else {
 				return false;
+			} else {
+				return true;
 			}
 		} catch (e) {
 			return false;
@@ -74,7 +82,13 @@ export class confirmationCodeExistsRule implements ValidatorConstraintInterface 
 
 	async validate(confirmationCode: string) {
 		try {
-			await this.usersRepository.findByConfirmationCode(confirmationCode);
+			const user = await this.usersRepository.findByConfirmationCode(confirmationCode);
+			if (!user) {
+				return false;
+			}
+			if (user.emailConfirmation.isConfirmed === true) {
+				return false;
+			}
 		} catch (e) {
 			return false;
 		}

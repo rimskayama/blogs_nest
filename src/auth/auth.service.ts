@@ -1,11 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UsersRepository } from '../users/users.repository';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { UserDto, UserInputDto } from '../users/users.types';
 import { ObjectId } from 'mongodb';
 import { User } from '../users/user.entity';
-import { emailManager } from './guards/registration/email.manager';
+import { emailManager } from './email/email.manager';
 import * as bcrypt from 'bcrypt';
 import { add } from 'date-fns/add';
 import { v4 as uuidv4 } from 'uuid';
