@@ -9,7 +9,7 @@ import { QueryParameters } from '../users/users.types';
 import { exceptionHandler } from '../exceptions/exception.handler';
 import { StatusCode, blogIdField, blogNotFound } from '../exceptions/exception.constants';
 import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { BasicAuthGuard } from '../auth/guards/basic-auth.guard';
+import { BasicAuthGuard } from '../auth/passport/guards/basic-auth.guard';
 
 @Controller('blogs')
 export class BlogsController {

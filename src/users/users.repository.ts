@@ -35,7 +35,10 @@ export class UsersRepository {
 
 	async findByConfirmationCode(code: string): Promise<User | null> {
 		const user: User | null = await this.userModel.findOne({ 'emailConfirmation.confirmationCode': code });
-		return user || null;
+		if (!user) {
+			return null;
+		}
+		return user;
 	}
 
 	async findByRecoveryCode(recoveryCode: string): Promise<User | null> {
