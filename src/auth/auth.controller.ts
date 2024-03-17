@@ -10,6 +10,10 @@ import { Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { JwtBearerGuard } from './passport/guards/jwt-bearer.guard';
 import { JwtRefreshGuard } from './passport/guards/jwt-refresh.guard';
+import { UserFromReq } from './decorators/userId.decorator';
+import { DeviceDetais } from './decorators/device.details.decorator';
+import { ObjectId } from 'mongodb';
+import { DeviceIdFromReq } from './decorators/deviceId.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -29,16 +33,17 @@ export class AuthController {
 	@UseGuards(LocalAuthGuard)
 	@Post('login')
 	@HttpCode(200)
-	async login(@Request() req, @Res({ passthrough: true }) res: Response) {
-		const userId = req.user.id;
+	async login(@Res({ passthrough: true }) res: Response, @UserFromReq() userId: string, @DeviceDetais() deviceDetais) {
 		const deviceId = uuidv4();
-		const deviceName = req.headers['user-agent'] || 'Device name';
-		const ip = req.socket.remoteAddress || 'IP address';
-		const expDate = req.headers.expires || 'expDate';
-
 		const result = await this.authService.login(userId, deviceId);
 
-		await this.devicesService.createNewSession(result.refreshToken, deviceName, ip, userId, expDate);
+		await this.devicesService.createNewSession(
+			result.refreshToken,
+			deviceDetais.deviceName,
+			deviceDetais.ip,
+			userId,
+			deviceDetais.expDate
+		);
 
 		res.cookie('refreshToken', result.refreshToken, { httpOnly: true, secure: true });
 		return {
@@ -49,8 +54,7 @@ export class AuthController {
 	@UseGuards(JwtBearerGuard, JwtRefreshGuard)
 	@Get('me')
 	@HttpCode(200)
-	async getProfile(@Request() req) {
-		const userId = req.user.id;
+	async getProfile(@UserFromReq() userId: ObjectId) {
 		const user = await this.usersQueryRepository.findUserById(userId);
 
 		if (!user) {
@@ -67,9 +71,11 @@ export class AuthController {
 	@UseGuards(JwtRefreshGuard)
 	@Post('refresh-token')
 	@HttpCode(200)
-	async getRefreshToken(@Request() req, @Res({ passthrough: true }) res: Response) {
-		const userId = req.user.id;
-		const deviceId = req.user.deviceId;
+	async getRefreshToken(
+		@UserFromReq() userId: string,
+		@DeviceIdFromReq() deviceId: string,
+		@Res({ passthrough: true }) res: Response
+	) {
 		const result = await this.authService.login(userId, deviceId);
 		const lastActiveDate = Math.floor(Date.now() / 1000);
 		await this.devicesService.updateLastActiveDate(deviceId, lastActiveDate);
