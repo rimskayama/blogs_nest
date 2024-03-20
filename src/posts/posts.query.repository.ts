@@ -7,6 +7,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { postsMapping } from '../utils/mapping';
+import { LikeStatus } from '../likes/likes.types';
 
 @Injectable()
 export class PostsQueryRepository {
@@ -22,9 +23,10 @@ export class PostsQueryRepository {
 		limit: number,
 		sortDirection: SortDirection,
 		sortBy: string,
-		skip: number
+		skip: number,
+		userId: string | false
 	): Promise<postsPaginationDto> {
-		const allPosts = await this.PostModel.find({}, {})
+		const allPosts = await this.PostModel.find({})
 			.skip(skip)
 			.limit(limit)
 			.sort({ [sortBy]: sortDirection })
@@ -36,14 +38,13 @@ export class PostsQueryRepository {
 
 		const items = await Promise.all(
 			allPosts.map(async (post) => {
-				const likeStatus = 'None';
-				//    if (userId) {
-				//        const likeInDB = await this.PostLikeModel.findOne(
-				//            {postId: post._id.toString()})
-				//        if (likeInDB) {
-				//            likeStatus = likeInDB.status
-				//        }
-				//    }
+				let likeStatus = 'None';
+				if (userId) {
+					const likeInDB = await this.PostLikeModel.findOne({ postId: post._id.toString() });
+					if (likeInDB) {
+						likeStatus = likeInDB.status;
+					}
+				}
 
 				const newestLikes: likeDetails[] = await this.PostLikeModel.find({
 					postId: post._id.toString(),
@@ -52,6 +53,7 @@ export class PostsQueryRepository {
 					.sort({ addedAt: -1 })
 					.limit(3)
 					.lean();
+
 				return Post.getViewPost({
 					...post,
 					extendedLikesInfo: {
@@ -71,22 +73,24 @@ export class PostsQueryRepository {
 		};
 	}
 
-	async findPostById(id: string): Promise<PostDto | null> {
-		const post: Post | null = await this.PostModel.findOne({ _id: new ObjectId(id) }).lean();
+	async findPostById(id: string, userId: string | false): Promise<PostDto | null> {
+		const post: Post | null = await this.PostModel.findById({ _id: new ObjectId(id) }).lean();
 		if (!post) {
 			return null;
 		}
 
-		const myStatus = 'None';
-		// if (userId) {
-		//     const likeInDB = await this.PostLikeModel.findOne(
-		//         {postId: post._id.toString(), userId: userId})
-		//     if (likeInDB) {
-		//         myStatus = likeInDB.status
-		//     }
-		// }
+		let myStatus = 'None';
+		if (userId) {
+			const likeInDB = await this.PostLikeModel.findOne({ postId: post._id.toString(), userId: userId });
+			if (likeInDB) {
+				myStatus = likeInDB.status;
+			}
+		}
 
-		const newestLikes: likeDetails[] = await this.PostLikeModel.find({ postId: post._id.toString(), status: 'Like' })
+		const newestLikes: likeDetails[] = await this.PostLikeModel.find({
+			postId: post._id.toString(),
+			status: LikeStatus.Like,
+		})
 			.sort({ addedAt: -1 })
 			.limit(3)
 			.lean();
@@ -107,7 +111,8 @@ export class PostsQueryRepository {
 		limit: number,
 		sortDirection: SortDirection,
 		sortBy: string,
-		skip: number
+		skip: number,
+		userId: string | false
 	) {
 		const postsByBlogId = await this.PostModel.find({ blogId: blogId })
 			.skip(skip)
@@ -121,14 +126,13 @@ export class PostsQueryRepository {
 
 		await Promise.all(
 			postsByBlogId.map(async (post) => {
-				const likeStatus = 'None';
-				// if (userId) {
-				//     const likeInDB = await this.PostLikeModel.findOne(
-				//         {postId: post._id.toString(), userId: userId})
-				//     if (likeInDB) {
-				//         likeStatus = likeInDB.status
-				//     }
-				// }
+				let likeStatus = 'None';
+				if (userId) {
+					const likeInDB = await this.PostLikeModel.findOne({ postId: post._id.toString(), userId: userId });
+					if (likeInDB) {
+						likeStatus = likeInDB.status;
+					}
+				}
 
 				const newestLikes: likeDetails[] = await this.PostLikeModel.find({
 					postId: post._id.toString(),
@@ -156,5 +160,17 @@ export class PostsQueryRepository {
 			totalCount: total,
 			items: postsMapping(postsByBlogId),
 		};
+	}
+
+	async updatePostLikes(postId: string, likesCount: number, dislikesCount: number) {
+		await this.PostModel.findByIdAndUpdate(
+			{ _id: new ObjectId(postId) },
+			{
+				$set: {
+					'extendedLikesInfo.likesCount': likesCount,
+					'extendedLikesInfo.dislikesCount': dislikesCount,
+				},
+			}
+		);
 	}
 }
