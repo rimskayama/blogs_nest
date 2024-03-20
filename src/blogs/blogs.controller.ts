@@ -10,6 +10,7 @@ import { exceptionHandler } from '../exceptions/exception.handler';
 import { StatusCode, blogIdField, blogNotFound } from '../exceptions/exception.constants';
 import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { BasicAuthGuard } from '../auth/passport/guards/basic-auth.guard';
+import { UserFromReq } from '../auth/decorators/userId.decorator';
 
 @Controller('blogs')
 export class BlogsController {
@@ -24,7 +25,6 @@ export class BlogsController {
 	@HttpCode(200)
 	async getBlogs(@Query() query: QueryParameters) {
 		const { page, limit, sortDirection, sortBy, searchNameTerm, skip } = getPagination(query);
-		//authorization to get likeStatus to send to Query
 		const result = await this.blogsQueryRepository.findBlogs(page, limit, sortDirection, sortBy, searchNameTerm, skip);
 		return result;
 	}
@@ -32,7 +32,6 @@ export class BlogsController {
 	@Get(':id')
 	@HttpCode(200)
 	async getBlog(@Param('id') blogId: string) {
-		//authorization to get likeStatus
 		const result = await this.blogsQueryRepository.findBlogById(blogId);
 		if (result) {
 			return result;
@@ -41,11 +40,13 @@ export class BlogsController {
 
 	@Get(':id/posts')
 	@HttpCode(200)
-	async getPostsOfBlog(@Param('id') blogId: string, @Query() query: QueryParameters) {
+	async getPostsOfBlog(
+		@Param('id') blogId: string,
+		@Query() query: QueryParameters,
+		@UserFromReq() userId: string | false
+	) {
 		const blog = await this.blogsQueryRepository.findBlogById(blogId);
 		const { page, limit, sortDirection, sortBy, skip } = getPagination(query);
-
-		//authorization to set likeStatus
 
 		if (blog) {
 			const result = await this.postsQueryRepository.findPostsByBlogId(
@@ -54,7 +55,8 @@ export class BlogsController {
 				limit,
 				sortDirection,
 				sortBy,
-				skip
+				skip,
+				userId
 			);
 			return result;
 		} else return exceptionHandler(StatusCode.NotFound, blogNotFound, blogIdField);
