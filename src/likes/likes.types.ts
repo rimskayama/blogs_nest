@@ -1,9 +1,10 @@
-import { IsEnum, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsEnum } from 'class-validator';
 
 export enum LikeStatus {
-	'None',
-	'Like',
-	'Dislike',
+	None = 'None',
+	Like = 'Like',
+	Dislike = 'Dislike',
 }
 
 export type likeDetailsDto = {
@@ -12,8 +13,12 @@ export type likeDetailsDto = {
 	login: string;
 };
 
-export class likeInputDto {
-	@IsString()
+export class likeStatus {
 	@IsEnum(LikeStatus)
-	likeStatus: string;
+	likeStatus: LikeStatus;
+}
+
+export class likeInputDto {
+	@Type(() => likeStatus)
+	likeStatus: likeStatus;
 }

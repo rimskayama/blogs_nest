@@ -7,7 +7,7 @@ import {
 	loginExistsRule,
 	recoveryCodeExistsRule,
 } from '../auth/authentification';
-const loginPattern = /^[a-zA-Z0-9_-]*$/;
+export const loginPattern = /^[a-zA-Z0-9_-]*$/;
 
 export class UserInputDto {
 	@IsString()

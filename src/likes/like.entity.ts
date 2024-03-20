@@ -24,7 +24,7 @@ export class PostLike {
 	userId: string;
 
 	@Prop({ required: true })
-	userLogin: string;
+	login: string;
 
 	@Prop({ required: true })
 	addedAt: string;
@@ -59,7 +59,7 @@ export class CommentLike {
 	userId: string;
 
 	@Prop({ required: true })
-	userLogin: string;
+	login: string;
 
 	@Prop({ required: true })
 	addedAt: string;
