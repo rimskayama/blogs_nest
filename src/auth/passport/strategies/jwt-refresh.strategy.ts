@@ -3,7 +3,6 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-jwt';
 import { jwtConstants } from '../../constants';
 import { cookieExtractor } from '../../utils/cookie.extractor';
-import { Request } from 'express';
 import { DevicesRepository } from '../../../devices/devices.repository';
 import { DeviceDto } from 'src/devices/devices.types';
 
@@ -13,11 +12,10 @@ export class JwtRefreshTokenStrategy extends PassportStrategy(Strategy, 'refresh
 		super({
 			jwtFromRequest: cookieExtractor,
 			secretOrKey: jwtConstants.refreshTokenSecret,
-			passReqToCallback: true,
 		});
 	}
 
-	async validate(request: Request, payload: any) {
+	async validate(payload: any) {
 		let device: DeviceDto | false;
 		try {
 			device = await this.devicesRepository.findDevice(payload.deviceId, payload.iat);
