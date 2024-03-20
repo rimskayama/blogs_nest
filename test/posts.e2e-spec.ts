@@ -291,4 +291,348 @@ describe('PostsController (e2e)', () => {
 			},
 		});
 	});
+
+	//LIKES
+
+	//POST auth/registration USER 1
+	let createdUser1: any = { id: 0 };
+	it('should create user 1 for post likes testing', async () => {
+		const data = {
+			password: 'qwerty1',
+			email: 'rimskayama@outlook.com',
+			login: 'login1',
+		};
+
+		const createResponse = await request(httpServer)
+			.post('/users')
+			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
+			.send(data)
+			.expect(201);
+
+		createdUser1 = createResponse.body;
+
+		const b = await request(httpServer).get('/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').expect(200);
+
+		expect(b.body).toEqual({
+			pagesCount: 1,
+			page: 1,
+			pageSize: 10,
+			totalCount: 1,
+			items: [
+				{
+					id: expect.any(String),
+					login: createdUser1.login,
+					email: createdUser1.email,
+					createdAt: expect.any(String),
+				},
+			],
+		});
+	});
+
+	//POST auth/registration USER 2
+	let createdUser2: any = { id: 1 };
+	it('should create user 2 for post likes testing', async () => {
+		const data = {
+			password: 'qwerty2',
+			email: 'emailofuser@outlook.com',
+			login: 'login2',
+		};
+
+		const createResponse = await request(httpServer)
+			.post('/users')
+			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
+			.send(data)
+			.expect(201);
+
+		createdUser2 = createResponse.body;
+
+		const b = await request(httpServer).get('/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').expect(200);
+
+		expect(b.body).toEqual({
+			pagesCount: 1,
+			page: 1,
+			pageSize: 10,
+			totalCount: 2,
+			items: [
+				{
+					id: expect.any(String),
+					login: createdUser2.login,
+					email: createdUser2.email,
+					createdAt: expect.any(String),
+				},
+				{
+					id: expect.any(String),
+					login: createdUser1.login,
+					email: createdUser1.email,
+					createdAt: expect.any(String),
+				},
+			],
+		});
+	});
+
+	// POST auth/login -> get accessToken USER 1
+
+	let accessToken = '';
+	it('should login user 1 to like posts', async () => {
+		const data = {
+			password: 'qwerty1',
+			loginOrEmail: 'login1',
+		};
+
+		const createResponse = await request(httpServer).post('/auth/login').send(data).expect(200);
+
+		accessToken = createResponse.body.accessToken;
+	});
+
+	it('should return status None without authorization', async () => {
+		const b = await request(httpServer)
+			.get('/posts/' + createdPost2.id)
+			.expect(200);
+
+		expect(b.body).toEqual({
+			id: expect.any(String),
+			title: 'new post title',
+			shortDescription: 'new short Description',
+			content: 'new post content',
+			blogId: createdPost2.blogId,
+			blogName: createdPost2.blogName,
+			createdAt: expect.any(String),
+			extendedLikesInfo: {
+				dislikesCount: 0,
+				likesCount: 0,
+				myStatus: 'None',
+				newestLikes: [],
+			},
+		});
+	});
+
+	// POST auth/login -> get accessToken USER 2
+
+	let accessToken2 = '';
+	it('should login user 2 to like posts', async () => {
+		const data = {
+			password: 'qwerty2',
+			loginOrEmail: 'login2',
+		};
+
+		const createResponse = await request(httpServer).post('/auth/login').send(data).expect(200);
+
+		accessToken2 = createResponse.body.accessToken;
+	});
+
+	//LIKES
+
+	it('should set like status, dislike of user 1', async () => {
+		const data = {
+			likeStatus: 'Dislike',
+		};
+		await request(httpServer)
+			.put('/posts/' + createdPost2.id + '/like-status')
+			.set('Authorization', `Bearer ${accessToken}`)
+			.send(data)
+			.expect(204);
+
+		const b = await request(httpServer)
+			.get('/posts/' + createdPost2.id)
+			.set('Authorization', `Bearer ${accessToken}`)
+			.expect(200);
+
+		expect(b.body).toEqual({
+			id: expect.any(String),
+			title: 'new post title',
+			shortDescription: 'new short Description',
+			content: 'new post content',
+			blogId: createdPost2.blogId,
+			blogName: createdPost2.blogName,
+			createdAt: expect.any(String),
+			extendedLikesInfo: {
+				dislikesCount: 1,
+				likesCount: 0,
+				myStatus: 'Dislike',
+				newestLikes: [],
+			},
+		});
+	});
+
+	it('should set like status, like of user 1', async () => {
+		const data = {
+			likeStatus: 'Like',
+		};
+		await request(httpServer)
+			.put('/posts/' + createdPost2.id + '/like-status')
+			.set('Authorization', `Bearer ${accessToken}`)
+			.send(data)
+			.expect(204);
+
+		const b = await request(httpServer)
+			.get('/posts/' + createdPost2.id)
+			.set('Authorization', `Bearer ${accessToken}`)
+			.expect(200);
+
+		expect(b.body).toEqual({
+			id: expect.any(String),
+			title: 'new post title',
+			shortDescription: 'new short Description',
+			content: 'new post content',
+			blogId: createdPost2.blogId,
+			blogName: createdPost2.blogName,
+			createdAt: expect.any(String),
+			extendedLikesInfo: {
+				dislikesCount: 0,
+				likesCount: 1,
+				myStatus: 'Like',
+				newestLikes: [
+					{
+						addedAt: expect.any(String),
+						userId: createdUser1.id,
+						login: createdUser1.login,
+					},
+				],
+			},
+		});
+	});
+
+	it('should set like status, like of user 2', async () => {
+		const data = {
+			likeStatus: 'Like',
+		};
+		await request(httpServer)
+			.put('/posts/' + createdPost2.id + '/like-status')
+			.set('Authorization', `Bearer ${accessToken2}`)
+			.send(data)
+			.expect(204);
+
+		const b = await request(httpServer)
+			.get('/posts/' + createdPost2.id)
+			.set('Authorization', `Bearer ${accessToken2}`)
+			.expect(200);
+
+		expect(b.body).toEqual({
+			id: expect.any(String),
+			title: 'new post title',
+			shortDescription: 'new short Description',
+			content: 'new post content',
+			blogId: createdPost2.blogId,
+			blogName: createdPost2.blogName,
+			createdAt: expect.any(String),
+			extendedLikesInfo: {
+				dislikesCount: 0,
+				likesCount: 2,
+				myStatus: 'Like',
+				newestLikes: [
+					{
+						addedAt: expect.any(String),
+						userId: createdUser2.id,
+						login: createdUser2.login,
+					},
+					{
+						addedAt: expect.any(String),
+						userId: createdUser1.id,
+						login: createdUser1.login,
+					},
+				],
+			},
+		});
+	});
+
+	//GET POSTS WITH LIKES
+
+	it('should return 200 and posts', async () => {
+		const createResponse = await request(httpServer)
+			.get('/posts')
+			.set('Authorization', `Bearer ${accessToken2}`)
+			.expect(200);
+
+		const allPosts = createResponse.body;
+		expect(allPosts).toEqual({
+			pagesCount: 1,
+			page: 1,
+			pageSize: 10,
+			totalCount: 1,
+			items: [
+				{
+					id: createdPost2.id,
+					title: createdPost2.title,
+					shortDescription: createdPost2.shortDescription,
+					content: createdPost2.content,
+					blogId: createdPost2.blogId,
+					blogName: createdPost2.blogName,
+					createdAt: createdPost2.createdAt,
+					extendedLikesInfo: {
+						dislikesCount: 0,
+						likesCount: 2,
+						myStatus: 'Like',
+						newestLikes: [
+							{
+								addedAt: expect.any(String),
+								userId: createdUser2.id,
+								login: createdUser2.login,
+							},
+							{
+								addedAt: expect.any(String),
+								userId: createdUser1.id,
+								login: createdUser1.login,
+							},
+						],
+					},
+				},
+			],
+		});
+
+		// const newestLikes = createResponse.body.items[0].extendedLikesInfo
+		//     expect(newestLikes).toEqual( {
+		//         dislikesCount: 0,
+		//         likesCount: 2,
+		//         myStatus: "Like",
+		//         newestLikes: [
+		//             {
+		//             addedAt: expect.any(String),
+		//             userId: createdUser2.id,
+		//             login: createdUser2.login
+		//         },
+		//         {
+		//             addedAt: expect.any(String),
+		//             userId: createdUser1.id,
+		//             login: createdUser1.login
+		//         }]
+		//     })
+	});
+
+	it('should set like status, None', async () => {
+		const data = {
+			likeStatus: 'None',
+		};
+		await request(httpServer)
+			.put('/posts/' + createdPost2.id + '/like-status')
+			.set('Authorization', `Bearer ${accessToken}`)
+			.send(data)
+			.expect(204);
+
+		const b = await request(httpServer)
+			.get('/posts/' + createdPost2.id)
+			.set('Authorization', `Bearer ${accessToken}`)
+			.expect(200);
+
+		expect(b.body).toEqual({
+			id: expect.any(String),
+			title: 'new post title',
+			shortDescription: 'new short Description',
+			content: 'new post content',
+			blogId: createdPost2.blogId,
+			blogName: createdPost2.blogName,
+			createdAt: expect.any(String),
+			extendedLikesInfo: {
+				dislikesCount: 0,
+				likesCount: 1,
+				myStatus: 'None',
+				newestLikes: [
+					{
+						addedAt: expect.any(String),
+						userId: createdUser2.id,
+						login: createdUser2.login,
+					},
+				],
+			},
+		});
+	});
 });
