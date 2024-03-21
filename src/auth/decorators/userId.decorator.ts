@@ -4,7 +4,9 @@ export const UserFromReq = createParamDecorator((data: unknown, ctx: ExecutionCo
 	const request = ctx.switchToHttp().getRequest();
 	try {
 		const userId = request.user.id;
-		return userId;
+		if (!userId) {
+			return false;
+		} else return userId;
 	} catch (e) {
 		return false;
 	}
