@@ -22,6 +22,7 @@ import { CommentsService } from '../comments/comments.service';
 import { LikesService } from '../likes/likes.service';
 import { likeInputDto } from '../likes/likes.types';
 import { commentInputDto } from '../comments/comments.types';
+import { UserAuthGuard } from '../auth/passport/guards/userId.guard';
 
 @Controller('posts')
 export class PostsController {
@@ -33,6 +34,7 @@ export class PostsController {
 		private readonly likesService: LikesService
 	) {}
 
+	@UseGuards(UserAuthGuard)
 	@Get()
 	@HttpCode(200)
 	async getPosts(@Query() query: QueryParameters, @UserFromReq() userId: string | false) {
@@ -41,6 +43,7 @@ export class PostsController {
 		return result;
 	}
 
+	@UseGuards(UserAuthGuard)
 	@Get(':id')
 	@HttpCode(200)
 	async getPost(@Param('id') postId: string, @UserFromReq() userId: string | false) {
@@ -58,6 +61,7 @@ export class PostsController {
 		else return exceptionHandler(StatusCode.NotFound, blogNotFound, blogIdField);
 	}
 
+	@UseGuards(UserAuthGuard)
 	@Get(':postId/comments')
 	@HttpCode(200)
 	async getCommentsOfPost(
