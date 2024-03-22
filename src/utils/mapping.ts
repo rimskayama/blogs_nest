@@ -17,6 +17,10 @@ export const usersMapping = (array: User[]) => {
 	return array.map((u: User) => User.getViewUser(u));
 };
 
+export const commentsMapping = (array: Comment[]) => {
+	return array.map((c: Comment) => Comment.getViewComment(c));
+};
+
 export const devicesMapping = (array: Device[]) => {
 	return array.map((d: Device) => Device.getViewDevice(d));
 };
