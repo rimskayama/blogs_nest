@@ -48,6 +48,29 @@ export class loginExistsRule implements ValidatorConstraintInterface {
 	}
 }
 
+@ValidatorConstraint({ name: 'LoginDoesNotExist', async: true })
+@Injectable()
+export class loginDoesNotExistRule implements ValidatorConstraintInterface {
+	constructor(private usersRepository: UsersRepository) {}
+
+	async validate(login: string) {
+		try {
+			const user = await this.usersRepository.findByLoginOrEmail(login);
+			if (user) {
+				return true;
+			} else {
+				return false;
+			}
+		} catch (e) {
+			return false;
+		}
+	}
+
+	defaultMessage() {
+		return 'User with that login does not exists';
+	}
+}
+
 @ValidatorConstraint({ name: 'EmailConfirmed', async: true })
 @Injectable()
 export class emailConfirmedRule implements ValidatorConstraintInterface {
