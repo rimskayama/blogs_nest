@@ -19,6 +19,8 @@ import { UserFromReq } from '../auth/decorators/userId.decorator';
 import { CommentsQueryRepository } from '../comments/comments.query.repository';
 import { JwtBearerGuard } from '../auth/passport/guards/jwt-bearer.guard';
 import { CommentsService } from '../comments/comments.service';
+import { LikesService } from '../likes/likes.service';
+import { likeInputDto } from '../likes/likes.types';
 import { commentInputDto } from '../comments/comments.types';
 
 @Controller('posts')
@@ -27,7 +29,8 @@ export class PostsController {
 		private readonly postsService: PostsService,
 		private readonly postsQueryRepository: PostsQueryRepository,
 		private readonly commentsService: CommentsService,
-		private readonly commentsQueryRepository: CommentsQueryRepository
+		private readonly commentsQueryRepository: CommentsQueryRepository,
+		private readonly likesService: LikesService
 	) {}
 
 	@Get()
@@ -108,6 +111,35 @@ export class PostsController {
 		const result = await this.postsService.updatePost(id, inputModel);
 		if (result) return;
 		else return exceptionHandler(StatusCode.NotFound, postNotFound, postIdField);
+	}
+
+	@UseGuards(JwtBearerGuard)
+	@Put(':postId/like-status')
+	@HttpCode(204)
+	async updateLikeStatus(
+		@Param('postId') postId: string,
+		@UserFromReq() userId: string,
+		@Body('likeStatus') likeStatus: likeInputDto
+	) {
+		const post = await this.postsQueryRepository.findPostById(postId, userId);
+		if (!post) {
+			return exceptionHandler(StatusCode.NotFound, postNotFound, postIdField);
+		} else {
+			const checkLikeStatus = await this.likesService.checkPostLikeStatus(likeStatus.toString(), post.id, userId);
+			if (checkLikeStatus) {
+				const likesInfo = await this.likesService.countPostLikes(post.id);
+				await this.postsQueryRepository.updatePostLikes(post.id, likesInfo.likesCount, likesInfo.dislikesCount);
+				return;
+			} else {
+				const newStatus = await this.likesService.setPostLikeStatus(likeStatus.toString(), post, userId);
+				if (newStatus) {
+					const likesInfo = await this.likesService.countPostLikes(post.id);
+					await this.postsQueryRepository.updatePostLikes(post.id, likesInfo.likesCount, likesInfo.dislikesCount);
+					return;
+				}
+				return exceptionHandler(StatusCode.NotFound, postNotFound, postIdField);
+			}
+		}
 	}
 
 	@Delete(':id')
