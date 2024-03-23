@@ -1,6 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
 import { UsersRepository } from '../users/users.repository';
+import { BlogsQueryRepository } from '../blogs/blogs.query.repository';
+
+@ValidatorConstraint({ name: 'blogDoesNotExist', async: true })
+@Injectable()
+export class blogDoesNotExistRule implements ValidatorConstraintInterface {
+	constructor(private BlogsQueryRepository: BlogsQueryRepository) {}
+
+	async validate(id: string) {
+		try {
+			const blog = await this.BlogsQueryRepository.findBlogById(id);
+			if (blog) {
+				return true;
+			} else {
+				return false;
+			}
+		} catch (e) {
+			return false;
+		}
+	}
+
+	defaultMessage() {
+		return 'Blog does not exists';
+	}
+}
 
 @ValidatorConstraint({ name: 'EmailExists', async: true })
 @Injectable()
@@ -45,29 +69,6 @@ export class loginExistsRule implements ValidatorConstraintInterface {
 
 	defaultMessage() {
 		return 'User with that login already exists';
-	}
-}
-
-@ValidatorConstraint({ name: 'LoginDoesNotExist', async: true })
-@Injectable()
-export class loginDoesNotExistRule implements ValidatorConstraintInterface {
-	constructor(private usersRepository: UsersRepository) {}
-
-	async validate(login: string) {
-		try {
-			const user = await this.usersRepository.findByLoginOrEmail(login);
-			if (user) {
-				return true;
-			} else {
-				return false;
-			}
-		} catch (e) {
-			return false;
-		}
-	}
-
-	defaultMessage() {
-		return 'User with that login does not exists';
 	}
 }
 
