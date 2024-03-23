@@ -21,12 +21,14 @@ import { JwtBearerGuard } from '../auth/passport/guards/jwt-bearer.guard';
 import { CommentsService } from '../comments/comments.service';
 import { LikesService } from '../likes/likes.service';
 import { likeInputDto } from '../likes/likes.types';
-import { commentInputDto } from '../comments/comments.types';
+import { contentInputDto } from '../comments/comments.types';
 import { UserAuthGuard } from '../auth/passport/guards/userId.guard';
+import { BlogsQueryRepository } from '../blogs/blogs.query.repository';
 
 @Controller('posts')
 export class PostsController {
 	constructor(
+		private readonly blogsQueryRepository: BlogsQueryRepository,
 		private readonly postsService: PostsService,
 		private readonly postsQueryRepository: PostsQueryRepository,
 		private readonly commentsService: CommentsService,
@@ -56,9 +58,10 @@ export class PostsController {
 	@Post()
 	@HttpCode(201)
 	async createPost(@Body() inputModel: PostInputDto) {
-		const result = await this.postsService.createPost(inputModel);
-		if (result) return result;
-		else return exceptionHandler(StatusCode.NotFound, blogNotFound, blogIdField);
+		const blog = await this.blogsQueryRepository.findBlogById(inputModel.blogId);
+		if (!blog) return exceptionHandler(StatusCode.NotFound, blogNotFound, blogIdField);
+
+		return await this.postsService.createPost(inputModel, blog.name);
 	}
 
 	@UseGuards(UserAuthGuard)
@@ -93,7 +96,7 @@ export class PostsController {
 	async createCommentByPostId(
 		@Param('postId') postId: string,
 		@UserFromReq() userId: string | false,
-		@Body() inputModel: commentInputDto
+		@Body() inputModel: contentInputDto
 	) {
 		const postById = await this.postsQueryRepository.findPostById(postId, userId);
 		if (!postById) {
@@ -112,6 +115,9 @@ export class PostsController {
 	@Put(':id')
 	@HttpCode(204)
 	async updatePost(@Body() inputModel: PostInputDto, @Param('id') id: string) {
+		const blog = await this.blogsQueryRepository.findBlogById(inputModel.blogId);
+		if (!blog) return exceptionHandler(StatusCode.NotFound, blogNotFound, blogIdField);
+
 		const result = await this.postsService.updatePost(id, inputModel);
 		if (result) return;
 		else return exceptionHandler(StatusCode.NotFound, postNotFound, postIdField);
@@ -123,19 +129,19 @@ export class PostsController {
 	async updateLikeStatus(
 		@Param('postId') postId: string,
 		@UserFromReq() userId: string,
-		@Body('likeStatus') likeStatus: likeInputDto
+		@Body() inputModel: likeInputDto
 	) {
 		const post = await this.postsQueryRepository.findPostById(postId, userId);
 		if (!post) {
 			return exceptionHandler(StatusCode.NotFound, postNotFound, postIdField);
 		} else {
-			const checkLikeStatus = await this.likesService.checkPostLikeStatus(likeStatus.toString(), post.id, userId);
+			const checkLikeStatus = await this.likesService.checkPostLikeStatus(inputModel.likeStatus, post.id, userId);
 			if (checkLikeStatus) {
 				const likesInfo = await this.likesService.countPostLikes(post.id);
 				await this.postsQueryRepository.updatePostLikes(post.id, likesInfo.likesCount, likesInfo.dislikesCount);
 				return;
 			} else {
-				const newStatus = await this.likesService.setPostLikeStatus(likeStatus.toString(), post, userId);
+				const newStatus = await this.likesService.setPostLikeStatus(inputModel.likeStatus, post, userId);
 				if (newStatus) {
 					const likesInfo = await this.likesService.countPostLikes(post.id);
 					await this.postsQueryRepository.updatePostLikes(post.id, likesInfo.likesCount, likesInfo.dislikesCount);
@@ -146,6 +152,7 @@ export class PostsController {
 		}
 	}
 
+	@UseGuards(BasicAuthGuard)
 	@Delete(':id')
 	@HttpCode(204)
 	async deletePost(@Param('id') postId: string) {
