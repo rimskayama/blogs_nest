@@ -11,6 +11,7 @@ import { StatusCode, blogIdField, blogNotFound } from '../exceptions/exception.c
 import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { BasicAuthGuard } from '../auth/passport/guards/basic-auth.guard';
 import { UserFromReq } from '../auth/decorators/userId.decorator';
+import { UserAuthGuard } from '../auth/passport/guards/userId.guard';
 
 @Controller('blogs')
 export class BlogsController {
@@ -38,6 +39,7 @@ export class BlogsController {
 		} else return exceptionHandler(StatusCode.NotFound, blogNotFound, blogIdField);
 	}
 
+	@UseGuards(UserAuthGuard)
 	@Get(':id/posts')
 	@HttpCode(200)
 	async getPostsOfBlog(
@@ -74,11 +76,14 @@ export class BlogsController {
 	@Post(':id/posts')
 	@HttpCode(201)
 	async createPostForSpecifiedBlog(@Body() inputModel: SpecifiedPostInputDto, @Param('id') blogId: string) {
+		const blog = await this.blogsQueryRepository.findBlogById(blogId);
+		if (!blog) return exceptionHandler(StatusCode.NotFound, blogNotFound, blogIdField);
+
 		const postModel = {
 			...inputModel,
 			blogId: blogId,
 		};
-		const result = await this.postsService.createPost(postModel);
+		const result = await this.postsService.createPost(postModel, blog.name);
 		if (result) {
 			return result;
 		} else return exceptionHandler(StatusCode.NotFound, blogNotFound, blogIdField);
