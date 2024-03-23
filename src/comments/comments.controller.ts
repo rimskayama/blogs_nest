@@ -54,14 +54,14 @@ export class CommentsController {
 	async updateLikeStatus(
 		@Param('commentId') commentId: string,
 		@UserFromReq() userId: string,
-		@Body('likeStatus') likeStatus: likeInputDto
+		@Body() inputModel: likeInputDto
 	) {
 		const comment = await this.commentsService.findCommentById(commentId, userId);
 
 		if (!comment) {
 			return exceptionHandler(StatusCode.NotFound, commentNotFound, commentIdField);
 		} else {
-			const checkLikeStatus = await this.likesService.checkCommentLikeStatus(likeStatus.toString(), comment.id, userId);
+			const checkLikeStatus = await this.likesService.checkCommentLikeStatus(inputModel.likeStatus, comment.id, userId);
 			if (checkLikeStatus) {
 				const likesInfo = await this.likesService.countCommentLikes(comment.id);
 				await this.commentsQueryRepository.updateCommentLikes(
@@ -71,7 +71,7 @@ export class CommentsController {
 				);
 				return;
 			} else {
-				const isCreated = await this.likesService.setCommentLikeStatus(likeStatus.toString(), comment, userId);
+				const isCreated = await this.likesService.setCommentLikeStatus(inputModel.likeStatus, comment, userId);
 				if (isCreated) {
 					const likesInfo = await this.likesService.countCommentLikes(comment.id);
 					await this.commentsQueryRepository.updateCommentLikes(
@@ -86,8 +86,8 @@ export class CommentsController {
 		}
 	}
 
-	@Delete(':id')
 	@UseGuards(JwtBearerGuard)
+	@Delete(':id')
 	@HttpCode(204)
 	async deleteComment(@Param('id') commentId: string, @UserFromReq() userId: string | false) {
 		const comment = await this.commentsService.findCommentById(commentId, userId);

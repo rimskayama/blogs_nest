@@ -6,7 +6,6 @@ import { PostLike, PostLikeDocument } from '../likes/like.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
-import { postsMapping } from '../utils/mapping';
 import { LikeStatus } from '../likes/likes.types';
 
 @Injectable()
@@ -40,7 +39,7 @@ export class PostsQueryRepository {
 			allPosts.map(async (post) => {
 				let likeStatus = 'None';
 				if (userId) {
-					const likeInDB = await this.PostLikeModel.findOne({ postId: post._id.toString() });
+					const likeInDB = await this.PostLikeModel.findOne({ postId: post._id.toString(), userId: userId });
 					if (likeInDB) {
 						likeStatus = likeInDB.status;
 					}
@@ -124,7 +123,7 @@ export class PostsQueryRepository {
 
 		const pagesCount = Math.ceil(total / limit);
 
-		await Promise.all(
+		const items = await Promise.all(
 			postsByBlogId.map(async (post) => {
 				let likeStatus = 'None';
 				if (userId) {
@@ -158,7 +157,7 @@ export class PostsQueryRepository {
 			page: page,
 			pageSize: limit,
 			totalCount: total,
-			items: postsMapping(postsByBlogId),
+			items,
 		};
 	}
 
