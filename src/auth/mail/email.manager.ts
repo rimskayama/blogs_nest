@@ -1,4 +1,5 @@
 import { emailAdapter } from './email.adapter';
+
 export const emailManager = {
 	async sendRegistrationEmail(email: string, confirmationCode: string) {
 		const subject = 'confirmation message';
