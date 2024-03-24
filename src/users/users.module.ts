@@ -8,6 +8,9 @@ import { UsersQueryRepository } from './users.query.repository';
 import { User, UserSchema } from './user.entity';
 import { BasicStrategy } from '../auth/passport/strategies/basic-strategy';
 
+const adapters = [UsersRepository, UsersQueryRepository];
+const strategies = [BasicStrategy];
+
 @Module({
 	imports: [
 		ConfigModule.forRoot(),
@@ -15,6 +18,6 @@ import { BasicStrategy } from '../auth/passport/strategies/basic-strategy';
 		MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
 	],
 	controllers: [UsersController],
-	providers: [UsersService, UsersRepository, UsersQueryRepository, BasicStrategy],
+	providers: [UsersService, ...adapters, ...strategies],
 })
 export class UsersModule {}

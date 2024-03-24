@@ -16,6 +16,17 @@ import { LikesService } from '../likes/likes.service';
 import { PostLikesRepository } from '../likes/post.likes.repository';
 import { JwtBearerStrategy } from '../auth/passport/strategies/jwt-bearer.strategy';
 
+const strategies = [JwtBearerStrategy];
+const services = [CommentsService, LikesService];
+const adapters = [
+	PostsQueryRepository,
+	UsersQueryRepository,
+	CommentsRepository,
+	CommentsQueryRepository,
+	CommentLikesRepository,
+	PostLikesRepository,
+];
+
 @Module({
 	imports: [
 		ConfigModule.forRoot(),
@@ -27,16 +38,6 @@ import { JwtBearerStrategy } from '../auth/passport/strategies/jwt-bearer.strate
 		MongooseModule.forFeature([{ name: CommentLike.name, schema: CommentLikeSchema }]),
 	],
 	controllers: [CommentsController],
-	providers: [
-		PostsQueryRepository,
-		UsersQueryRepository,
-		CommentsService,
-		CommentsRepository,
-		CommentsQueryRepository,
-		CommentLikesRepository,
-		LikesService,
-		PostLikesRepository,
-		JwtBearerStrategy,
-	],
+	providers: [...services, ...adapters, ...strategies],
 })
 export class CommentsModule {}

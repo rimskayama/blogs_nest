@@ -9,6 +9,13 @@ import { DevicesQueryRepository } from './devices.query.repository';
 import { PassportModule } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
 import { JwtRefreshTokenStrategy } from '../auth/passport/strategies/jwt-refresh.strategy';
+import { RefreshTokenValidationUseCase } from '../auth/use-cases/validations/validate-refresh-token.use-case';
+import { CqrsModule } from '@nestjs/cqrs';
+
+const strategies = [JwtRefreshTokenStrategy];
+const services = [JwtService, DevicesService];
+const adapters = [DevicesRepository, DevicesQueryRepository];
+const useCases = [RefreshTokenValidationUseCase];
 
 @Module({
 	imports: [
@@ -16,8 +23,9 @@ import { JwtRefreshTokenStrategy } from '../auth/passport/strategies/jwt-refresh
 		MongooseModule.forRoot(process.env.MONGO_URL),
 		MongooseModule.forFeature([{ name: Device.name, schema: DeviceSchema }]),
 		PassportModule,
+		CqrsModule,
 	],
 	controllers: [DevicesController],
-	providers: [JwtService, DevicesService, DevicesRepository, DevicesQueryRepository, JwtRefreshTokenStrategy],
+	providers: [...services, ...adapters, ...strategies, ...useCases],
 })
 export class DevicesModule {}
