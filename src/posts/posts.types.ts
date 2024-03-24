@@ -1,28 +1,32 @@
-import { IsString, Length } from 'class-validator';
+import { Length, Validate } from 'class-validator';
 import { likeDetails } from './post.entity';
+import { Transform } from 'class-transformer';
+import validator from 'validator';
+import { blogDoesNotExistRule } from '../auth/authentification';
 
 export class PostInputDto {
-	@IsString()
+	@Transform(({ value }) => validator.trim(value))
 	@Length(1, 30)
 	title: string;
-	@IsString()
+	@Transform(({ value }) => validator.trim(value))
 	@Length(1, 100)
 	shortDescription: string;
-	@IsString()
+	@Transform(({ value }) => validator.trim(value))
 	@Length(1, 1000)
 	content: string;
-	@IsString()
+	@Transform(({ value }) => validator.trim(value))
+	@Validate(blogDoesNotExistRule)
 	blogId: string;
 }
 
 export class SpecifiedPostInputDto {
-	@IsString()
+	@Transform(({ value }) => validator.trim(value))
 	@Length(1, 30)
 	title: string;
-	@IsString()
+	@Transform(({ value }) => validator.trim(value))
 	@Length(1, 100)
 	shortDescription: string;
-	@IsString()
+	@Transform(({ value }) => validator.trim(value))
 	@Length(1, 1000)
 	content: string;
 }

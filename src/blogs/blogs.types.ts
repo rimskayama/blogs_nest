@@ -1,14 +1,13 @@
-import { IsString, IsUrl, Length } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsUrl, Length } from 'class-validator';
+import validator from 'validator';
 
 export class BlogInputDto {
-	@IsString()
+	@Transform(({ value }) => validator.trim(value))
 	@Length(1, 15)
 	name: string;
-	@IsString()
 	@Length(1, 500)
 	description: string;
-	@IsString()
-	@Length(1, 100)
 	@IsUrl()
 	websiteUrl: string;
 }

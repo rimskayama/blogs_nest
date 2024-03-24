@@ -1,4 +1,3 @@
-import { Type } from 'class-transformer';
 import { IsEnum } from 'class-validator';
 
 export enum LikeStatus {
@@ -13,12 +12,7 @@ export type likeDetailsDto = {
 	login: string;
 };
 
-export class likeStatus {
+export class likeInputDto {
 	@IsEnum(LikeStatus)
 	likeStatus: LikeStatus;
-}
-
-export class likeInputDto {
-	@Type(() => likeStatus)
-	likeStatus: likeStatus;
 }
