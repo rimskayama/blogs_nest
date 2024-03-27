@@ -3,29 +3,26 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-jwt';
 import { jwtConstants } from '../../constants';
 import { cookieExtractor } from '../../utils/cookie.extractor';
-import { DevicesRepository } from '../../../devices/devices.repository';
-import { DeviceDto } from 'src/devices/devices.types';
+import { RefreshTokenValidationCommand } from '../../use-cases/validations/validate-refresh-token.use-case';
+import { CommandBus } from '@nestjs/cqrs';
 
 @Injectable()
 export class JwtRefreshTokenStrategy extends PassportStrategy(Strategy, 'refresh') {
-	constructor(private devicesRepository: DevicesRepository) {
+	constructor(private commandBus: CommandBus) {
 		super({
 			jwtFromRequest: cookieExtractor,
+			ignoreExpiration: false,
 			secretOrKey: jwtConstants.refreshTokenSecret,
 		});
 	}
 
 	async validate(payload: any) {
-		let device: DeviceDto | false;
-		try {
-			device = await this.devicesRepository.findDevice(payload.deviceId, payload.iat);
-		} catch (e) {
-			return false;
-		}
-		if (!device) return false;
-		return {
-			id: payload.sub,
-			deviceId: payload.deviceId,
-		};
+		const result = await this.commandBus.execute(new RefreshTokenValidationCommand(payload));
+		if (!result) return false;
+		else
+			return {
+				id: payload.sub,
+				deviceId: payload.deviceId,
+			};
 	}
 }
