@@ -25,7 +25,7 @@ import { UserAuthStrategy } from '../auth/passport/strategies/userId.strategy';
 import { blogDoesNotExistRule } from '../auth/authentification';
 
 const strategies = [JwtBearerStrategy, UserAuthStrategy];
-const services = [PostsService, CommentsService, LikesService];
+const services = [JwtService, PostsService, CommentsService, LikesService];
 const adapters = [
 	BlogsQueryRepository,
 	PostsRepository,
@@ -51,6 +51,6 @@ const validators = [blogDoesNotExistRule];
 		PassportModule,
 	],
 	controllers: [PostsController],
-	providers: [JwtService, ...services, ...adapters, ...strategies, ...validators],
+	providers: [...services, ...adapters, ...strategies, ...validators],
 })
 export class PostsModule {}

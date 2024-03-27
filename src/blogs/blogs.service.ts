@@ -1,15 +1,11 @@
 import { BlogInputDto, BlogDto } from './blogs.types';
 import { ObjectId } from 'mongodb';
 import { BlogsRepository } from './blogs.repository';
-import { BlogsQueryRepository } from './blogs.query.repository';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class BlogsService {
-	constructor(
-		@Inject(BlogsRepository) protected blogsRepository: BlogsRepository,
-		@Inject(BlogsQueryRepository) protected blogsQueryRepository: BlogsQueryRepository
-	) {}
+	constructor(private blogsRepository: BlogsRepository) {}
 
 	async createBlog(inputModel: BlogInputDto): Promise<BlogDto> {
 		const newBlog = {

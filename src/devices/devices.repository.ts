@@ -38,7 +38,7 @@ export class DevicesRepository {
 	}
 
 	async updateLastActiveDate(deviceId: string, lastActiveDate: number) {
-		return await this.deviceModel.updateOne({ deviceId }, { $set: { lastActiveDate: lastActiveDate } });
+		return await this.deviceModel.findOneAndUpdate({ deviceId }, { lastActiveDate: lastActiveDate });
 	}
 
 	async terminateAllSessions(userId: string, deviceId: string) {

@@ -12,7 +12,7 @@ export class UsersService {
 
 	async createUser(inputModel: UserInputDto): Promise<UserDto> {
 		const passwordSalt = await bcrypt.genSalt(10);
-		const passwordHash = await this._generateHash(inputModel.password, passwordSalt);
+		const passwordHash = await bcrypt.hash(inputModel.password, passwordSalt);
 
 		const newUser = {
 			_id: new ObjectId(),
@@ -38,10 +38,6 @@ export class UsersService {
 		};
 
 		return this.usersRepository.createUser(newUser);
-	}
-
-	async _generateHash(password: string, salt: string) {
-		return await bcrypt.hash(password, salt);
 	}
 
 	async deleteUser(id: string) {

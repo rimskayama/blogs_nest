@@ -12,7 +12,7 @@ export class DevicesQueryRepository {
 		private deviceModel: Model<DeviceDocument>
 	) {}
 	async findDevices(userId: string): Promise<DeviceViewDto[]> {
-		const allDevices = await this.deviceModel.find({ userId: userId }, {});
+		const allDevices = await this.deviceModel.find({ userId: userId });
 		return devicesMapping(allDevices);
 	}
 }
