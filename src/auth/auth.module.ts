@@ -31,6 +31,7 @@ import { RegistrationResendEmailUseCase } from './use-cases/registration/registr
 import { RegistrationConfirmEmailUseCase } from './use-cases/registration/registration-confirm-email.user-case';
 import { PasswordRecoveryUseCase } from './use-cases/password/password-recovery.use-case';
 import { PasswordUpdateUseCase } from './use-cases/password/password-update.use-case';
+import { CqrsModule } from '@nestjs/cqrs';
 
 const strategies = [LocalStrategy, JwtBearerStrategy, JwtRefreshTokenStrategy];
 const services = [JwtService, UsersService, DevicesService];
@@ -61,6 +62,7 @@ const useCases = [
 		UsersModule,
 		MongooseModule.forFeature([{ name: Device.name, schema: DeviceSchema }]),
 		PassportModule,
+		CqrsModule,
 	],
 	controllers: [AuthController],
 	providers: [...services, ...adapters, ...strategies, ...validators, ...useCases],

@@ -14,6 +14,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { DevicesModule } from './devices/devices.module';
 import { PassportModule } from '@nestjs/passport';
 import { CommentsModule } from './comments/comments.module';
+import { CqrsModule } from '@nestjs/cqrs';
 
 @Module({
 	imports: [
@@ -30,6 +31,7 @@ import { CommentsModule } from './comments/comments.module';
 		DevicesModule,
 		CommentsModule,
 		LikesModule,
+		CqrsModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
