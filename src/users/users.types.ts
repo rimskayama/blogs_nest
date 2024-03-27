@@ -37,6 +37,7 @@ export class newPasswordInputDto {
 
 export class emailInputDto {
 	@IsString()
+	@IsEmail()
 	@Validate(emailConfirmedRule)
 	email: string;
 }
