@@ -9,6 +9,8 @@ import { UsersQueryRepository } from '../users/users.query.repository';
 import { User, UserSchema } from '../users/user.entity';
 import { JwtBearerStrategy } from '../auth/passport/strategies/jwt-bearer.strategy';
 
+const adapters = [PostLikesRepository, CommentLikesRepository, UsersQueryRepository];
+
 @Module({
 	imports: [
 		ConfigModule.forRoot(),
@@ -18,6 +20,6 @@ import { JwtBearerStrategy } from '../auth/passport/strategies/jwt-bearer.strate
 		MongooseModule.forFeature([{ name: CommentLike.name, schema: CommentLikeSchema }]),
 	],
 	controllers: [],
-	providers: [LikesService, PostLikesRepository, CommentLikesRepository, UsersQueryRepository, JwtBearerStrategy],
+	providers: [LikesService, JwtBearerStrategy, ...adapters],
 })
 export class LikesModule {}

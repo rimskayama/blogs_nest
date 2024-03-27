@@ -4,7 +4,6 @@ import { JwtService } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { UsersRepository } from '../users/users.repository';
 import { User, UserSchema } from '../users/user.entity';
@@ -24,6 +23,35 @@ import {
 	loginExistsRule,
 	recoveryCodeExistsRule,
 } from './authentification';
+import { LoginUserUseCase } from './use-cases/login/login-user.use-case';
+import { RegistrationUseCase } from './use-cases/registration/registration.use-case';
+import { RefreshTokenValidationUseCase } from './use-cases/validations/validate-refresh-token.use-case';
+import { UserValidationUseCase } from './use-cases/validations/validate-user.use-case';
+import { RegistrationResendEmailUseCase } from './use-cases/registration/registration-resend-email.use-case';
+import { RegistrationConfirmEmailUseCase } from './use-cases/registration/registration-confirm-email.user-case';
+import { PasswordRecoveryUseCase } from './use-cases/password/password-recovery.use-case';
+import { PasswordUpdateUseCase } from './use-cases/password/password-update.use-case';
+
+const strategies = [LocalStrategy, JwtBearerStrategy, JwtRefreshTokenStrategy];
+const services = [JwtService, UsersService, DevicesService];
+const adapters = [UsersRepository, UsersQueryRepository, DevicesRepository, DevicesQueryRepository];
+const validators = [
+	emailExistsRule,
+	loginExistsRule,
+	emailConfirmedRule,
+	confirmationCodeExistsRule,
+	recoveryCodeExistsRule,
+];
+const useCases = [
+	RegistrationUseCase,
+	RegistrationResendEmailUseCase,
+	RegistrationConfirmEmailUseCase,
+	LoginUserUseCase,
+	RefreshTokenValidationUseCase,
+	UserValidationUseCase,
+	PasswordRecoveryUseCase,
+	PasswordUpdateUseCase,
+];
 
 @Module({
 	imports: [
@@ -35,23 +63,6 @@ import {
 		PassportModule,
 	],
 	controllers: [AuthController],
-	providers: [
-		JwtService,
-		AuthService,
-		UsersService,
-		DevicesService,
-		UsersRepository,
-		UsersQueryRepository,
-		DevicesRepository,
-		DevicesQueryRepository,
-		LocalStrategy,
-		JwtBearerStrategy,
-		JwtRefreshTokenStrategy,
-		emailExistsRule,
-		loginExistsRule,
-		emailConfirmedRule,
-		confirmationCodeExistsRule,
-		recoveryCodeExistsRule,
-	],
+	providers: [...services, ...adapters, ...strategies, ...validators, ...useCases],
 })
 export class AuthModule {}

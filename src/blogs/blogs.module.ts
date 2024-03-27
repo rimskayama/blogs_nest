@@ -13,6 +13,9 @@ import { PostsService } from '../posts/posts.service';
 import { PostsRepository } from '../posts/posts.repository';
 import { PostsQueryRepository } from '../posts/posts.query.repository';
 
+const services = [BlogsService, PostsService];
+const adapters = [BlogsRepository, BlogsQueryRepository, PostsRepository, PostsQueryRepository];
+
 @Module({
 	imports: [
 		ConfigModule.forRoot(),
@@ -22,6 +25,6 @@ import { PostsQueryRepository } from '../posts/posts.query.repository';
 		MongooseModule.forFeature([{ name: PostLike.name, schema: PostLikeSchema }]),
 	],
 	controllers: [BlogsController],
-	providers: [BlogsService, BlogsRepository, BlogsQueryRepository, PostsService, PostsRepository, PostsQueryRepository],
+	providers: [...services, ...adapters],
 })
 export class BlogsModule {}

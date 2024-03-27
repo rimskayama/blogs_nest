@@ -21,6 +21,22 @@ import { CommentLikesRepository } from '../likes/comment.likes.repository';
 import { JwtBearerStrategy } from '../auth/passport/strategies/jwt-bearer.strategy';
 import { JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { UserAuthStrategy } from '../auth/passport/strategies/userId.strategy';
+import { blogDoesNotExistRule } from '../auth/authentification';
+
+const strategies = [JwtBearerStrategy, UserAuthStrategy];
+const services = [PostsService, CommentsService, LikesService];
+const adapters = [
+	BlogsQueryRepository,
+	PostsRepository,
+	PostsQueryRepository,
+	CommentsRepository,
+	CommentsQueryRepository,
+	UsersQueryRepository,
+	PostLikesRepository,
+	CommentLikesRepository,
+];
+const validators = [blogDoesNotExistRule];
 
 @Module({
 	imports: [
@@ -35,20 +51,6 @@ import { PassportModule } from '@nestjs/passport';
 		PassportModule,
 	],
 	controllers: [PostsController],
-	providers: [
-		JwtService,
-		BlogsQueryRepository,
-		PostsService,
-		PostsRepository,
-		PostsQueryRepository,
-		CommentsService,
-		CommentsRepository,
-		CommentsQueryRepository,
-		UsersQueryRepository,
-		LikesService,
-		PostLikesRepository,
-		CommentLikesRepository,
-		JwtBearerStrategy,
-	],
+	providers: [JwtService, ...services, ...adapters, ...strategies, ...validators],
 })
 export class PostsModule {}
