@@ -23,7 +23,7 @@ export class Device {
 		return {
 			ip: deviceFromDb.ip,
 			title: deviceFromDb.title,
-			lastActiveDate: Math.floor(deviceFromDb.lastActiveDate / 1000).toString(),
+			lastActiveDate: new Date(deviceFromDb.lastActiveDate * 1000).toISOString(),
 			deviceId: deviceFromDb.deviceId,
 		};
 	}
