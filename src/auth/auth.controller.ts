@@ -1,5 +1,4 @@
 import { Controller, Post, UseGuards, Request, Get, HttpCode, Body, Res } from '@nestjs/common';
-import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './passport/guards/local-auth.guard';
 import { exceptionHandler } from '../exceptions/exception.handler';
 import { StatusCode, userIdField, userNotFound } from '../exceptions/exception.constants';
@@ -7,18 +6,25 @@ import { UsersQueryRepository } from '../users/users.query.repository';
 import { UserInputDto, confirmationCodeInputDto, emailInputDto, newPasswordInputDto } from '../users/users.types';
 import { DevicesService } from '../devices/devices.service';
 import { Response } from 'express';
-import { v4 as uuidv4 } from 'uuid';
 import { JwtBearerGuard } from './passport/guards/jwt-bearer.guard';
 import { JwtRefreshGuard } from './passport/guards/jwt-refresh.guard';
 import { UserFromReq } from './decorators/userId.decorator';
 import { DeviceDetais } from './decorators/device.details.decorator';
 import { ObjectId } from 'mongodb';
 import { DeviceIdFromReq } from './decorators/deviceId.decorator';
+import { v4 as uuidv4 } from 'uuid';
+import { CommandBus } from '@nestjs/cqrs';
+import { RegistrationCommand } from './use-cases/registration/registration.use-case';
+import { RegistrationConfirmEmailCommand } from './use-cases/registration/registration-confirm-email.user-case';
+import { RegistrationResendEmailCommand } from './use-cases/registration/registration-resend-email.use-case';
+import { PasswordRecoveryCommand } from './use-cases/password/password-recovery.use-case';
+import { PasswordUpdateCommand } from './use-cases/password/password-update.use-case';
+import { LoginUserCommand } from './use-cases/login/login-user.use-case';
 
 @Controller('auth')
 export class AuthController {
 	constructor(
-		private readonly authService: AuthService,
+		private commandBus: CommandBus,
 		private readonly usersQueryRepository: UsersQueryRepository,
 		private readonly devicesService: DevicesService
 	) {}
@@ -26,7 +32,7 @@ export class AuthController {
 	@Post('registration')
 	@HttpCode(204)
 	async registerUser(@Body() inputModel: UserInputDto) {
-		const result = await this.authService.registerUser(inputModel);
+		const result = await this.commandBus.execute(new RegistrationCommand(inputModel));
 		return result;
 	}
 
@@ -35,7 +41,7 @@ export class AuthController {
 	@HttpCode(200)
 	async login(@Res({ passthrough: true }) res: Response, @UserFromReq() userId: string, @DeviceDetais() deviceDetais) {
 		const deviceId = uuidv4();
-		const result = await this.authService.login(userId, deviceId);
+		const result = await this.commandBus.execute(new LoginUserCommand(userId, deviceId));
 
 		await this.devicesService.createNewSession(
 			result.refreshToken,
@@ -51,7 +57,7 @@ export class AuthController {
 		};
 	}
 
-	@UseGuards(JwtBearerGuard, JwtRefreshGuard)
+	@UseGuards(JwtBearerGuard)
 	@Get('me')
 	@HttpCode(200)
 	async getProfile(@UserFromReq() userId: ObjectId) {
@@ -76,7 +82,7 @@ export class AuthController {
 		@DeviceIdFromReq() deviceId: string,
 		@Res({ passthrough: true }) res: Response
 	) {
-		const result = await this.authService.login(userId, deviceId);
+		const result = await this.commandBus.execute(new LoginUserCommand(userId, deviceId));
 		const lastActiveDate = Math.floor(Date.now() / 1000);
 		await this.devicesService.updateLastActiveDate(deviceId, lastActiveDate);
 		res.cookie('refreshToken', result.refreshToken, { httpOnly: true, secure: true });
@@ -98,30 +104,27 @@ export class AuthController {
 	@Post('registration-confirmation')
 	@HttpCode(204)
 	async confirmRegistration(@Body() codeInputModel: confirmationCodeInputDto) {
-		const result = await this.authService.confirmEmail(codeInputModel.code);
+		const result = await this.commandBus.execute(new RegistrationConfirmEmailCommand(codeInputModel.code));
 		return result;
 	}
 
 	@Post('registration-email-resending')
 	@HttpCode(204)
 	async resendEmail(@Body() emailInputModel: emailInputDto) {
-		const result = await this.authService.resendEmail(emailInputModel.email);
+		const result = await this.commandBus.execute(new RegistrationResendEmailCommand(emailInputModel.email));
 		return result;
 	}
 
 	@Post('password-recovery')
 	@HttpCode(204)
 	async recoverPassword(@Body() inputModel: emailInputDto) {
-		const result = await this.authService.sendPasswordRecoveryEmail(inputModel.email);
+		const result = await this.commandBus.execute(new PasswordRecoveryCommand(inputModel.email));
 		return result;
 	}
 
 	@Post('new-password')
 	@HttpCode(204)
 	async updatePassword(@Body() inputModel: newPasswordInputDto) {
-		const userIdByCode = await this.authService.confirmRecoveryCode(inputModel.recoveryCode);
-		if (userIdByCode) {
-			await this.authService.updatePassword(userIdByCode, inputModel.newPassword);
-		}
+		return await this.commandBus.execute(new PasswordUpdateCommand(inputModel));
 	}
 }
