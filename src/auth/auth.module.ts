@@ -23,6 +23,7 @@ import {
 	loginExistsRule,
 	recoveryCodeExistsRule,
 } from './authentification';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { LoginUserUseCase } from './use-cases/login/login-user.use-case';
 import { RegistrationUseCase } from './use-cases/registration/registration.use-case';
 import { RefreshTokenValidationUseCase } from './use-cases/validations/validate-refresh-token.use-case';
@@ -63,6 +64,12 @@ const useCases = [
 		MongooseModule.forFeature([{ name: Device.name, schema: DeviceSchema }]),
 		PassportModule,
 		CqrsModule,
+		ThrottlerModule.forRoot([
+			{
+				ttl: 10000,
+				limit: 5,
+			},
+		]),
 	],
 	controllers: [AuthController],
 	providers: [...services, ...adapters, ...strategies, ...validators, ...useCases],

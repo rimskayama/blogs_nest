@@ -20,6 +20,7 @@ import { RegistrationResendEmailCommand } from './use-cases/registration/registr
 import { PasswordRecoveryCommand } from './use-cases/password/password-recovery.use-case';
 import { PasswordUpdateCommand } from './use-cases/password/password-update.use-case';
 import { LoginUserCommand } from './use-cases/login/login-user.use-case';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -29,6 +30,7 @@ export class AuthController {
 		private readonly devicesService: DevicesService
 	) {}
 
+	@UseGuards(ThrottlerGuard)
 	@Post('registration')
 	@HttpCode(204)
 	async registerUser(@Body() inputModel: UserInputDto) {
@@ -36,7 +38,7 @@ export class AuthController {
 		return result;
 	}
 
-	@UseGuards(LocalAuthGuard)
+	@UseGuards(ThrottlerGuard, LocalAuthGuard)
 	@Post('login')
 	@HttpCode(200)
 	async login(@Res({ passthrough: true }) res: Response, @UserFromReq() userId: string, @DeviceDetais() deviceDetais) {
@@ -101,6 +103,7 @@ export class AuthController {
 		return;
 	}
 
+	@UseGuards(ThrottlerGuard)
 	@Post('registration-confirmation')
 	@HttpCode(204)
 	async confirmRegistration(@Body() codeInputModel: confirmationCodeInputDto) {
@@ -108,6 +111,7 @@ export class AuthController {
 		return result;
 	}
 
+	@UseGuards(ThrottlerGuard)
 	@Post('registration-email-resending')
 	@HttpCode(204)
 	async resendEmail(@Body() emailInputModel: emailInputDto) {
@@ -115,6 +119,7 @@ export class AuthController {
 		return result;
 	}
 
+	@UseGuards(ThrottlerGuard)
 	@Post('password-recovery')
 	@HttpCode(204)
 	async recoverPassword(@Body() inputModel: emailInputDto) {
@@ -122,6 +127,7 @@ export class AuthController {
 		return result;
 	}
 
+	@UseGuards(ThrottlerGuard)
 	@Post('new-password')
 	@HttpCode(204)
 	async updatePassword(@Body() inputModel: newPasswordInputDto) {
