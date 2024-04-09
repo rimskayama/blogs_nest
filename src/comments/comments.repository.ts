@@ -25,7 +25,9 @@ export class CommentsRepository {
 
 		comment.likesInfo.myStatus = 'None';
 		if (userId) {
-			const likeInDB = await this.commentLikeModel.findOne({ $and: [{ commentId: comment._id }, { userId: userId }] });
+			const likeInDB = await this.commentLikeModel.findOne({
+				$and: [{ commentId: comment._id.toString() }, { userId: userId }],
+			});
 			if (likeInDB) {
 				comment.likesInfo.myStatus = likeInDB.status.toString();
 			}
