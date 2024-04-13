@@ -1,67 +1,63 @@
-import { ObjectId, SortDirection } from 'mongodb';
-import { UsersPaginationDto } from './users.types';
-import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from './user.entity';
-import { Model } from 'mongoose';
+import { UserType, UsersPaginationDto } from './users.types';
 import { Injectable } from '@nestjs/common';
-import { UserDto } from './users.types';
 import { usersMapping } from '../utils/mapping';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class UsersQueryRepository {
-	constructor(
-		@InjectModel(User.name)
-		private userModel: Model<UserDocument>
-	) {}
+	constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
 	async findUsers(
 		page: number,
 		limit: number,
-		sortDirection: SortDirection,
+		sortDirection: string,
 		sortBy: string,
 		skip: number,
 		searchLoginTerm: string,
 		searchEmailTerm: string
 	): Promise<UsersPaginationDto> {
-		const allUsers = await this.userModel
-			.find({
-				$or: [
-					{ 'accountData.login': { $regex: searchLoginTerm, $options: 'i' } },
-					{ 'accountData.email': { $regex: searchEmailTerm, $options: 'i' } },
-				],
-			})
+		let result;
+		const query = `
+		SELECT u.*, count(*) as total
+		FROM public."Users" u
+		WHERE u."login" like $1
+		OR not exists (SELECT u.* FROM public."Users" u WHERE u."login" like $1)
+		AND u.email like $2
+		OR not exists (SELECT u.* FROM public."Users" u WHERE u.email like $2)
+		GROUP BY u."id"
+		ORDER BY $3 ${sortDirection === 'asc' ? 'ASC' : 'DESC'}
+		LIMIT $4 OFFSET $5;`;
 
-			.limit(limit)
-			.sort({ [sortBy]: sortDirection })
-			.skip(skip)
-			.lean()
-			.exec();
+		try {
+			result = await this.dataSource.query(query, [searchLoginTerm, searchEmailTerm, sortBy, limit, skip]);
+		} catch (error) {
+			console.error('Error finding users:', error);
+		}
 
-		const total = await this.userModel
-			.countDocuments({
-				$or: [
-					{ 'accountData.login': { $regex: searchLoginTerm, $options: 'i' } },
-					{ 'accountData.email': { $regex: searchEmailTerm, $options: 'i' } },
-				],
-			})
-			.exec();
-
-		const pagesCount = Math.ceil(total / limit);
+		const pagesCount = Math.ceil(usersMapping(result).length / limit);
 
 		return {
 			pagesCount: pagesCount,
 			page: page,
 			pageSize: limit,
-			totalCount: total,
-			items: usersMapping(allUsers),
+			totalCount: result.total,
+			items: usersMapping(result),
 		};
 	}
 
-	async findUserById(_id: ObjectId): Promise<UserDto | null> {
-		const user: User | null = await this.userModel.findOne({ _id });
-		if (!user) {
-			return null;
+	async findUserById(id: string): Promise<UserType | null> {
+		const query = `
+        SELECT id, login, email, "createdAt"
+		FROM public."Users" u
+		WHERE u.id = $1
+    `;
+
+		try {
+			const result = await this.dataSource.query(query, [id]);
+			return result[0];
+		} catch (error) {
+			console.error('Error finding user:', error);
 		}
-		return User.getViewUser(user);
 	}
 }
