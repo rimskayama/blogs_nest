@@ -2,8 +2,8 @@ import { Blog } from '../blogs/blog.entity';
 import { Device } from '../devices/device.entity';
 import { PostLike } from '../likes/like.entity';
 import { Post, likeDetails } from '../posts/post.entity';
-import { User } from '../users/user.entity';
 import { Comment } from '../comments/comment.entity';
+import { UserType } from 'src/users/users.types';
 
 export const blogsMapping = (array: Blog[]) => {
 	return array.map((b: Blog) => Blog.getViewBlog(b));
@@ -13,8 +13,8 @@ export const postsMapping = (array: Post[]) => {
 	return array.map((p: Post) => Post.getViewPost(p));
 };
 
-export const usersMapping = (array: User[]) => {
-	return array.map((u: User) => User.getViewUser(u));
+export const usersMapping = (array: UserType[]) => {
+	return array.map((u: UserType) => UserType.getViewUser(u));
 };
 
 export const commentsMapping = (array: Comment[]) => {

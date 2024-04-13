@@ -1,5 +1,4 @@
 import { IsEmail, IsString, Length, Matches, Validate } from 'class-validator';
-import { Sort } from 'mongodb';
 import {
 	confirmationCodeExistsRule,
 	emailConfirmedRule,
@@ -66,11 +65,43 @@ export type UsersPaginationDto = {
 export class QueryParameters {
 	pageNumber: number;
 	pageSize: number;
-	sortDirection: Sort;
+	sortDirection: string;
 	sortBy: string;
-	sortByUsers: string;
 	searchNameTerm: string;
 	searchLoginTerm: string;
 	searchEmailTerm: string;
 	skip: number;
+}
+
+export class UserType {
+	id: string;
+
+	login: string;
+
+	email: string;
+
+	passwordHash: string;
+
+	passwordSalt: string;
+
+	createdAt: string;
+
+	emailconfirmationCode: string;
+
+	emailexpirationDate: Date;
+
+	emailConfirmationStatus: boolean;
+
+	passwordRecoveryCode: string;
+
+	passwordExpirationDate: Date;
+
+	static getViewUser(userFromDb: UserType) {
+		return {
+			id: userFromDb.id,
+			login: userFromDb.login,
+			email: userFromDb.email,
+			createdAt: userFromDb.createdAt,
+		};
+	}
 }
