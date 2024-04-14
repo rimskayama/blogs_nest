@@ -86,9 +86,9 @@ export class UserType {
 
 	createdAt: string;
 
-	emailconfirmationCode: string;
+	emailConfirmationCode: string;
 
-	emailexpirationDate: Date;
+	emailExpirationDate: Date;
 
 	emailConfirmationStatus: boolean;
 
@@ -104,4 +104,17 @@ export class UserType {
 			createdAt: userFromDb.createdAt,
 		};
 	}
+}
+
+export class emailConfirmationDto {
+	id: string;
+	emailConfirmationCode: string;
+	emailExpirationDate: Date;
+	emailConfirmationStatus: boolean;
+}
+
+export class passwordConfirmationDto {
+	id: string;
+	passwordRecoveryCode: string;
+	passwordExpirationDate: Date;
 }
