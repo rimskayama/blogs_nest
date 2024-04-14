@@ -32,16 +32,18 @@ export class UsersQueryRepository {
 		try {
 			result = await this.dataSource.query(query, [searchLoginTerm, searchEmailTerm, sortBy, limit, skip]);
 		} catch (error) {
-			console.error('Error finding users:', error);
+			console.error('Error finding users', error);
 		}
 
-		const pagesCount = Math.ceil(usersMapping(result).length / limit);
+		const allUsers = usersMapping(result);
+		const total = allUsers.length;
+		const pagesCount = Math.ceil(total / limit);
 
 		return {
 			pagesCount: pagesCount,
 			page: page,
 			pageSize: limit,
-			totalCount: result.total,
+			totalCount: total,
 			items: usersMapping(result),
 		};
 	}
