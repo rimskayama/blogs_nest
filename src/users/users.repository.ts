@@ -1,117 +1,182 @@
-import { UserDto } from './users.types';
-import { User } from './user.entity';
-import { ObjectId } from 'mongodb';
+import { UserDto, UserType, emailConfirmationDto, passwordConfirmationDto } from './users.types';
 import { v4 as uuidv4 } from 'uuid';
 import { add } from 'date-fns';
-import { UserDocument } from './user.entity';
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { usersMapping } from '../utils/mapping';
 
 @Injectable()
 export class UsersRepository {
-	constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+	constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
-	async save(user: UserDocument) {
-		user.save();
+	async createUser(user: UserType): Promise<UserDto> {
+		const query = `
+        INSERT INTO public."Users"(
+            "id", "login", "email", "passwordHash", "passwordSalt", "createdAt", 
+            "emailConfirmationCode", "emailExpirationDate", "emailConfirmationStatus", 
+            "passwordRecoveryCode", "passwordExpirationDate")
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        RETURNING *;
+    `;
+		const values = [
+			user.id,
+			user.login,
+			user.email,
+			user.passwordHash,
+			user.passwordSalt,
+			user.createdAt,
+			user.emailConfirmationCode,
+			user.emailExpirationDate,
+			user.emailConfirmationStatus,
+			user.passwordRecoveryCode,
+			user.passwordExpirationDate,
+		];
+
+		try {
+			const result = await this.dataSource.query(query, values);
+			return usersMapping(result)[0];
+		} catch (error) {
+			console.error('Error creating user:', error);
+		}
 	}
 
-	async createUser(user: User): Promise<UserDto> {
-		const newUser = new this.userModel(user);
-		await this.save(newUser);
-		return User.getViewUser(newUser);
+	async findByLoginOrEmail(loginOrEmail: string): Promise<UserType | null> {
+		const query = `
+        SELECT id, login, email, "createdAt"
+		FROM public."Users" u
+		WHERE u.login = $1 OR u.email = $1;
+    `;
+
+		try {
+			const result = await this.dataSource.query(query, [loginOrEmail]);
+			if (result.length === 0) {
+				return null;
+			}
+			return result;
+		} catch (error) {
+			console.error('Error finding user:', error);
+		}
 	}
 
-	async findByLoginOrEmail(loginOrEmail: string): Promise<User | null> {
-		const user: User | null = await this.userModel.findOne({
-			$or: [{ 'accountData.login': loginOrEmail }, { 'accountData.email': loginOrEmail }],
+	async findByConfirmationCode(code: string): Promise<emailConfirmationDto | null> {
+		const query = `
+        SELECT id, emailConfirmationCode, emailExpirationDate, emailConfirmationStatus
+		FROM public."Users" u
+		WHERE u.emailConfirmationCode = $1;
+    `;
+
+		try {
+			const result = await this.dataSource.query(query, [code]);
+			if (result.length === 0) {
+				return null;
+			}
+			return result;
+		} catch (error) {
+			console.error('Error finding emailConfirmationCode:', error);
+			return null;
+		}
+	}
+
+	async findByRecoveryCode(recoveryCode: string): Promise<passwordConfirmationDto | null> {
+		const query = `
+        SELECT id, passwordRecoveryCode, passwordExpirationDate
+		FROM public."Users" u
+		WHERE u.passwordRecoveryCode = $1;
+    `;
+		try {
+			const result = await this.dataSource.query(query, [recoveryCode]);
+			return result;
+		} catch (error) {
+			console.error('Error finding recoveryCode:', error);
+			return null;
+		}
+	}
+
+	async updateConfirmation(id: string): Promise<true> {
+		const query = `
+		UPDATE public."Users" u
+		SET emailConfirmationStatus=true
+		WHERE u.id = $1;
+    `;
+		try {
+			await this.dataSource.query(query, [id]);
+			return true;
+		} catch (error) {
+			console.error('Error updating emailConfirmationStatus:', error);
+			return true;
+		}
+	}
+
+	async updateConfirmationCode(id: string): Promise<string | null> {
+		const confirmationCode = uuidv4();
+		const expirationDate = add(new Date(), {
+			hours: 1,
+			minutes: 3,
 		});
-
-		if (!user) {
+		const query = `
+		UPDATE public."Users" u
+		SET emailConfirmationCode=$1, emailExpirationDate=$2
+		WHERE u.id = $3;
+    `;
+		try {
+			await this.dataSource.query(query, [confirmationCode, expirationDate, id]);
+			return confirmationCode;
+		} catch (error) {
+			console.error('Error updating emailConfirmationCode:', error);
 			return null;
 		}
-		return user;
 	}
 
-	async findByConfirmationCode(code: string): Promise<User | null> {
-		const user: User | null = await this.userModel.findOne({ 'emailConfirmation.confirmationCode': code });
-		if (!user) {
+	async updatePasswordRecoveryCode(id: string): Promise<string | null> {
+		const confirmationCode = uuidv4();
+		const expirationDate = add(new Date(), {
+			hours: 1,
+			minutes: 3,
+		});
+		const query = `
+		UPDATE public."Users" u
+		SET passwordConfirmationCode=$1, passwordExpirationDate=$2
+		WHERE u.id = $3;
+    `;
+		try {
+			await this.dataSource.query(query, [confirmationCode, expirationDate, id]);
+			return confirmationCode;
+		} catch (error) {
+			console.error('Error updating passwordConfirmationCode:', error);
 			return null;
 		}
-		return user;
 	}
 
-	async findByRecoveryCode(recoveryCode: string): Promise<User | null> {
-		const user: User | null = await this.userModel.findOne({ 'passwordConfirmation.recoveryCode': recoveryCode });
-		return user || null;
-	}
-
-	async updateConfirmation(_id: ObjectId) {
-		await this.userModel.findByIdAndUpdate(
-			{ _id },
-			{
-				$set: {
-					'emailConfirmation.isConfirmed': true,
-				},
-			}
-		);
-		return true;
-	}
-
-	async updateConfirmationCode(_id: ObjectId) {
-		await this.userModel.findByIdAndUpdate(
-			{ _id },
-			{
-				$set: {
-					'emailConfirmation.confirmationCode': uuidv4(),
-					'emailConfirmation.expirationDate': add(new Date(), {
-						hours: 1,
-						minutes: 3,
-					}),
-				},
-			}
-		);
-		return this.userModel.findById({ _id });
-	}
-
-	async updatePasswordRecoveryCode(_id: ObjectId) {
-		await this.userModel.findByIdAndUpdate(
-			{ _id },
-			{
-				$set: {
-					'passwordConfirmation.recoveryCode': uuidv4(),
-					'passwordConfirmation.expirationDate': add(new Date(), {
-						hours: 1,
-						minutes: 3,
-					}),
-				},
-			}
-		);
-		return this.userModel.findById({ _id });
-	}
-
-	async updatePassword(_id: ObjectId, passwordHash: string, passwordSalt: string) {
-		await this.userModel.updateOne(
-			{ _id },
-			{
-				$set: {
-					'accountData.passwordHash': passwordHash,
-					'accountData.passwordSalt': passwordSalt,
-				},
-			}
-		);
-		return true;
-	}
-
-	async deleteUser(_id: ObjectId) {
-		const user = await this.userModel.findById({ _id }, { projection: { _id: 0 } });
-		if (user) {
-			return this.userModel.deleteOne({ _id });
+	async updatePassword(id: string, passwordHash: string, passwordSalt: string): Promise<true> {
+		const query = `
+		UPDATE public."Users" u
+		SET passwordHash=$1, passwordSalt=$2
+		WHERE u.id = $3;
+    `;
+		try {
+			await this.dataSource.query(query, [passwordHash, passwordSalt, id]);
+			return true;
+		} catch (error) {
+			console.error('Error updating password:', error);
 		}
-		return null;
 	}
 
-	async deleteAll() {
-		return this.userModel.deleteMany({});
+	async deleteUser(id: string): Promise<true | null> {
+		const query = `
+		DELETE FROM public."Users" u
+		WHERE u.id = $1;
+    `;
+
+		try {
+			const result = await this.dataSource.query(query, [id]);
+			if (result[1] === 0) {
+				return null;
+			}
+			return true;
+		} catch (error) {
+			console.error('Error deleting user:', error);
+			return null;
+		}
 	}
 }
