@@ -5,10 +5,9 @@ import { UserInputDto, QueryParameters } from './users.types';
 import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { exceptionHandler } from '../exceptions/exception.handler';
 import { StatusCode, userIdField, userNotFound } from '../exceptions/exception.constants';
-import { ObjectId } from 'mongodb';
 import { BasicAuthGuard } from '../auth/passport/guards/basic-auth.guard';
 
-@Controller('users')
+@Controller('sa/users')
 export class UsersController {
 	constructor(
 		@Inject(UsersService) protected usersService: UsersService,
@@ -19,12 +18,12 @@ export class UsersController {
 	@Get()
 	@HttpCode(200)
 	async getUsers(@Query() query: QueryParameters) {
-		const { page, limit, sortDirection, sortByUsers, searchLoginTerm, searchEmailTerm, skip } = getPagination(query);
+		const { page, limit, sortDirection, sortBy, searchLoginTerm, searchEmailTerm, skip } = getPagination(query);
 		const result = await this.usersQueryRepository.findUsers(
 			page,
 			limit,
 			sortDirection,
-			sortByUsers,
+			sortBy,
 			skip,
 			searchLoginTerm,
 			searchEmailTerm
@@ -36,7 +35,7 @@ export class UsersController {
 	@Get(':id')
 	@HttpCode(200)
 	async getUser(@Param('id') userId: string) {
-		const result = await this.usersQueryRepository.findUserById(new ObjectId(userId));
+		const result = await this.usersQueryRepository.findUserById(userId);
 		if (result) return result;
 		else return exceptionHandler(StatusCode.NotFound, userNotFound, userIdField);
 	}

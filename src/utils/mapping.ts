@@ -3,7 +3,7 @@ import { Device } from '../devices/device.entity';
 import { PostLike } from '../likes/like.entity';
 import { Post, likeDetails } from '../posts/post.entity';
 import { Comment } from '../comments/comment.entity';
-import { UserType } from 'src/users/users.types';
+import { UserType } from '../users/users.types';
 
 export const blogsMapping = (array: Blog[]) => {
 	return array.map((b: Blog) => Blog.getViewBlog(b));
