@@ -14,10 +14,10 @@ export class RegistrationResendEmailUseCase implements ICommandHandler<Registrat
 		const user = await this.usersRepository.findByLoginOrEmail(command.email);
 
 		if (user) {
-			const userWithUpdatedCode = await this.usersRepository.updateConfirmationCode(user._id);
+			const emailConfirmationCode = await this.usersRepository.updateConfirmationCode(user.id);
 
-			if (userWithUpdatedCode) {
-				await emailManager.resendEmail(command.email, userWithUpdatedCode.emailConfirmation.confirmationCode);
+			if (emailConfirmationCode) {
+				await emailManager.resendEmail(command.email, emailConfirmationCode);
 				return true;
 			}
 			return false;

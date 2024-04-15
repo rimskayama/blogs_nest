@@ -10,7 +10,6 @@ import { JwtBearerGuard } from './passport/guards/jwt-bearer.guard';
 import { JwtRefreshGuard } from './passport/guards/jwt-refresh.guard';
 import { UserFromReq } from './decorators/userId.decorator';
 import { DeviceDetais } from './decorators/device.details.decorator';
-import { ObjectId } from 'mongodb';
 import { DeviceIdFromReq } from './decorators/deviceId.decorator';
 import { v4 as uuidv4 } from 'uuid';
 import { CommandBus } from '@nestjs/cqrs';
@@ -62,7 +61,7 @@ export class AuthController {
 	@UseGuards(JwtBearerGuard)
 	@Get('me')
 	@HttpCode(200)
-	async getProfile(@UserFromReq() userId: ObjectId) {
+	async getProfile(@UserFromReq() userId: string) {
 		const user = await this.usersQueryRepository.findUserById(userId);
 
 		if (!user) {

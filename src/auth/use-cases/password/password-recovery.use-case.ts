@@ -14,12 +14,9 @@ export class PasswordRecoveryUseCase implements ICommandHandler<PasswordRecovery
 		const user = await this.usersRepository.findByLoginOrEmail(command.email);
 
 		if (user) {
-			const userWithUpdatedCode = await this.usersRepository.updatePasswordRecoveryCode(user._id);
+			const passwordRecoveryCode = await this.usersRepository.updatePasswordRecoveryCode(user.id);
 			try {
-				await emailManager.sendPasswordRecoveryEmail(
-					command.email,
-					userWithUpdatedCode!.passwordConfirmation.recoveryCode
-				);
+				await emailManager.sendPasswordRecoveryEmail(command.email, passwordRecoveryCode);
 				return true;
 			} catch (error) {
 				console.error('mail error');
