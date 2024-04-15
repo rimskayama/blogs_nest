@@ -21,12 +21,12 @@ describe('UsersController (e2e)', () => {
 
 		httpServer = app.getHttpServer();
 
-		await request(httpServer).delete('/testing/all-data');
+		//await request(httpServer).delete('/testing/all-data');
 	});
 
 	//GET
 	it('should return 200 and users', async () => {
-		await request(httpServer).get('/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').expect(HttpStatus.OK, {
+		await request(httpServer).get('/sa/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').expect(HttpStatus.OK, {
 			pagesCount: 0,
 			page: 1,
 			pageSize: 10,
@@ -37,7 +37,7 @@ describe('UsersController (e2e)', () => {
 
 	it('should return 404 for not existing user', async () => {
 		await request(httpServer)
-			.get('/users/6413437e44902b9011d0b316')
+			.get('/sa/users/6413437e44902b9011d0b316')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.expect(404);
 	});
@@ -52,9 +52,9 @@ describe('UsersController (e2e)', () => {
 			password: 'string',
 			email: 'asdfg@gmail.com',
 		};
-		await request(httpServer).post('/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').send(data).expect(400);
+		await request(httpServer).post('/sa/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').send(data).expect(400);
 
-		await request(httpServer).get('/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').expect(200, {
+		await request(httpServer).get('/sa/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').expect(200, {
 			pagesCount: 0,
 			page: 1,
 			pageSize: 10,
@@ -70,14 +70,14 @@ describe('UsersController (e2e)', () => {
 			email: 'asdfg@gmail.com',
 		};
 		const createResponse = await request(httpServer)
-			.post('/users')
+			.post('/sa/users')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.send(data)
 			.expect(201);
 
 		createdUser1 = createResponse.body;
 
-		const b = await request(httpServer).get('/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').expect(200);
+		const b = await request(httpServer).get('/sa/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').expect(200);
 
 		expect(b.body).toEqual({
 			pagesCount: 1,
@@ -99,23 +99,23 @@ describe('UsersController (e2e)', () => {
 
 	it('should NOT delete user that not exist', async () => {
 		await request(httpServer)
-			.delete('/users/' + '6426b691b5ac688d25825932')
+			.delete('/sa/users/' + '6426b691b5ac688d25825932')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.expect(404);
 	});
 
 	it('should delete user', async () => {
 		await request(httpServer)
-			.delete('/users/' + createdUser1.id)
+			.delete('/sa/users/' + createdUser1.id)
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.expect(204);
 
 		await request(httpServer)
-			.get('/users/' + createdUser1.id)
+			.get('/sa/users/' + createdUser1.id)
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.expect(404);
 
-		await request(httpServer).get('/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').expect(200, {
+		await request(httpServer).get('/sa/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').expect(200, {
 			pagesCount: 0,
 			page: 1,
 			pageSize: 10,
