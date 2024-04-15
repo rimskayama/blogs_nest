@@ -1,21 +1,14 @@
-import { BlogsService } from '../blogs/blogs.service';
-import { PostsService } from '../posts/posts.service';
-import { UsersService } from '../users/users.service';
+import { InjectDataSource } from '@nestjs/typeorm';
 import { Controller, Delete, HttpCode } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 
 @Controller('testing')
 export class TestingController {
-	constructor(
-		private readonly blogsService: BlogsService,
-		private readonly postsService: PostsService,
-		private readonly usersService: UsersService
-	) {}
+	constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
 	@Delete('all-data')
 	@HttpCode(204)
 	async deleteAll() {
-		await this.blogsService.deleteAll();
-		await this.postsService.deleteAll();
-		await this.usersService.deleteAll();
+		return this.dataSource.query(`SELECT truncate_tables('rimskayama');`);
 	}
 }
