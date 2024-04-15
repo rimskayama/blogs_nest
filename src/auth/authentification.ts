@@ -84,7 +84,7 @@ export class emailConfirmedRule implements ValidatorConstraintInterface {
 				return true;
 			}
 
-			if (user.emailConfirmation.isConfirmed === true) {
+			if (user.emailConfirmationStatus === true) {
 				return false;
 			} else {
 				return true;
@@ -110,7 +110,7 @@ export class confirmationCodeExistsRule implements ValidatorConstraintInterface 
 			if (!user) {
 				return false;
 			}
-			if (user.emailConfirmation.isConfirmed === true) {
+			if (user.emailConfirmationStatus === true) {
 				return false;
 			}
 		} catch (e) {

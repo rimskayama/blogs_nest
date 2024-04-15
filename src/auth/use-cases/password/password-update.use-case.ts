@@ -17,12 +17,12 @@ export class PasswordUpdateUseCase implements ICommandHandler<PasswordUpdateComm
 		if (!userByCode) return false;
 
 		if (
-			userByCode.passwordConfirmation.recoveryCode === command.inputModel.recoveryCode &&
-			userByCode.passwordConfirmation.expirationDate > new Date()
+			userByCode.passwordRecoveryCode === command.inputModel.recoveryCode &&
+			userByCode.passwordExpirationDate > new Date()
 		) {
 			const passwordSalt = await bcrypt.genSalt(10);
 			const passwordHash = await bcrypt.hash(command.inputModel.newPassword, passwordSalt);
-			return await this.usersRepository.updatePassword(userByCode._id, passwordHash, passwordSalt);
+			return await this.usersRepository.updatePassword(userByCode.id, passwordHash, passwordSalt);
 		} else return false;
 	}
 }

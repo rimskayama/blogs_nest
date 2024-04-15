@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { User } from 'src/users/user.entity';
 import { UsersRepository } from '../../../users/users.repository';
 import * as bcrypt from 'bcrypt';
+import { UserType } from 'src/users/users.types';
 
 export class UserValidationCommand {
 	constructor(
@@ -14,17 +14,17 @@ export class UserValidationCommand {
 export class UserValidationUseCase implements ICommandHandler<UserValidationCommand> {
 	constructor(private readonly usersRepository: UsersRepository) {}
 
-	async execute(command: UserValidationCommand): Promise<null | User> {
+	async execute(command: UserValidationCommand): Promise<null | UserType> {
 		const user = await this.usersRepository.findByLoginOrEmail(command.loginOrEmail);
 		let confirmation: boolean;
 		try {
-			confirmation = user.emailConfirmation.isConfirmed;
+			confirmation = user.emailConfirmationStatus;
 		} catch (e) {
 			return null;
 		}
 		if (!user || !confirmation) return null;
-		const passwordHash = await bcrypt.hash(command.password, user.accountData.passwordSalt);
-		if (user.accountData.passwordHash !== passwordHash) {
+		const passwordHash = await bcrypt.hash(command.password, user.passwordSalt);
+		if (user.passwordHash !== passwordHash) {
 			return null;
 		}
 		return user;

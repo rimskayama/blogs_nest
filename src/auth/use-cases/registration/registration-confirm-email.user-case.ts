@@ -14,14 +14,11 @@ export class RegistrationConfirmEmailUseCase implements ICommandHandler<Registra
 
 		if (!foundUserByCode) return false;
 
-		if (foundUserByCode.emailConfirmation.isConfirmed) {
+		if (foundUserByCode.emailConfirmationStatus) {
 			return false;
 		} else {
-			if (
-				foundUserByCode.emailConfirmation.confirmationCode === command.code &&
-				foundUserByCode.emailConfirmation.expirationDate > new Date()
-			) {
-				return await this.usersRepository.updateConfirmation(foundUserByCode._id);
+			if (foundUserByCode.emailConfirmationCode === command.code && foundUserByCode.emailExpirationDate > new Date()) {
+				return await this.usersRepository.updateConfirmation(foundUserByCode.id);
 			} else return false;
 		}
 	}
