@@ -81,7 +81,7 @@ export class emailConfirmedRule implements ValidatorConstraintInterface {
 		try {
 			const user = await this.usersRepository.findByLoginOrEmail(email);
 			if (!user) {
-				return true;
+				return false;
 			}
 
 			if (user.emailConfirmationStatus === true) {
@@ -90,7 +90,7 @@ export class emailConfirmedRule implements ValidatorConstraintInterface {
 				return true;
 			}
 		} catch (e) {
-			return true;
+			return false;
 		}
 	}
 
