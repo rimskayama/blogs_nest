@@ -25,7 +25,10 @@ export class RegistrationUseCase implements ICommandHandler<RegistrationCommand>
 			passwordSalt: passwordSalt,
 			createdAt: new Date().toISOString(),
 			emailConfirmationCode: uuidv4(),
-			emailExpirationDate: new Date(),
+			emailExpirationDate: add(new Date(), {
+				hours: 1,
+				minutes: 3,
+			}),
 			emailConfirmationStatus: false,
 			passwordRecoveryCode: uuidv4(),
 			passwordExpirationDate: add(new Date(), {

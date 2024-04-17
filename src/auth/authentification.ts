@@ -110,7 +110,7 @@ export class confirmationCodeExistsRule implements ValidatorConstraintInterface 
 			if (!user) {
 				return false;
 			}
-			if (user.emailConfirmationStatus === true) {
+			if (user.emailConfirmationStatus === true || user.emailExpirationDate < new Date()) {
 				return false;
 			}
 		} catch (e) {
