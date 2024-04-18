@@ -1,14 +1,13 @@
-import { InjectDataSource } from '@nestjs/typeorm';
-import { Controller, Delete, HttpCode } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { Controller, Delete, HttpCode, Inject } from '@nestjs/common';
+import { UsersRepository } from 'src/users/users.repository';
 
 @Controller('testing')
 export class TestingController {
-	constructor(@InjectDataSource() protected dataSource: DataSource) {}
+	constructor(@Inject(UsersRepository) protected usersRepository: UsersRepository) {}
 
 	@Delete('all-data')
 	@HttpCode(204)
 	async deleteAll() {
-		return this.dataSource.query(`SELECT truncate_tables('rimskayama');`);
+		await this.usersRepository.deleteAll();
 	}
 }
