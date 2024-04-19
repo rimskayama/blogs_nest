@@ -18,25 +18,30 @@ export class UsersQueryRepository {
 		searchEmailTerm: string
 	): Promise<UsersPaginationDto> {
 		let result;
+		let count;
 		const query = `
-		SELECT u.*, count(*) as total
+		SELECT u.*
 		FROM public."Users" u
-		WHERE u."login" like $1
-		OR not exists (SELECT u.* FROM public."Users" u WHERE u."login" like $1)
-		AND u.email like $2
-		OR not exists (SELECT u.* FROM public."Users" u WHERE u.email like $2)
+		WHERE u."login" ILIKE '%' || $1 || '%' 
+		OR u."email" ILIKE '%' || $2 || '%'
 		GROUP BY u."id"
-		ORDER BY $3 ${sortDirection === 'asc' ? 'ASC' : 'DESC'}
-		LIMIT $4 OFFSET $5;`;
+		ORDER BY "${sortBy}" ${sortDirection === 'asc' ? 'ASC' : 'DESC'}
+		LIMIT $3 OFFSET $4;`;
+
+		const queryToCountTotal = `
+		SELECT count(*) as total
+		FROM public."Users" u
+		WHERE u."login" ILIKE '%' || $1 || '%' 
+		OR u."email" ILIKE '%' || $2 || '%'`;
 
 		try {
-			result = await this.dataSource.query(query, [searchLoginTerm, searchEmailTerm, sortBy, limit, skip]);
+			result = await this.dataSource.query(query, [searchLoginTerm, searchEmailTerm, limit, skip]);
+			count = await this.dataSource.query(queryToCountTotal, [searchLoginTerm, searchEmailTerm]);
 		} catch (error) {
 			console.error('Error finding users', error);
 		}
 
-		const allUsers = usersMapping(result);
-		const total = allUsers.length;
+		const total = parseInt(count[0].total);
 		const pagesCount = Math.ceil(total / limit);
 
 		return {

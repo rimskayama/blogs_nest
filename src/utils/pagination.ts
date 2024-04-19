@@ -4,7 +4,7 @@ export const getPagination = (query: QueryParameters) => {
 	const page: number = Number(query.pageNumber) || 1;
 	const limit: number = Number(query.pageSize) || 10;
 	const sortDirection: string = query.sortDirection || 'desc';
-	const sortBy = query.sortBy || 'createdAt';
+	const sortBy: string = query.sortBy || 'createdAt';
 	const searchNameTerm = query.searchNameTerm || '';
 	const searchLoginTerm = query.searchLoginTerm || '';
 	const searchEmailTerm = query.searchEmailTerm || '';
