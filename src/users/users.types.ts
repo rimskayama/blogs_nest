@@ -6,6 +6,7 @@ import {
 	loginExistsRule,
 	recoveryCodeExistsRule,
 } from '../auth/authentification';
+import { format } from 'date-fns';
 export const loginPattern = /^[a-zA-Z0-9_-]*$/;
 
 export class UserInputDto {
@@ -84,7 +85,7 @@ export class UserType {
 
 	passwordSalt: string;
 
-	createdAt: string;
+	createdAt: Date;
 
 	emailConfirmationCode: string;
 
@@ -101,7 +102,7 @@ export class UserType {
 			id: userFromDb.id,
 			login: userFromDb.login,
 			email: userFromDb.email,
-			createdAt: userFromDb.createdAt,
+			createdAt: format(userFromDb.createdAt, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"),
 		};
 	}
 }

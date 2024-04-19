@@ -43,9 +43,9 @@ export class UsersRepository {
 
 	async findByLoginOrEmail(loginOrEmail: string): Promise<UserType | null> {
 		const query = `
-        SELECT id, login, email, "createdAt"
+        SELECT "id", "login", "email", "createdAt", "emailConfirmationStatus", "passwordSalt", "passwordHash"
 		FROM public."Users" u
-		WHERE u.login = $1 OR u.email = $1;
+		WHERE u."login" = $1 OR u."email" = $1;
     `;
 
 		try {
@@ -53,7 +53,7 @@ export class UsersRepository {
 			if (result.length === 0) {
 				return null;
 			}
-			return result;
+			return result[0];
 		} catch (error) {
 			console.error('Error finding user:', error);
 		}
@@ -61,9 +61,9 @@ export class UsersRepository {
 
 	async findByConfirmationCode(code: string): Promise<emailConfirmationDto | null> {
 		const query = `
-        SELECT id, emailConfirmationCode, emailExpirationDate, emailConfirmationStatus
+        SELECT "id", "emailConfirmationCode", "emailExpirationDate", "emailConfirmationStatus"
 		FROM public."Users" u
-		WHERE u.emailConfirmationCode = $1;
+		WHERE u."emailConfirmationCode" = $1;
     `;
 
 		try {
@@ -71,7 +71,7 @@ export class UsersRepository {
 			if (result.length === 0) {
 				return null;
 			}
-			return result;
+			return result[0];
 		} catch (error) {
 			console.error('Error finding emailConfirmationCode:', error);
 			return null;
@@ -80,9 +80,9 @@ export class UsersRepository {
 
 	async findByRecoveryCode(recoveryCode: string): Promise<passwordConfirmationDto | null> {
 		const query = `
-        SELECT id, passwordRecoveryCode, passwordExpirationDate
+        SELECT "id", "passwordRecoveryCode", "passwordExpirationDate"
 		FROM public."Users" u
-		WHERE u.passwordRecoveryCode = $1;
+		WHERE u."passwordRecoveryCode" = $1;
     `;
 		try {
 			const result = await this.dataSource.query(query, [recoveryCode]);
@@ -96,8 +96,8 @@ export class UsersRepository {
 	async updateConfirmation(id: string): Promise<true> {
 		const query = `
 		UPDATE public."Users" u
-		SET emailConfirmationStatus=true
-		WHERE u.id = $1;
+		SET "emailConfirmationStatus"=true
+		WHERE u."id" = $1;
     `;
 		try {
 			await this.dataSource.query(query, [id]);
@@ -116,8 +116,8 @@ export class UsersRepository {
 		});
 		const query = `
 		UPDATE public."Users" u
-		SET emailConfirmationCode=$1, emailExpirationDate=$2
-		WHERE u.id = $3;
+		SET "emailConfirmationCode"=$1, "emailExpirationDate"=$2
+		WHERE u."id" = $3;
     `;
 		try {
 			await this.dataSource.query(query, [confirmationCode, expirationDate, id]);
@@ -136,8 +136,8 @@ export class UsersRepository {
 		});
 		const query = `
 		UPDATE public."Users" u
-		SET passwordConfirmationCode=$1, passwordExpirationDate=$2
-		WHERE u.id = $3;
+		SET "passwordConfirmationCode"=$1, "passwordExpirationDate"=$2
+		WHERE u."id" = $3;
     `;
 		try {
 			await this.dataSource.query(query, [confirmationCode, expirationDate, id]);
@@ -151,8 +151,8 @@ export class UsersRepository {
 	async updatePassword(id: string, passwordHash: string, passwordSalt: string): Promise<true> {
 		const query = `
 		UPDATE public."Users" u
-		SET passwordHash=$1, passwordSalt=$2
-		WHERE u.id = $3;
+		SET "passwordHash"=$1, "passwordSalt"=$2
+		WHERE u."id" = $3;
     `;
 		try {
 			await this.dataSource.query(query, [passwordHash, passwordSalt, id]);
@@ -165,7 +165,7 @@ export class UsersRepository {
 	async deleteUser(id: string): Promise<true | null> {
 		const query = `
 		DELETE FROM public."Users" u
-		WHERE u.id = $1;
+		WHERE u."id" = $1;
     `;
 
 		try {
@@ -178,5 +178,9 @@ export class UsersRepository {
 			console.error('Error deleting user:', error);
 			return null;
 		}
+	}
+
+	async deleteAll() {
+		return await this.dataSource.query(`TRUNCATE TABLE public."Users";`);
 	}
 }

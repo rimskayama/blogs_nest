@@ -12,7 +12,10 @@ export class RegistrationConfirmEmailUseCase implements ICommandHandler<Registra
 	async execute(command: RegistrationConfirmEmailCommand): Promise<boolean> {
 		const foundUserByCode = await this.usersRepository.findByConfirmationCode(command.code);
 
-		if (foundUserByCode.emailConfirmationCode === command.code && foundUserByCode.emailExpirationDate > new Date()) {
+		if (
+			foundUserByCode.emailConfirmationCode === command.code &&
+			new Date(foundUserByCode.emailExpirationDate) > new Date()
+		) {
 			return await this.usersRepository.updateConfirmation(foundUserByCode.id);
 		} else return false;
 	}

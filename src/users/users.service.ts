@@ -19,7 +19,7 @@ export class UsersService {
 			email: inputModel.email,
 			passwordHash: passwordHash,
 			passwordSalt: passwordSalt,
-			createdAt: new Date().toISOString(),
+			createdAt: new Date(),
 			emailConfirmationCode: uuidv4(),
 			emailExpirationDate: new Date(),
 			emailConfirmationStatus: true,

@@ -23,7 +23,7 @@ export class RegistrationUseCase implements ICommandHandler<RegistrationCommand>
 			email: command.inputModel.email,
 			passwordHash: passwordHash,
 			passwordSalt: passwordSalt,
-			createdAt: new Date().toISOString(),
+			createdAt: new Date(),
 			emailConfirmationCode: uuidv4(),
 			emailExpirationDate: add(new Date(), {
 				hours: 1,
