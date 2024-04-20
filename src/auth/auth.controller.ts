@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, Request, Get, HttpCode, Body, Res } from '@nestjs/common';
+import { Controller, Post, UseGuards, Request, Get, HttpCode, Body, Res, HttpStatus } from '@nestjs/common';
 import { LocalAuthGuard } from './passport/guards/local-auth.guard';
 import { exceptionHandler } from '../exceptions/exception.handler';
 import { StatusCode, userIdField, userNotFound } from '../exceptions/exception.constants';
@@ -31,7 +31,7 @@ export class AuthController {
 
 	@UseGuards(ThrottlerGuard)
 	@Post('registration')
-	@HttpCode(204)
+	@HttpCode(HttpStatus.NO_CONTENT)
 	async registerUser(@Body() inputModel: UserInputDto) {
 		const result = await this.commandBus.execute(new RegistrationCommand(inputModel));
 		return result;
@@ -39,28 +39,28 @@ export class AuthController {
 
 	@UseGuards(ThrottlerGuard, LocalAuthGuard)
 	@Post('login')
-	@HttpCode(200)
-	async login(@Res({ passthrough: true }) res: Response, @UserFromReq() userId: string, @DeviceDetais() deviceDetais) {
+	@HttpCode(HttpStatus.OK)
+	async login(@Res() res: Response, @UserFromReq() userId: string, @DeviceDetais() deviceDetais) {
 		const deviceId = uuidv4();
 		const result = await this.commandBus.execute(new LoginUserCommand(userId, deviceId));
 
 		await this.devicesService.createNewSession(
+			result.accessToken,
 			result.refreshToken,
 			deviceDetais.deviceName,
 			deviceDetais.ip,
-			userId,
-			deviceDetais.expDate
+			userId
 		);
 
-		res.cookie('refreshToken', result.refreshToken, { httpOnly: true, secure: true });
-		return {
-			accessToken: result.accessToken,
-		};
+		return res
+			.cookie('refreshToken', result.refreshToken, { httpOnly: true, secure: true })
+			.status(HttpStatus.OK)
+			.send({ accessToken: result.accessToken });
 	}
 
 	@UseGuards(JwtBearerGuard)
 	@Get('me')
-	@HttpCode(200)
+	@HttpCode(HttpStatus.OK)
 	async getProfile(@UserFromReq() userId: string) {
 		const user = await this.usersQueryRepository.findUserById(userId);
 
@@ -77,34 +77,30 @@ export class AuthController {
 
 	@UseGuards(JwtRefreshGuard)
 	@Post('refresh-token')
-	@HttpCode(200)
-	async getRefreshToken(
-		@UserFromReq() userId: string,
-		@DeviceIdFromReq() deviceId: string,
-		@Res({ passthrough: true }) res: Response
-	) {
+	@HttpCode(HttpStatus.OK)
+	async getRefreshToken(@UserFromReq() userId: string, @DeviceIdFromReq() deviceId: string, @Res() res: Response) {
 		const result = await this.commandBus.execute(new LoginUserCommand(userId, deviceId));
-		const lastActiveDate = Math.floor(Date.now() / 1000);
-		await this.devicesService.updateLastActiveDate(deviceId, lastActiveDate);
-		res.cookie('refreshToken', result.refreshToken, { httpOnly: true, secure: true });
-		return {
-			accessToken: result.accessToken,
-		};
+		await this.devicesService.updateLastActiveDate(result.accessToken, result.refreshToken, deviceId);
+		return res
+			.cookie('refreshToken', result.refreshToken, { httpOnly: true, secure: true })
+			.status(HttpStatus.OK)
+			.send({
+				accessToken: result.accessToken,
+			});
 	}
 
 	@UseGuards(JwtRefreshGuard)
 	@Post('logout')
-	@HttpCode(204)
-	async logout(@Request() req, @Res({ passthrough: true }) res: Response) {
+	@HttpCode(HttpStatus.NO_CONTENT)
+	async logout(@Request() req, @Res() res: Response) {
 		const deviceId = req.user.deviceId;
 		await this.devicesService.terminateSession(deviceId);
-		res.clearCookie('refreshToken');
-		return;
+		return res.clearCookie('refreshToken').sendStatus(HttpStatus.NO_CONTENT);
 	}
 
 	@UseGuards(ThrottlerGuard)
 	@Post('registration-confirmation')
-	@HttpCode(204)
+	@HttpCode(HttpStatus.NO_CONTENT)
 	async confirmRegistration(@Body() codeInputModel: confirmationCodeInputDto) {
 		const result = await this.commandBus.execute(new RegistrationConfirmEmailCommand(codeInputModel.code));
 		return result;
@@ -112,7 +108,7 @@ export class AuthController {
 
 	@UseGuards(ThrottlerGuard)
 	@Post('registration-email-resending')
-	@HttpCode(204)
+	@HttpCode(HttpStatus.NO_CONTENT)
 	async resendEmail(@Body() emailInputModel: emailInputDto) {
 		const result = await this.commandBus.execute(new RegistrationResendEmailCommand(emailInputModel.email));
 		return result;
@@ -120,7 +116,7 @@ export class AuthController {
 
 	@UseGuards(ThrottlerGuard)
 	@Post('password-recovery')
-	@HttpCode(204)
+	@HttpCode(HttpStatus.NO_CONTENT)
 	async recoverPassword(@Body() inputModel: emailInputDto) {
 		const result = await this.commandBus.execute(new PasswordRecoveryCommand(inputModel.email));
 		return result;
@@ -128,7 +124,7 @@ export class AuthController {
 
 	@UseGuards(ThrottlerGuard)
 	@Post('new-password')
-	@HttpCode(204)
+	@HttpCode(HttpStatus.NO_CONTENT)
 	async updatePassword(@Body() inputModel: newPasswordInputDto) {
 		return await this.commandBus.execute(new PasswordUpdateCommand(inputModel));
 	}
