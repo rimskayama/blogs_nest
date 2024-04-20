@@ -21,7 +21,7 @@ describe('UsersController (e2e)', () => {
 
 		httpServer = app.getHttpServer();
 
-		//await request(httpServer).delete('/testing/all-data');
+		await request(httpServer).delete('/testing/all-data');
 	});
 
 	//GET
