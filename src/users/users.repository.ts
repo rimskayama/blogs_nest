@@ -179,8 +179,4 @@ export class UsersRepository {
 			return null;
 		}
 	}
-
-	async deleteAll() {
-		return await this.dataSource.query(`TRUNCATE TABLE public."Users";`);
-	}
 }

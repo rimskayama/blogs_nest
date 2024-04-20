@@ -32,7 +32,7 @@ export class UsersQueryRepository {
 		SELECT count(*) as total
 		FROM public."Users" u
 		WHERE u."login" ILIKE '%' || $1 || '%' 
-		OR u."email" ILIKE '%' || $2 || '%'`;
+		OR u."email" ILIKE '%' || $2 || '%';`;
 
 		try {
 			result = await this.dataSource.query(query, [searchLoginTerm, searchEmailTerm, limit, skip]);
@@ -57,7 +57,7 @@ export class UsersQueryRepository {
 		const query = `
         SELECT id, login, email, "createdAt"
 		FROM public."Users" u
-		WHERE u.id = $1
+		WHERE u.id = $1;
     `;
 
 		try {
