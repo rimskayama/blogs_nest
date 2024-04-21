@@ -1,18 +1,24 @@
 import { DeviceViewDto } from './devices.types';
 import { devicesMapping } from '../utils/mapping';
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Device, DeviceDocument } from './device.entity';
-import { Model } from 'mongoose';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class DevicesQueryRepository {
-	constructor(
-		@InjectModel(Device.name)
-		private deviceModel: Model<DeviceDocument>
-	) {}
+	constructor(@InjectDataSource() protected dataSource: DataSource) {}
 	async findDevices(userId: string): Promise<DeviceViewDto[]> {
-		const allDevices = await this.deviceModel.find({ userId: userId });
-		return devicesMapping(allDevices);
+		const query = `
+        SELECT d.*
+		FROM public."Devices" d
+		WHERE d."userId" = $1;
+    `;
+
+		try {
+			const result = await this.dataSource.query(query, [userId]);
+			return devicesMapping(result);
+		} catch (error) {
+			console.error('Error finding device:', error);
+		}
 	}
 }
