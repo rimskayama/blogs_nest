@@ -8,7 +8,7 @@ import { StatusCode, userIdField, userNotFound } from '../exceptions/exception.c
 import { BasicAuthGuard } from '../auth/passport/guards/basic-auth.guard';
 
 @Controller('sa/users')
-export class UsersController {
+export class SuperAdminUsersController {
 	constructor(
 		@Inject(UsersService) protected usersService: UsersService,
 		@Inject(UsersQueryRepository) protected usersQueryRepository: UsersQueryRepository

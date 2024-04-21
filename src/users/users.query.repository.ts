@@ -55,9 +55,9 @@ export class UsersQueryRepository {
 
 	async findUserById(id: string): Promise<UserType | null> {
 		const query = `
-        SELECT id, login, email, "createdAt"
+        SELECT "id", "login", "email", "createdAt"
 		FROM public."Users" u
-		WHERE u.id = $1;
+		WHERE u."id" = $1;
     `;
 
 		try {
