@@ -9,18 +9,17 @@ export class DevicesService {
 		private readonly jwtService: JwtService
 	) {}
 
-	async createNewSession(refreshToken: string, deviceName: string, ip: string, userId: string, expDate: string) {
-		const decodedToken = this.jwtService.decode(refreshToken);
-		const deviceId = decodedToken.deviceId;
-		const lastActiveDate = decodedToken.iat;
+	async createNewSession(accessToken: string, refreshToken: string, deviceName: string, ip: string, userId: string) {
+		const decodedAccessToken = this.jwtService.decode(accessToken);
+		const decodedRefreshToken = this.jwtService.decode(refreshToken);
 
 		const device = {
 			userId: userId,
 			ip: ip,
 			title: deviceName,
-			lastActiveDate: lastActiveDate,
-			deviceId: deviceId,
-			expDate: expDate,
+			lastActiveDate: decodedRefreshToken.iat,
+			deviceId: decodedRefreshToken.deviceId,
+			tokenExpirationDate: decodedAccessToken.exp,
 		};
 		return await this.devicesRepository.createNewSession(device);
 	}
@@ -50,8 +49,13 @@ export class DevicesService {
 		}
 	}
 
-	async updateLastActiveDate(deviceId: string, lastActiveDate: number) {
-		return await this.devicesRepository.updateLastActiveDate(deviceId, lastActiveDate);
+	async updateLastActiveDate(accessToken: string, refreshToken: string, deviceId: string) {
+		const decodedAccessToken = this.jwtService.decode(accessToken);
+		const decodedRefreshToken = this.jwtService.decode(refreshToken);
+
+		const lastActiveDate = decodedRefreshToken.iat;
+		const tokenExpirationDate = decodedAccessToken.exp;
+		return await this.devicesRepository.updateLastActiveDate(deviceId, lastActiveDate, tokenExpirationDate);
 	}
 
 	async terminateAllSessions(userId: string, deviceId: string) {
