@@ -1,7 +1,6 @@
 import { Controller, Delete, Get, HttpCode, Param, Request, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { DevicesService } from './devices.service';
 import { DevicesQueryRepository } from './devices.query.repository';
-import { cookieExtractor } from '../auth/utils/cookie.extractor';
 import { exceptionHandler } from '../exceptions/exception.handler';
 import { StatusCode, deviceIdField, deviceNotFound, forbidden } from '../exceptions/exception.constants';
 import { JwtRefreshGuard } from '../auth/passport/guards/jwt-refresh.guard';
@@ -27,9 +26,9 @@ export class DevicesController {
 	@UseGuards(JwtRefreshGuard)
 	@Delete()
 	@HttpCode(204)
-	async deleteSession(@Request() req) {
-		const refreshToken = await cookieExtractor(req);
-		const session = await this.devicesService.getSession(refreshToken);
+	async deleteAllOthersSessions(@Request() req) {
+		const deviceIdFromRT = req.user.deviceId;
+		const session = await this.devicesRepository.getSessionByDeviceId(deviceIdFromRT);
 
 		if (session) {
 			return await this.devicesService.terminateAllSessions(session.userId, session.deviceId);
@@ -39,12 +38,8 @@ export class DevicesController {
 	@UseGuards(JwtRefreshGuard)
 	@Delete(':id')
 	@HttpCode(204)
-	async deleteAllOthersSessions(@Request() req, @Param('id') deviceIdFromReq: string) {
-		const refreshToken = await cookieExtractor(req);
-		const session = await this.devicesService.getSession(refreshToken);
-		if (!session) {
-			return new UnauthorizedException();
-		}
+	async deleteSession(@Request() req, @Param('id') deviceIdFromReq: string) {
+		//Req
 		if (!deviceIdFromReq) {
 			return exceptionHandler(StatusCode.NotFound, deviceNotFound, deviceIdField);
 		}
@@ -54,14 +49,13 @@ export class DevicesController {
 		}
 
 		//RT
-		if (!req.user.deviceId) {
-			return exceptionHandler(StatusCode.NotFound, deviceNotFound, deviceIdField);
-		}
 		const deviceIdFromRT = req.user.deviceId;
 		const userFromRT = await this.devicesRepository.getSessionByDeviceId(deviceIdFromRT);
+		if (!userFromRT) {
+			return exceptionHandler(StatusCode.NotFound, deviceNotFound, deviceIdField);
+		}
 
-		//Req
-		if (userFromReq.userId.toString() !== userFromRT.userId.toString()) {
+		if (userFromReq.userId !== userFromRT.userId) {
 			return exceptionHandler(StatusCode.Forbidden, forbidden, deviceIdField);
 		} else {
 			return await this.devicesService.terminateSession(deviceIdFromReq);
