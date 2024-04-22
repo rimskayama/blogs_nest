@@ -28,3 +28,22 @@ export type BlogsPaginationDto = {
 	totalCount: number;
 	items: BlogDto[];
 };
+
+export class BlogType {
+	id: string;
+	name: string;
+	description: string;
+	websiteUrl: string;
+	createdAt: Date;
+	isMembership: boolean;
+	static getViewBlog(blogFromDb: BlogType): BlogDto {
+		return {
+			id: blogFromDb.id,
+			name: blogFromDb.name,
+			description: blogFromDb.description,
+			websiteUrl: blogFromDb.websiteUrl,
+			isMembership: blogFromDb.isMembership,
+			createdAt: blogFromDb.createdAt.toISOString(),
+		};
+	}
+}
