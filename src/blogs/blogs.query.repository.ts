@@ -1,35 +1,44 @@
 import { BlogDto } from './blogs.types';
-import { ObjectId, SortDirection } from 'mongodb';
 import { blogsMapping } from '../utils/mapping';
 import { BlogsPaginationDto } from './blogs.types';
 import { Injectable } from '@nestjs/common';
-import { Blog, BlogDocument } from './blog.entity';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class BlogsQueryRepository {
-	constructor(
-		@InjectModel(Blog.name)
-		private blogModel: Model<BlogDocument>
-	) {}
+	constructor(@InjectDataSource() protected dataSource: DataSource) {}
 	async findBlogs(
 		page: number,
 		limit: number,
-		sortDirection: SortDirection,
+		sortDirection: string,
 		sortBy: string,
 		searchNameTerm: string,
 		skip: number
 	): Promise<BlogsPaginationDto> {
-		const result = await this.blogModel
-			.find({ name: { $regex: searchNameTerm, $options: 'i' } })
-			.skip(skip)
-			.limit(limit)
-			.sort({ [sortBy]: sortDirection })
-			.lean();
+		let result;
+		let count;
+		const query = `
+		SELECT b.*
+		FROM public."Blogs" b
+		WHERE b."name" ILIKE '%' || $1 || '%' 
+		GROUP BY b."id"
+		ORDER BY "${sortBy}" ${sortDirection === 'asc' ? 'ASC' : 'DESC'}
+		LIMIT $2 OFFSET $3;`;
 
-		const total = await this.blogModel.countDocuments({ name: { $regex: searchNameTerm, $options: 'i' } });
+		const queryToCountTotal = `
+		SELECT count(*) as total
+		FROM public."Blogs" b
+		WHERE b."name" ILIKE '%' || $1 || '%';`;
 
+		try {
+			result = await this.dataSource.query(query, [searchNameTerm, limit, skip]);
+			count = await this.dataSource.query(queryToCountTotal, [searchNameTerm]);
+		} catch (error) {
+			console.error('Error finding blogs', error);
+		}
+
+		const total = parseInt(count[0].total);
 		const pagesCount = Math.ceil(total / limit);
 
 		return {
@@ -42,11 +51,17 @@ export class BlogsQueryRepository {
 	}
 
 	async findBlogById(blogId: string): Promise<BlogDto | null> {
+		const query = `
+        SELECT "id", "name", "description", "websiteUrl", "isMembership", "createdAt"
+		FROM public."Blogs" b
+		WHERE b."id" = $1;
+    `;
+
 		try {
-			const result = await this.blogModel.findById({ _id: new ObjectId(blogId) });
-			if (result) return Blog.getViewBlog(result);
-		} catch (e) {
-			console.error(e);
+			const result = await this.dataSource.query(query, [blogId]);
+			return result[0];
+		} catch (error) {
+			console.error('Error finding blog:', error);
 			return null;
 		}
 	}
