@@ -1,65 +1,84 @@
-import { PostDto, postsPaginationDto } from './posts.types';
-import { ObjectId, SortDirection } from 'mongodb';
+import { PostType, PostViewDto, postsPaginationDto } from './posts.types';
 import { likeDetails } from './post.entity';
-import { Post, PostDocument } from './post.entity';
-import { PostLike, PostLikeDocument } from '../likes/like.entity';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { LikeStatus } from '../likes/likes.types';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class PostsQueryRepository {
-	constructor(
-		@InjectModel(Post.name)
-		private PostModel: Model<PostDocument>,
-		@InjectModel(PostLike.name)
-		private PostLikeModel: Model<PostLikeDocument>
-	) {}
+	constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
 	async findPosts(
 		page: number,
 		limit: number,
-		sortDirection: SortDirection,
+		sortDirection: string,
 		sortBy: string,
 		skip: number,
 		userId: string | false
 	): Promise<postsPaginationDto> {
-		const allPosts = await this.PostModel.find({})
-			.skip(skip)
-			.limit(limit)
-			.sort({ [sortBy]: sortDirection })
-			.lean();
+		let result;
+		let count;
+		const query = `
+		SELECT p.*
+		FROM public."Posts" p
+		GROUP BY p."id"
+		ORDER BY "${sortBy}" ${sortDirection === 'asc' ? 'ASC' : 'DESC'}
+		LIMIT $1 OFFSET $2;`;
 
-		const total = await this.PostModel.countDocuments();
+		const queryToCountTotal = `
+		SELECT count(*) as total
+		FROM public."Posts" p`;
 
+		try {
+			result = await this.dataSource.query(query, [limit, skip]);
+			count = await this.dataSource.query(queryToCountTotal);
+		} catch (error) {
+			console.error('Error finding posts', error);
+		}
+
+		const total = parseInt(count[0].total);
 		const pagesCount = Math.ceil(total / limit);
 
 		const items = await Promise.all(
-			allPosts.map(async (post) => {
+			result.map(async (post) => {
 				let likeStatus = 'None';
+				//status
 				if (userId) {
-					const likeInDB = await this.PostLikeModel.findOne({ postId: post._id.toString(), userId: userId });
-					if (likeInDB) {
-						likeStatus = likeInDB.status;
+					const query = `
+					SELECT "status"
+					FROM public."PostLikes" pl
+					WHERE pl."postId" = $1 AND pl."userId" = $2
+				`;
+					try {
+						const likeResult = await this.dataSource.query(query, [post.id, userId]);
+						if (likeResult.length === 0) {
+							likeStatus = 'None';
+						} else likeStatus = likeResult[0].status;
+					} catch (error) {
+						console.error('Error finding post likes:', error);
 					}
 				}
 
-				const newestLikes: likeDetails[] = await this.PostLikeModel.find({
-					postId: post._id.toString(),
-					status: 'Like',
-				})
-					.sort({ addedAt: -1 })
-					.limit(3)
-					.lean();
+				//get newestLikes
+				let newestLikes: likeDetails[] = [];
+				const queryToGetLikes = `
+				SELECT "userId", "login", "addedAt"
+				FROM public."PostLikes" pl
+				WHERE pl."postId" = $1 AND pl."status" = $2
+				ORDER BY "addedAt" DESC
+				LIMIT $3 OFFSET $4;
+				`;
+				try {
+					newestLikes = await this.dataSource.query(queryToGetLikes, [post.id, LikeStatus.Like, 3, 0]);
+				} catch (error) {
+					console.error('Error finding post likes:', error);
+				}
 
-				return Post.getViewPost({
+				return PostType.getViewPost({
 					...post,
-					extendedLikesInfo: {
-						...post.extendedLikesInfo,
-						newestLikes,
-						myStatus: likeStatus,
-					},
+					myStatus: likeStatus,
+					newestLikes,
 				});
 			})
 		);
@@ -72,86 +91,134 @@ export class PostsQueryRepository {
 		};
 	}
 
-	async findPostById(id: string, userId: string | false): Promise<PostDto | null> {
-		const post: Post | null = await this.PostModel.findById({ _id: new ObjectId(id) }).lean();
-		if (!post) {
+	async findPostById(postId: string, userId: string | false): Promise<PostViewDto | null> {
+		const query = `
+        SELECT "id", "title", "shortDescription", "content", "blogId", "blogName", "createdAt", "likesCount", "dislikesCount"
+		FROM public."Posts" p
+		WHERE p."id" = $1
+    `;
+		try {
+			const result = await this.dataSource.query(query, [postId]);
+			if (result.length === 0) {
+				return null;
+			}
+			//set like
+			let likeStatus = 'None';
+			if (userId) {
+				const query = `
+					SELECT "status"
+					FROM public."PostLikes" pl
+					WHERE pl."postId" = $1 AND pl."userId" = $2
+				`;
+				try {
+					const likeResult = await this.dataSource.query(query, [postId, userId]);
+					if (likeResult.length === 0) {
+						likeStatus = 'None';
+					} else likeStatus = likeResult[0].status;
+				} catch (error) {
+					console.error('Error finding post likes:', error);
+				}
+			}
+
+			//get newestLikes
+			let newestLikes: likeDetails[] = [];
+			const queryToGetLikes = `
+				SELECT "userId", "login", "addedAt"
+				FROM public."PostLikes" pl
+				WHERE pl."postId" = $1 AND pl."status" = $2
+				ORDER BY "addedAt" DESC
+				LIMIT $3 OFFSET $4;
+				`;
+			try {
+				newestLikes = await this.dataSource.query(queryToGetLikes, [postId, LikeStatus.Like, 3, 0]);
+			} catch (error) {
+				console.error('Error finding post likes:', error);
+			}
+
+			return PostType.getViewPost({
+				...result[0],
+				myStatus: likeStatus,
+				newestLikes,
+			});
+		} catch (error) {
+			console.error('Error finding post:', error);
 			return null;
 		}
-
-		let myStatus = 'None';
-		if (userId) {
-			const likeInDB = await this.PostLikeModel.findOne({ postId: post._id.toString(), userId: userId });
-			if (likeInDB) {
-				myStatus = likeInDB.status;
-			}
-		}
-
-		const newestLikes: likeDetails[] = await this.PostLikeModel.find({
-			postId: post._id.toString(),
-			status: LikeStatus.Like,
-		})
-			.sort({ addedAt: -1 })
-			.limit(3)
-			.lean();
-
-		return Post.getViewPost({
-			...post,
-			extendedLikesInfo: {
-				...post.extendedLikesInfo,
-				newestLikes,
-				myStatus,
-			},
-		});
 	}
 
 	async findPostsByBlogId(
 		blogId: string,
 		page: number,
 		limit: number,
-		sortDirection: SortDirection,
+		sortDirection: string,
 		sortBy: string,
 		skip: number,
 		userId: string | false
 	) {
-		const postsByBlogId = await this.PostModel.find({ blogId: blogId })
-			.skip(skip)
-			.limit(limit)
-			.sort({ [sortBy]: sortDirection })
-			.lean();
+		let result;
+		let count;
+		const query = `
+		SELECT p.*
+		FROM public."Posts" p
+		WHERE p."blogId" = $1
+		ORDER BY "${sortBy}" ${sortDirection === 'asc' ? 'ASC' : 'DESC'}
+		LIMIT $2 OFFSET $3;`;
 
-		const total = await this.PostModel.countDocuments({ blogId: blogId });
+		const queryToCountTotal = `
+		SELECT count(*) as total
+		FROM public."Posts" p
+		WHERE p."blogId" = $1;`;
 
+		try {
+			result = await this.dataSource.query(query, [blogId, limit, skip]);
+			count = await this.dataSource.query(queryToCountTotal, [blogId]);
+		} catch (error) {
+			console.error('Error finding posts', error);
+		}
+
+		const total = parseInt(count[0].total);
 		const pagesCount = Math.ceil(total / limit);
 
 		const items = await Promise.all(
-			postsByBlogId.map(async (post) => {
+			result.map(async (post) => {
 				let likeStatus = 'None';
+				//set like
 				if (userId) {
-					const likeInDB = await this.PostLikeModel.findOne({ postId: post._id.toString(), userId: userId });
-					if (likeInDB) {
-						likeStatus = likeInDB.status;
+					const query = `
+					SELECT "status"
+					FROM public."PostLikes" pl
+					WHERE pl."postId" = $1 AND pl."userId" = $2
+				`;
+					try {
+						const result = await this.dataSource.query(query, [post.id, userId]);
+						likeStatus = result[0].status;
+					} catch (error) {
+						console.error('Error finding post likes:', error);
 					}
 				}
 
-				const newestLikes: likeDetails[] = await this.PostLikeModel.find({
-					postId: post._id.toString(),
-					status: 'Like',
-				})
-					.sort({ addedAt: -1 })
-					.limit(3)
-					.lean();
+				//get newestLikes
+				let newestLikes: likeDetails[] = [];
+				const queryToGetLikes = `
+				SELECT "userId", "login", "addedAt"
+				FROM public."PostLikes" pl
+				WHERE pl."postId" = $1 AND pl."status" = $2
+				ORDER BY "addedAt" DESC
+				LIMIT $3 OFFSET $4;
+				`;
+				try {
+					newestLikes = await this.dataSource.query(queryToGetLikes, [post.id, LikeStatus.Like, 3, 0]);
+				} catch (error) {
+					console.error('Error finding post likes:', error);
+				}
 
-				return Post.getViewPost({
+				return PostType.getViewPost({
 					...post,
-					extendedLikesInfo: {
-						...post.extendedLikesInfo,
-						newestLikes,
-						myStatus: likeStatus,
-					},
+					myStatus: likeStatus,
+					newestLikes,
 				});
 			})
 		);
-
 		return {
 			pagesCount: pagesCount,
 			page: page,
@@ -162,14 +229,16 @@ export class PostsQueryRepository {
 	}
 
 	async updatePostLikes(postId: string, likesCount: number, dislikesCount: number) {
-		await this.PostModel.findByIdAndUpdate(
-			{ _id: new ObjectId(postId) },
-			{
-				$set: {
-					'extendedLikesInfo.likesCount': likesCount,
-					'extendedLikesInfo.dislikesCount': dislikesCount,
-				},
-			}
-		);
+		const query = `
+		UPDATE public."Posts" p
+		SET "likesCount"=$1, "dislikesCount"=$2
+		WHERE p."id" = $3;
+	`;
+		try {
+			await this.dataSource.query(query, [likesCount, dislikesCount, postId]);
+			return true;
+		} catch (error) {
+			console.error('Error updating post likes:', error);
+		}
 	}
 }
