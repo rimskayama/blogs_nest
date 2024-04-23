@@ -39,23 +39,23 @@ describe('BlogsController (e2e)', () => {
 		await request(httpServer)
 			.get('/blogs/6413437e44902b9011d0b316')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
-			.expect(404);
+			.expect(HttpStatus.NOT_FOUND);
 	});
 
 	//POST
 
 	it('should NOT create blog with incorrect input data', async () => {
 		await request(httpServer)
-			.post('/blogs')
+			.post('/sa/blogs')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.send({
 				name: 'veryveryverylongname234',
 				description: 'string',
 				websiteUrl: 'string',
 			})
-			.expect(400);
+			.expect(HttpStatus.BAD_REQUEST);
 
-		await request(httpServer).get('/blogs').expect(200, {
+		await request(httpServer).get('/blogs').expect(HttpStatus.OK, {
 			pagesCount: 0,
 			page: 1,
 			pageSize: 10,
@@ -73,15 +73,15 @@ describe('BlogsController (e2e)', () => {
 			websiteUrl: 'https://www.base64encode.org/',
 		};
 		const createResponse = await request(httpServer)
-			.post('/blogs')
+			.post('/sa/blogs')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.send(data)
-			.expect(201);
+			.expect(HttpStatus.CREATED);
 
 		createdBlog1 = createResponse.body;
 		//console.log(createdBlog1);
 
-		const b = await request(httpServer).get('/blogs').expect(200);
+		const b = await request(httpServer).get('/blogs').expect(HttpStatus.OK);
 
 		//console.log(b.body, 'list of blogs')
 
@@ -113,10 +113,10 @@ describe('BlogsController (e2e)', () => {
 		};
 
 		await request(httpServer)
-			.put('/blogs/' + createdBlog1.id)
+			.put('/sa/blogs/' + createdBlog1.id)
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.send(data)
-			.expect(400, {
+			.expect(HttpStatus.BAD_REQUEST, {
 				errorsMessages: [
 					{
 						message: 'name must be shorter than or equal to 15 characters',
@@ -130,14 +130,14 @@ describe('BlogsController (e2e)', () => {
 
 	it('should NOT update blog that not exist', async () => {
 		await request(httpServer)
-			.put('/blogs/' + '642681e8ad245fa9580960f8')
+			.put('/sa/blogs/' + '642681e8ad245fa9580960f8')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.send({
 				name: 'new name',
 				description: 'new description',
 				websiteUrl: 'https://vercel.com/',
 			})
-			.expect(404);
+			.expect(HttpStatus.NOT_FOUND);
 	});
 
 	//console.log(createdBlog1)
@@ -150,14 +150,14 @@ describe('BlogsController (e2e)', () => {
 		};
 
 		await request(httpServer)
-			.put('/blogs/' + createdBlog1.id)
+			.put('/sa/blogs/' + createdBlog1.id)
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.send(data)
-			.expect(204);
+			.expect(HttpStatus.NO_CONTENT);
 
 		const b = await request(httpServer)
 			.get('/blogs/' + createdBlog1.id)
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		expect(b.body).toEqual({
 			id: expect.any(String),
@@ -172,15 +172,15 @@ describe('BlogsController (e2e)', () => {
 	//DELETE
 	it('should delete blog', async () => {
 		await request(httpServer)
-			.delete('/blogs/' + createdBlog1.id)
+			.delete('/sa/blogs/' + createdBlog1.id)
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
-			.expect(204);
+			.expect(HttpStatus.NO_CONTENT);
 
 		await request(httpServer)
 			.get('/blogs/' + createdBlog1.id)
-			.expect(404);
+			.expect(HttpStatus.NOT_FOUND);
 
-		await request(httpServer).get('/blogs').expect(200, {
+		await request(httpServer).get('/blogs').expect(HttpStatus.OK, {
 			pagesCount: 0,
 			page: 1,
 			pageSize: 10,

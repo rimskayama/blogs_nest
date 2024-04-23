@@ -33,14 +33,14 @@ describe('DevicesController (e2e)', () => {
 		};
 
 		const createResponse = await request(httpServer)
-			.post('/users')
+			.post('/sa/users')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.send(data)
 			.expect(HttpStatus.CREATED);
 
 		createdUser1 = createResponse.body;
 
-		const b = await request(httpServer).get('/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').expect(200);
+		const b = await request(httpServer).get('/sa/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').expect(200);
 
 		expect(b.body).toEqual({
 			pagesCount: 1,
@@ -72,7 +72,7 @@ describe('DevicesController (e2e)', () => {
 			.post('/auth/login')
 			.set('user-agent', 'Chrome')
 			.send(data)
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		accessToken = createResponse.body.accessToken;
 		refreshTokenOfSession1 = createResponse.headers['set-cookie'][0];
@@ -88,7 +88,7 @@ describe('DevicesController (e2e)', () => {
 			.post('/auth/login')
 			.set('user-agent', 'Android')
 			.send(data)
-			.expect(200);
+			.expect(HttpStatus.OK);
 	});
 
 	it('should login user: 3 session, Firefox', async () => {
@@ -101,7 +101,7 @@ describe('DevicesController (e2e)', () => {
 			.post('/auth/login')
 			.set('user-agent', 'Firefox')
 			.send(data)
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		refreshTokenOfSession3 = createResponse.headers['set-cookie'][0];
 	});
@@ -116,7 +116,7 @@ describe('DevicesController (e2e)', () => {
 			.post('/auth/login')
 			.set('user-agent', 'iPhone')
 			.send(data)
-			.expect(200);
+			.expect(HttpStatus.OK);
 	});
 
 	let deviceIdOfUser1 = '';
@@ -125,7 +125,7 @@ describe('DevicesController (e2e)', () => {
 		const createResponse = await request(httpServer)
 			.get('/security/devices')
 			.set('Cookie', refreshTokenOfSession1)
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		expect(createResponse.body).toEqual([
 			{
@@ -162,7 +162,7 @@ describe('DevicesController (e2e)', () => {
 		await request(httpServer)
 			.delete('/security/devices/' + 'somewrongdeviceid')
 			.set('Cookie', refreshTokenOfSession1)
-			.expect(404);
+			.expect(HttpStatus.NOT_FOUND);
 	});
 
 	//ERR 403
@@ -179,10 +179,10 @@ describe('DevicesController (e2e)', () => {
 		};
 
 		const createResponse = await request(httpServer)
-			.post('/users')
+			.post('/sa/users')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.send(data)
-			.expect(201);
+			.expect(HttpStatus.CREATED);
 
 		createdUser2 = createResponse.body;
 	});
@@ -197,7 +197,7 @@ describe('DevicesController (e2e)', () => {
 			.post('/auth/login')
 			.set('user-agent', 'iPhone')
 			.send(data)
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		accessTokenOfUser2 = createResponse.body.accessToken;
 		refreshTokenOfUser2 = createResponse.headers['set-cookie'][0];
@@ -207,7 +207,7 @@ describe('DevicesController (e2e)', () => {
 		const createResponse = await request(httpServer)
 			.get('/security/devices')
 			.set('Cookie', refreshTokenOfUser2)
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		expect(createResponse.body).toEqual([
 			{
@@ -223,19 +223,19 @@ describe('DevicesController (e2e)', () => {
 	it('should NOT delete session, err 401', async () => {
 		await request(httpServer)
 			.delete('/security/devices/' + deviceIdOfUser2)
-			.expect(401);
+			.expect(HttpStatus.UNAUTHORIZED);
 	});
 	it('should NOT delete session, err 403: deviceId of user №2, refreshToken of user №1', async () => {
 		await request(httpServer)
 			.delete('/security/devices/' + deviceIdOfUser2)
 			.set('Cookie', refreshTokenOfSession1)
-			.expect(403);
+			.expect(HttpStatus.FORBIDDEN);
 	});
 	it('should return new refresh of user 1, session 1 Chrome', async () => {
 		const createResponse = await request(httpServer)
 			.post('/auth/refresh-token')
 			.set('Cookie', refreshTokenOfSession1)
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		refreshTokenOfSession1 = createResponse.headers['set-cookie'][0];
 	});
@@ -244,24 +244,18 @@ describe('DevicesController (e2e)', () => {
 		const createResponse = await request(httpServer)
 			.get('/security/devices')
 			.set('Cookie', refreshTokenOfSession1)
-			.expect(200);
+			.expect(HttpStatus.OK);
 	});
 
 	it('should delete session 2, refreshToken of session 1', async () => {
 		await request(httpServer)
 			.delete('/security/devices/' + deviceIdOfUser1)
 			.set('Cookie', refreshTokenOfSession1)
-			.expect(204);
+			.expect(HttpStatus.NO_CONTENT);
 
 		const b = await request(httpServer).get('/security/devices').set('Cookie', refreshTokenOfSession1).expect(200);
 
 		expect(b.body).toEqual([
-			{
-				ip: expect.any(String),
-				title: 'Chrome',
-				lastActiveDate: expect.any(String),
-				deviceId: expect.any(String),
-			},
 			{
 				ip: expect.any(String),
 				title: 'Firefox',
@@ -274,6 +268,12 @@ describe('DevicesController (e2e)', () => {
 				lastActiveDate: expect.any(String),
 				deviceId: expect.any(String),
 			},
+			{
+				ip: expect.any(String),
+				title: 'Chrome',
+				lastActiveDate: expect.any(String),
+				deviceId: expect.any(String),
+			},
 		]);
 	});
 
@@ -281,20 +281,20 @@ describe('DevicesController (e2e)', () => {
 		const createResponse = await request(httpServer)
 			.post('/auth/logout')
 			.set('Cookie', refreshTokenOfSession3)
-			.expect(204);
+			.expect(HttpStatus.NO_CONTENT);
 
 		const b = await request(httpServer).get('/security/devices').set('Cookie', refreshTokenOfSession1).expect(200);
 
 		expect(b.body).toEqual([
 			{
 				ip: expect.any(String),
-				title: 'Chrome',
+				title: 'iPhone',
 				lastActiveDate: expect.any(String),
 				deviceId: expect.any(String),
 			},
 			{
 				ip: expect.any(String),
-				title: 'iPhone',
+				title: 'Chrome',
 				lastActiveDate: expect.any(String),
 				deviceId: expect.any(String),
 			},
@@ -302,9 +302,15 @@ describe('DevicesController (e2e)', () => {
 	});
 
 	it('should delete others sessions except Chrome, refreshToken of session 1', async () => {
-		await request(httpServer).delete('/security/devices/').set('Cookie', refreshTokenOfSession1).expect(204);
+		await request(httpServer)
+			.delete('/security/devices/')
+			.set('Cookie', refreshTokenOfSession1)
+			.expect(HttpStatus.NO_CONTENT);
 
-		const b = await request(httpServer).get('/security/devices').set('Cookie', refreshTokenOfSession1).expect(200);
+		const b = await request(httpServer)
+			.get('/security/devices')
+			.set('Cookie', refreshTokenOfSession1)
+			.expect(HttpStatus.OK);
 
 		expect(b.body).toEqual([
 			{
