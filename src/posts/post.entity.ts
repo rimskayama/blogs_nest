@@ -1,6 +1,6 @@
 import mongoose, { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { PostDto } from './posts.types';
+import { PostViewDto } from './posts.types';
 import { likeDetailsMapping } from '../utils/mapping';
 import { ObjectId } from 'mongodb';
 
@@ -62,7 +62,7 @@ export class Post {
 	@Prop({ default: [] })
 	extendedLikesInfo: extendedLikesInfo;
 
-	static getViewPost(postFromDb: Post): PostDto {
+	static getViewPost(postFromDb: Post): PostViewDto {
 		return {
 			id: postFromDb._id.toString(),
 			title: postFromDb.title,

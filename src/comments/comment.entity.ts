@@ -1,7 +1,7 @@
 import mongoose, { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
-import { commentDto } from './comments.types';
+import { CommentViewDto } from './comments.types';
 
 export type CommentDocument = HydratedDocument<Comment>;
 
@@ -41,7 +41,7 @@ export class Comment {
 	@Prop({ required: true })
 	likesInfo: likesInfo;
 
-	static getViewComment(commentFromDb: Comment): commentDto {
+	static getViewComment(commentFromDb: Comment): CommentViewDto {
 		return {
 			id: commentFromDb._id.toString(),
 			content: commentFromDb.content,
