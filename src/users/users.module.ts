@@ -12,11 +12,7 @@ const adapters = [UsersRepository, UsersQueryRepository];
 const strategies = [BasicStrategy];
 
 @Module({
-	imports: [
-		ConfigModule.forRoot(),
-		MongooseModule.forRoot(process.env.MONGO_URL),
-		MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-	],
+	imports: [ConfigModule.forRoot(), MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])],
 	controllers: [SuperAdminUsersController],
 	providers: [UsersService, ...adapters, ...strategies],
 })
