@@ -1,64 +1,69 @@
-import { ObjectId } from 'mongodb';
-import { Comment, CommentDocument } from './comment.entity';
-import { commentDto } from './comments.types';
+import { commentDto, CommentViewDto } from './comments.types';
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { CommentLike, CommentLikeDocument } from '../likes/like.entity';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { commentsMapping } from '../utils/mapping';
 
 @Injectable()
 export class CommentsRepository {
-	constructor(
-		@InjectModel(Comment.name) private commentModel: Model<CommentDocument>,
-		@InjectModel(CommentLike.name) private commentLikeModel: Model<CommentLikeDocument>
-	) {}
+	constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
-	async save(comment: CommentDocument) {
-		comment.save();
+	async createComment(comment: commentDto): Promise<CommentViewDto> {
+		const query = `INSERT INTO public."Comments"(
+			"id", "postId", "content", "createdAt", "commentatorId", "commentatorLogin", "likesCount", "dislikesCount")
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8)
+        RETURNING *
+        `;
+
+		const values = [
+			comment.id,
+			comment.postId,
+			comment.content,
+			comment.createdAt,
+			comment.commentatorId,
+			comment.commentatorLogin,
+			comment.likesCount,
+			comment.dislikesCount,
+		];
+
+		try {
+			const result = await this.dataSource.query(query, values);
+			return commentsMapping(result)[0];
+		} catch (error) {
+			console.error('Error creating comment :', error);
+		}
 	}
 
-	async findCommentById(_id: ObjectId, userId: string | false): Promise<commentDto | null> {
-		const comment: Comment | null = await this.commentModel.findOne({ _id });
-		if (!comment) {
+	async updateComment(id: string, content: string) {
+		const query = `
+		UPDATE public."Comments" c
+		SET "content"=$1
+		WHERE c."id" = $2;
+    `;
+		try {
+			const result = await this.dataSource.query(query, [content, id]);
+			return result;
+		} catch (error) {
+			console.error('Error updating comment:', error);
+			return false;
+		}
+	}
+
+	async deleteComment(id: string): Promise<true | null> {
+		const query = `
+		DELETE FROM public."Comments" c
+		WHERE c."id" = $1;
+	`;
+
+		try {
+			const result = await this.dataSource.query(query, [id]);
+			if (result[1] === 0) {
+				return null;
+			}
+			return true;
+		} catch (error) {
+			console.error('Error deleting comment:', error);
 			return null;
 		}
-
-		comment.likesInfo.myStatus = 'None';
-		if (userId) {
-			const likeInDB = await this.commentLikeModel.findOne({
-				$and: [{ commentId: comment._id.toString() }, { userId: userId }],
-			});
-			if (likeInDB) {
-				comment.likesInfo.myStatus = likeInDB.status.toString();
-			}
-		}
-		return Comment.getViewComment(comment);
-	}
-	async createComment(comment: Comment): Promise<commentDto> {
-		const newComment = new this.commentModel(comment);
-		await this.save(newComment);
-		return Comment.getViewComment(newComment);
-	}
-
-	async updateComment(_id: ObjectId, content: string) {
-		return await this.commentModel.findByIdAndUpdate(
-			{ _id: _id },
-			{
-				content: content,
-			}
-		);
-	}
-
-	async deleteComment(_id: ObjectId) {
-		await this.commentModel.deleteOne({ _id });
-		const comment = await this.commentModel.findById({ _id: _id });
-		if (!comment) {
-			return true;
-		}
-		return false;
-	}
-
-	async deleteAll() {
-		return this.commentModel.deleteMany({});
 	}
 }

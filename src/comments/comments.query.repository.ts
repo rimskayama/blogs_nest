@@ -1,78 +1,145 @@
-import { ObjectId, SortDirection } from 'mongodb';
-import { commentsMapping } from '../utils/mapping';
 import { Injectable } from '@nestjs/common';
-import { Model } from 'mongoose';
-import { Comment, CommentDocument } from './comment.entity';
-import { InjectModel } from '@nestjs/mongoose';
-import { CommentLike, CommentLikeDocument } from '../likes/like.entity';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { CommentType, CommentViewDto } from './comments.types';
+import { likeDetails } from '../posts/post.entity';
+import { LikeStatus } from '../likes/likes.types';
 
 @Injectable()
 export class CommentsQueryRepository {
-	constructor(
-		@InjectModel(Comment.name) private commentModel: Model<CommentDocument>,
-		@InjectModel(CommentLike.name) private commentLikeModel: Model<CommentLikeDocument>
-	) {}
+	constructor(@InjectDataSource() protected dataSource: DataSource) {}
 	async findCommentsByPostId(
 		postId: string,
 		page: number,
 		limit: number,
-		sortDirection: SortDirection,
+		sortDirection: string,
 		sortBy: string,
 		skip: number,
 		userId: string | false
 	) {
-		const allComments = await this.commentModel
-			.find({ postId: postId })
-			.skip(skip)
-			.limit(limit)
-			.sort({ [sortBy]: sortDirection })
-			.lean();
+		let result;
+		let count;
+		const query = `
+		SELECT c.*
+		FROM public."Comments" c
+		WHERE c."postId" ILIKE '%' || $1 || '%'
+		GROUP BY c."id"
+		ORDER BY "${sortBy}" ${sortDirection === 'asc' ? 'ASC' : 'DESC'}
+		LIMIT $2 OFFSET $3;`;
 
-		const idList = [];
-		for (let i = 0; i < allComments.length; i++) {
-			idList.push(allComments[i]._id);
+		const queryToCountTotal = `
+		SELECT count(*) as total
+		FROM public."Comments" c
+		WHERE c."postId" ILIKE '%' || $1 || '%' ;`;
+
+		try {
+			result = await this.dataSource.query(query, [postId, limit, skip]);
+			count = await this.dataSource.query(queryToCountTotal, [postId]);
+		} catch (error) {
+			console.error('Error finding comments by postId', error);
 		}
 
-		const statusList: string[] = [];
-		for (let i = 0; i < allComments.length; i++) {
-			let likeStatus = 'None';
-			if (userId) {
-				const likeInDB = await this.commentLikeModel.findOne({
-					$and: [{ commentId: allComments[i]._id.toString() }, { userId: userId }],
-				});
-				if (likeInDB) {
-					likeStatus = likeInDB.status.toString();
-				}
-			}
-			statusList.push(likeStatus);
-		}
-
-		for (let i = 0; i < allComments.length; i++) {
-			allComments.map((obj, number) => (obj.likesInfo.myStatus = statusList[number]));
-		}
-
-		const total = await this.commentModel.countDocuments({ postId: postId });
-
+		const total = parseInt(count[0].total);
 		const pagesCount = Math.ceil(total / limit);
 
+		const items = await Promise.all(
+			result.map(async (comment) => {
+				let likeStatus = 'None';
+				//set like
+				if (userId) {
+					const query = `
+					SELECT "status"
+					FROM public."CommentLikes" cl
+					WHERE cl."commentId" = $1 AND cl."userId" = $2
+				`;
+					try {
+						const result = await this.dataSource.query(query, [comment.id, userId]);
+						likeStatus = result[0].status;
+					} catch (error) {
+						console.error('Error finding comment likes:', error);
+					}
+				}
+
+				//get newestLikes
+				let newestLikes: likeDetails[] = [];
+				const queryToGetLikes = `
+				SELECT "userId", "login", "addedAt"
+				FROM public."CommentLikes" cl
+				WHERE cl."commentId" = $1 AND cl."status" = $2
+				ORDER BY "addedAt" DESC
+				LIMIT $3 OFFSET $4;
+				`;
+				try {
+					newestLikes = await this.dataSource.query(queryToGetLikes, [comment.id, LikeStatus.Like, 3, 0]);
+				} catch (error) {
+					console.error('Error finding comment likes:', error);
+				}
+
+				return CommentType.getViewComment({
+					...comment,
+					myStatus: likeStatus,
+					newestLikes,
+				});
+			})
+		);
 		return {
 			pagesCount: pagesCount,
 			page: page,
 			pageSize: limit,
 			totalCount: total,
-			items: commentsMapping(allComments),
+			items,
 		};
 	}
 
-	async updateCommentLikes(commentId: string, likesCount: number, dislikesCount: number) {
-		await this.commentModel.updateOne(
-			{ _id: new ObjectId(commentId) },
-			{
-				$set: {
-					'likesInfo.likesCount': likesCount,
-					'likesInfo.dislikesCount': dislikesCount,
-				},
+	async findCommentById(commentId: string, userId: string | false): Promise<CommentViewDto | null> {
+		const query = `
+		SELECT "id", "content", "createdAt", "commentatorId", "commentatorLogin", "likesCount", "dislikesCount"
+		FROM public."Comments" c
+		WHERE c."id" = $1;
+	`;
+		try {
+			const result = await this.dataSource.query(query, [commentId]);
+			if (result.length === 0) {
+				return null;
 			}
-		);
+			//set like
+			let likeStatus = 'None';
+			if (userId) {
+				const query = `
+				SELECT "status"
+				FROM public."CommentLikes" cl
+				WHERE cl."commentId" = $1 AND cl."userId" = $2
+			`;
+				try {
+					const likeResult = await this.dataSource.query(query, [commentId, userId]);
+					if (likeResult.length === 0) {
+						likeStatus = 'None';
+					} else likeStatus = likeResult[0].status;
+				} catch (error) {
+					console.error('Error finding comment likes:', error);
+				}
+			}
+			return CommentType.getViewComment({
+				...result[0],
+				myStatus: likeStatus,
+			});
+		} catch (error) {
+			console.error('Error finding comment:', error);
+			return null;
+		}
+	}
+
+	async updateCommentLikes(commentId: string, likesCount: number, dislikesCount: number) {
+		const query = `
+		UPDATE public."Comments" cl
+		SET "likesCount"=$1, "dislikesCount"=$2
+		WHERE cl."id" = $3;
+    `;
+		try {
+			await this.dataSource.query(query, [likesCount, dislikesCount, commentId]);
+			return true;
+		} catch (error) {
+			console.error('Error updating comment likes:', error);
+		}
 	}
 }

@@ -1,7 +1,7 @@
 import { LikesService } from '../likes/likes.service';
 import { CommentsService } from './comments.service';
 import { CommentsQueryRepository } from './comments.query.repository';
-import { Body, Controller, Delete, Get, HttpCode, Param, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Put, UseGuards } from '@nestjs/common';
 import { JwtBearerGuard } from '../auth/passport/guards/jwt-bearer.guard';
 import { StatusCode, commentIdField, commentNotFound, forbidden } from '../exceptions/exception.constants';
 import { UserFromReq } from '../auth/decorators/userId.decorator';
@@ -20,9 +20,9 @@ export class CommentsController {
 
 	@UseGuards(UserAuthGuard)
 	@Get(':id')
-	@HttpCode(200)
+	@HttpCode(HttpStatus.OK)
 	async getComment(@Param('id') commentId: string, @UserFromReq() userId: string | false) {
-		const comment = await this.commentsService.findCommentById(commentId, userId);
+		const comment = await this.commentsQueryRepository.findCommentById(commentId, userId);
 		if (comment) {
 			return comment;
 		}
@@ -31,13 +31,13 @@ export class CommentsController {
 
 	@UseGuards(JwtBearerGuard)
 	@Put(':id')
-	@HttpCode(204)
+	@HttpCode(HttpStatus.NO_CONTENT)
 	async updateComment(
 		@Param('id') commentId: string,
 		@UserFromReq() userId: string | false,
 		@Body() contentInputModel: contentInputDto
 	) {
-		const comment = await this.commentsService.findCommentById(commentId, userId);
+		const comment = await this.commentsQueryRepository.findCommentById(commentId, userId);
 		if (!comment) {
 			return exceptionHandler(StatusCode.NotFound, commentNotFound, commentIdField);
 		}
@@ -50,13 +50,13 @@ export class CommentsController {
 
 	@UseGuards(JwtBearerGuard)
 	@Put(':commentId/like-status')
-	@HttpCode(204)
+	@HttpCode(HttpStatus.NO_CONTENT)
 	async updateLikeStatus(
 		@Param('commentId') commentId: string,
 		@UserFromReq() userId: string,
 		@Body() inputModel: likeInputDto
 	) {
-		const comment = await this.commentsService.findCommentById(commentId, userId);
+		const comment = await this.commentsQueryRepository.findCommentById(commentId, userId);
 
 		if (!comment) {
 			return exceptionHandler(StatusCode.NotFound, commentNotFound, commentIdField);
@@ -88,9 +88,9 @@ export class CommentsController {
 
 	@UseGuards(JwtBearerGuard)
 	@Delete(':id')
-	@HttpCode(204)
+	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteComment(@Param('id') commentId: string, @UserFromReq() userId: string | false) {
-		const comment = await this.commentsService.findCommentById(commentId, userId);
+		const comment = await this.commentsQueryRepository.findCommentById(commentId, userId);
 		if (!comment) {
 			return exceptionHandler(StatusCode.NotFound, commentNotFound, commentIdField);
 		}

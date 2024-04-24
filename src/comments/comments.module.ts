@@ -15,6 +15,7 @@ import { User, UserSchema } from '../users/user.entity';
 import { LikesService } from '../likes/likes.service';
 import { PostLikesRepository } from '../likes/post.likes.repository';
 import { JwtBearerStrategy } from '../auth/passport/strategies/jwt-bearer.strategy';
+import { CqrsModule } from '@nestjs/cqrs';
 
 const strategies = [JwtBearerStrategy];
 const services = [CommentsService, LikesService];
@@ -36,6 +37,7 @@ const adapters = [
 		MongooseModule.forFeature([{ name: PostLike.name, schema: PostLikeSchema }]),
 		MongooseModule.forFeature([{ name: Comment.name, schema: CommentSchema }]),
 		MongooseModule.forFeature([{ name: CommentLike.name, schema: CommentLikeSchema }]),
+		CqrsModule,
 	],
 	controllers: [CommentsController],
 	providers: [...services, ...adapters, ...strategies],
