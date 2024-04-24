@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Device, DeviceSchema } from './device.entity';
 import { DevicesController } from './devices.controller';
 import { DevicesService } from './devices.service';
 import { DevicesRepository } from './devices.repository';
@@ -19,13 +17,7 @@ const adapters = [DevicesRepository, DevicesQueryRepository];
 const useCases = [RefreshTokenValidationUseCase, AccessTokenValidationUseCase];
 
 @Module({
-	imports: [
-		ConfigModule.forRoot(),
-		MongooseModule.forRoot(process.env.MONGO_URL),
-		MongooseModule.forFeature([{ name: Device.name, schema: DeviceSchema }]),
-		PassportModule,
-		CqrsModule,
-	],
+	imports: [ConfigModule.forRoot(), PassportModule, CqrsModule],
 	controllers: [DevicesController],
 	providers: [...services, ...adapters, ...strategies, ...useCases],
 })
