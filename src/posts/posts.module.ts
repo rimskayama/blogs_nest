@@ -14,7 +14,6 @@ import { JwtBearerStrategy } from '../auth/passport/strategies/jwt-bearer.strate
 import { JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { UserAuthStrategy } from '../auth/passport/strategies/userId.strategy';
-import { blogDoesNotExistRule } from '../auth/authentification';
 import { CqrsModule } from '@nestjs/cqrs';
 
 const strategies = [JwtBearerStrategy, UserAuthStrategy];
@@ -28,11 +27,10 @@ const adapters = [
 	PostLikesRepository,
 	CommentLikesRepository,
 ];
-const validators = [blogDoesNotExistRule];
 
 @Module({
 	imports: [ConfigModule.forRoot(), PassportModule, CqrsModule],
 	controllers: [PostsController],
-	providers: [...services, ...adapters, ...strategies, ...validators],
+	providers: [...services, ...adapters, ...strategies],
 })
 export class PostsModule {}
