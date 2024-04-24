@@ -1,4 +1,4 @@
-import { Controller, Delete, HttpCode } from '@nestjs/common';
+import { Controller, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
@@ -7,11 +7,16 @@ export class TestingController {
 	constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
 	@Delete('all-data')
-	@HttpCode(204)
+	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteAll() {
-		await this.dataSource.query(
-			`DELETE FROM public."Users";
-			DELETE FROM public."Devices"`
-		);
+		await this.dataSource.query(`
+		DELETE FROM public."CommentLikes";
+		DELETE FROM public."PostLikes";
+		DELETE FROM public."Comments";
+		DELETE FROM public."Posts";
+		DELETE FROM public."Devices";
+		DELETE FROM public."Users";
+		DELETE FROM public."Blogs";
+		`);
 	}
 }

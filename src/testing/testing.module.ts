@@ -5,8 +5,6 @@ import { TestingController } from './testing.controller';
 import { BlogsService } from '../blogs/blogs.service';
 import { BlogsRepository } from '../blogs/blogs.repository';
 import { BlogsQueryRepository } from '../blogs/blogs.query.repository';
-import { PostsService } from '../posts/posts.service';
-import { PostsRepository } from '../posts/posts.repository';
 import { PostsQueryRepository } from '../posts/posts.query.repository';
 import { UsersService } from '../users/users.service';
 import { UsersRepository } from '../users/users.repository';
@@ -30,8 +28,6 @@ import { User, UserSchema } from '../users/user.entity';
 		BlogsService,
 		BlogsRepository,
 		BlogsQueryRepository,
-		PostsService,
-		PostsRepository,
 		PostsQueryRepository,
 		UsersService,
 		UsersRepository,
