@@ -1,7 +1,6 @@
 import { ConfigModule } from '@nestjs/config';
 export const configModule = ConfigModule.forRoot();
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 import { BlogsModule } from './blogs/blogs.module';
 import { PostsModule } from './posts/posts.module';
 import { UsersModule } from './users/users.module';
@@ -20,7 +19,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 @Module({
 	imports: [
 		configModule,
-		MongooseModule.forRoot(process.env.MONGO_URL),
 		TypeOrmModule.forRoot({
 			type: 'postgres',
 			host: 'localhost',
