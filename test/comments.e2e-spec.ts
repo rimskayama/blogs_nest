@@ -1,5 +1,5 @@
 import { Test, type TestingModule } from '@nestjs/testing';
-import { type INestApplication } from '@nestjs/common';
+import { HttpStatus, type INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { appSettings } from '../src/app.settings';
@@ -35,15 +35,15 @@ describe('CommentsController (e2e)', () => {
 			websiteUrl: 'https://www.base64encode.org/',
 		};
 		const createResponse = await request(httpServer)
-			.post('/blogs')
+			.post('/sa/blogs')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.send(data)
-			.expect(201);
+			.expect(HttpStatus.CREATED);
 
 		createdBlog1 = createResponse.body;
 		//console.log(createdBlog1);
 
-		await request(httpServer).get('/blogs').expect(200);
+		await request(httpServer).get('/blogs').expect(HttpStatus.OK);
 	});
 
 	let createdPost1: any = { id: 0 };
@@ -57,16 +57,16 @@ describe('CommentsController (e2e)', () => {
 			shortDescription: 'short Description',
 		};
 		const createResponse = await request(httpServer)
-			.post('/blogs/' + createdBlog1.id + '/posts')
+			.post('/sa/blogs/' + createdBlog1.id + '/posts')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.send(data)
-			.expect(201);
+			.expect(HttpStatus.CREATED);
 
 		createdPost1 = createResponse.body;
 
 		const b = await request(httpServer)
 			.get('/blogs/' + createdBlog1.id + '/posts')
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		//console.log(b.body, 'list of posts for specific blog')
 
@@ -100,7 +100,7 @@ describe('CommentsController (e2e)', () => {
 	it('should return comments for specific post', async () => {
 		await request(httpServer)
 			.get('/posts/' + createdPost1.id + '/comments')
-			.expect(200, {
+			.expect(HttpStatus.OK, {
 				pagesCount: 0,
 				page: 1,
 				pageSize: 10,
@@ -119,15 +119,18 @@ describe('CommentsController (e2e)', () => {
 		};
 
 		const createResponse = await request(httpServer)
-			.post('/users')
+			.post('/sa/users')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.send(data)
-			.expect(201);
+			.expect(HttpStatus.CREATED);
 
 		createdUser1 = createResponse.body;
 		//console.log(createdUser1)
 
-		const b = await request(httpServer).get('/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').expect(200);
+		const b = await request(httpServer)
+			.get('/sa/users')
+			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
+			.expect(HttpStatus.OK);
 
 		//console.log(b.body, 'list of users')
 
@@ -156,7 +159,7 @@ describe('CommentsController (e2e)', () => {
 			loginOrEmail: 'login1',
 		};
 
-		const createResponse = await request(httpServer).post('/auth/login').send(data).expect(200);
+		const createResponse = await request(httpServer).post('/auth/login').send(data).expect(HttpStatus.OK);
 
 		accessToken = createResponse.body.accessToken;
 	});
@@ -175,7 +178,7 @@ describe('CommentsController (e2e)', () => {
 			.set('Authorization', `Bearer ${accessToken}`)
 			.send({ accessToken: '123' })
 			.send(data)
-			.expect(400, {
+			.expect(HttpStatus.BAD_REQUEST, {
 				errorsMessages: [
 					{
 						message: 'content must be longer than or equal to 20 characters',
@@ -186,7 +189,7 @@ describe('CommentsController (e2e)', () => {
 
 		await request(httpServer)
 			.get('/posts/' + createdPost1.id + '/comments')
-			.expect(200, {
+			.expect(HttpStatus.OK, {
 				pagesCount: 0,
 				page: 1,
 				pageSize: 10,
@@ -201,7 +204,7 @@ describe('CommentsController (e2e)', () => {
 		await request(httpServer)
 			.get('/comments/6413437e44902b9011d0b316')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
-			.expect(404);
+			.expect(HttpStatus.NOT_FOUND);
 	});
 
 	//POST posts/:postId/comments
@@ -220,14 +223,14 @@ describe('CommentsController (e2e)', () => {
 			.post('/posts/' + createdPost1.id + '/comments')
 			.set('Authorization', `Bearer ${accessToken}`)
 			.send(data)
-			.expect(201);
+			.expect(HttpStatus.CREATED);
 
 		createdComment1 = createResponse.body;
 		//console.log(createdComment1)
 
 		const b = await request(httpServer)
 			.get('/posts/' + createdPost1.id + '/comments')
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		expect(b.body).toEqual({
 			pagesCount: 1,
@@ -258,7 +261,7 @@ describe('CommentsController (e2e)', () => {
 	it('should return comment by ID', async () => {
 		const b = await request(httpServer)
 			.get('/comments/' + createdComment1.id)
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		expect(b.body).toEqual({
 			id: createdComment1.id,
@@ -286,7 +289,7 @@ describe('CommentsController (e2e)', () => {
 			.put('/comments/' + '642681e8ad245fa9580960f8')
 			.set('Authorization', `Bearer ${accessToken}`)
 			.send(data)
-			.expect(404);
+			.expect(HttpStatus.NOT_FOUND);
 	});
 
 	it('should NOT update comment with short content', async () => {
@@ -298,7 +301,7 @@ describe('CommentsController (e2e)', () => {
 			.put('/comments/' + createdComment1.id)
 			.set('Authorization', `Bearer ${accessToken}`)
 			.send(data)
-			.expect(400, {
+			.expect(HttpStatus.BAD_REQUEST, {
 				errorsMessages: [
 					{
 						message: 'content must be longer than or equal to 20 characters',
@@ -317,11 +320,11 @@ describe('CommentsController (e2e)', () => {
 			.put('/comments/' + createdComment1.id)
 			.set('Authorization', `Bearer ${accessToken}`)
 			.send(data)
-			.expect(204);
+			.expect(HttpStatus.NO_CONTENT);
 
 		const b = await request(httpServer)
 			.get('/comments/' + createdComment1.id)
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		expect(b.body).toEqual({
 			id: createdComment1.id,
@@ -345,7 +348,7 @@ describe('CommentsController (e2e)', () => {
 	it('should return status None without authorization', async () => {
 		const b = await request(httpServer)
 			.get('/comments/' + createdComment1.id)
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		expect(b.body).toEqual({
 			id: createdComment1.id,
@@ -371,12 +374,12 @@ describe('CommentsController (e2e)', () => {
 			.put('/comments/' + createdComment1.id + '/like-status')
 			.set('Authorization', `Bearer ${accessToken}`)
 			.send(data)
-			.expect(204);
+			.expect(HttpStatus.NO_CONTENT);
 
 		const b = await request(httpServer)
 			.get('/comments/' + createdComment1.id)
 			.set('Authorization', `Bearer ${accessToken}`)
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		expect(b.body).toEqual({
 			id: createdComment1.id,
@@ -402,12 +405,12 @@ describe('CommentsController (e2e)', () => {
 			.put('/comments/' + createdComment1.id + '/like-status')
 			.set('Authorization', `Bearer ${accessToken}`)
 			.send(data)
-			.expect(204);
+			.expect(HttpStatus.NO_CONTENT);
 
 		const b = await request(httpServer)
 			.get('/comments/' + createdComment1.id)
 			.set('Authorization', `Bearer ${accessToken}`)
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		expect(b.body).toEqual({
 			id: createdComment1.id,
@@ -433,12 +436,12 @@ describe('CommentsController (e2e)', () => {
 			.put('/comments/' + createdComment1.id + '/like-status')
 			.set('Authorization', `Bearer ${accessToken}`)
 			.send(data)
-			.expect(204);
+			.expect(HttpStatus.NO_CONTENT);
 
 		const b = await request(httpServer)
 			.get('/comments/' + createdComment1.id)
 			.set('Authorization', `Bearer ${accessToken}`)
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		expect(b.body).toEqual({
 			id: createdComment1.id,
@@ -461,15 +464,15 @@ describe('CommentsController (e2e)', () => {
 		await request(httpServer)
 			.delete('/comments/' + createdComment1.id)
 			.set('Authorization', `Bearer ${accessToken}`)
-			.expect(204);
+			.expect(HttpStatus.NO_CONTENT);
 
 		await request(httpServer)
 			.get('/comments/' + createdComment1.id)
-			.expect(404);
+			.expect(HttpStatus.NOT_FOUND);
 
 		await request(httpServer)
 			.get('/posts/' + createdPost1.id + '/comments')
-			.expect(200, {
+			.expect(HttpStatus.OK, {
 				pagesCount: 0,
 				page: 1,
 				pageSize: 10,
@@ -482,10 +485,10 @@ describe('CommentsController (e2e)', () => {
 		await request(httpServer)
 			.delete('/comments/' + createdComment1.id)
 			.set('Authorization', `Bearer ${accessToken}`)
-			.expect(404);
+			.expect(HttpStatus.NOT_FOUND);
 
 		await request(httpServer)
 			.get('/comments/' + createdComment1.id)
-			.expect(404);
+			.expect(HttpStatus.NOT_FOUND);
 	});
 });

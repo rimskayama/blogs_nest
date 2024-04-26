@@ -39,7 +39,7 @@ describe('UsersController (e2e)', () => {
 		await request(httpServer)
 			.get('/sa/users/6413437e44902b9011d0b316')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
-			.expect(404);
+			.expect(HttpStatus.NOT_FOUND);
 	});
 
 	// POST
@@ -52,9 +52,13 @@ describe('UsersController (e2e)', () => {
 			password: 'string',
 			email: 'asdfg@gmail.com',
 		};
-		await request(httpServer).post('/sa/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').send(data).expect(400);
+		await request(httpServer)
+			.post('/sa/users')
+			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
+			.send(data)
+			.expect(HttpStatus.BAD_REQUEST);
 
-		await request(httpServer).get('/sa/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').expect(200, {
+		await request(httpServer).get('/sa/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').expect(HttpStatus.OK, {
 			pagesCount: 0,
 			page: 1,
 			pageSize: 10,
@@ -73,11 +77,14 @@ describe('UsersController (e2e)', () => {
 			.post('/sa/users')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.send(data)
-			.expect(201);
+			.expect(HttpStatus.CREATED);
 
 		createdUser1 = createResponse.body;
 
-		const b = await request(httpServer).get('/sa/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').expect(200);
+		const b = await request(httpServer)
+			.get('/sa/users')
+			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
+			.expect(HttpStatus.OK);
 
 		expect(b.body).toEqual({
 			pagesCount: 1,
@@ -101,21 +108,21 @@ describe('UsersController (e2e)', () => {
 		await request(httpServer)
 			.delete('/sa/users/' + '6426b691b5ac688d25825932')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
-			.expect(404);
+			.expect(HttpStatus.NOT_FOUND);
 	});
 
 	it('should delete user', async () => {
 		await request(httpServer)
 			.delete('/sa/users/' + createdUser1.id)
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
-			.expect(204);
+			.expect(HttpStatus.NO_CONTENT);
 
 		await request(httpServer)
 			.get('/sa/users/' + createdUser1.id)
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
-			.expect(404);
+			.expect(HttpStatus.NOT_FOUND);
 
-		await request(httpServer).get('/sa/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').expect(200, {
+		await request(httpServer).get('/sa/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').expect(HttpStatus.OK, {
 			pagesCount: 0,
 			page: 1,
 			pageSize: 10,

@@ -39,7 +39,7 @@ describe('PostsController (e2e)', () => {
 		await request(httpServer)
 			.get('/posts/6413437e44902b9011d0b316')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
-			.expect(404);
+			.expect(HttpStatus.NOT_FOUND);
 	});
 
 	//POST
@@ -53,15 +53,15 @@ describe('PostsController (e2e)', () => {
 			websiteUrl: 'https://www.base64encode.org/',
 		};
 		const createResponse = await request(httpServer)
-			.post('/blogs')
+			.post('/sa/blogs')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.send(data)
-			.expect(201);
+			.expect(HttpStatus.CREATED);
 
 		createdBlog1 = createResponse.body;
 		//console.log(createdBlog1);
 
-		await request(httpServer).get('/blogs').expect(200);
+		await request(httpServer).get('/blogs').expect(HttpStatus.OK);
 	});
 
 	//GET blogs/:blogId/posts
@@ -90,16 +90,16 @@ describe('PostsController (e2e)', () => {
 			shortDescription: 'short Description',
 		};
 		const createResponse = await request(httpServer)
-			.post('/blogs/' + createdBlog1.id + '/posts')
+			.post('/sa/blogs/' + createdBlog1.id + '/posts')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.send(data)
-			.expect(201);
+			.expect(HttpStatus.CREATED);
 
 		createdPost1 = createResponse.body;
 
 		const b = await request(httpServer)
 			.get('/blogs/' + createdBlog1.id + '/posts')
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		//console.log(b.body, 'list of posts for specific blog')
 
@@ -132,15 +132,15 @@ describe('PostsController (e2e)', () => {
 
 	it('should delete post', async () => {
 		await request(httpServer)
-			.delete('/posts/' + createdPost1.id)
+			.delete('/sa/blogs/' + createdBlog1.id + '/posts/' + createdPost1.id)
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
-			.expect(204);
+			.expect(HttpStatus.NO_CONTENT);
 
 		await request(httpServer)
 			.get('/posts/' + createdPost1.id)
-			.expect(404);
+			.expect(HttpStatus.NOT_FOUND);
 
-		await request(httpServer).get('/posts').expect(200, {
+		await request(httpServer).get('/posts').expect(HttpStatus.OK, {
 			pagesCount: 0,
 			page: 1,
 			pageSize: 10,
@@ -153,15 +153,18 @@ describe('PostsController (e2e)', () => {
 
 	let createdPost2: any = { id: 0 };
 
-	it('should NOT create post without ID', async () => {
+	it('should NOT create post without title', async () => {
 		const data = {
-			title: 'post title',
 			content: 'post content',
 			shortDescription: 'short Description',
 		};
-		await request(httpServer).post('/posts').set('Authorization', 'Basic YWRtaW46cXdlcnR5').send(data).expect(400);
+		await request(httpServer)
+			.post('/sa/blogs/' + createdBlog1.id + '/posts')
+			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
+			.send(data)
+			.expect(HttpStatus.BAD_REQUEST);
 
-		await request(httpServer).get('/posts').expect(200, {
+		await request(httpServer).get('/posts').expect(HttpStatus.OK, {
 			pagesCount: 0,
 			page: 1,
 			pageSize: 10,
@@ -178,15 +181,15 @@ describe('PostsController (e2e)', () => {
 			shortDescription: 'short Description',
 		};
 		const createResponse = await request(httpServer)
-			.post('/posts')
+			.post('/sa/blogs/' + createdBlog1.id + '/posts')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.send(data)
-			.expect(201);
+			.expect(HttpStatus.CREATED);
 
 		createdPost2 = createResponse.body;
 		//console.log(createdPost1);
 
-		const b = await request(httpServer).get('/posts').expect(200);
+		const b = await request(httpServer).get('/posts').expect(HttpStatus.OK);
 
 		//console.log(b.body, 'list of posts')
 
@@ -225,10 +228,10 @@ describe('PostsController (e2e)', () => {
 			shortDescription: 'new short Description',
 		};
 		await request(httpServer)
-			.put('/posts/' + '642681e8ad245fa9580960f8')
+			.put('/sa/blogs/' + createdBlog1.id + '/posts/' + '642681e8ad245fa9580960f8')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.send(data)
-			.expect(404);
+			.expect(HttpStatus.NOT_FOUND);
 	});
 
 	it('should NOT update post with incorrect title', async () => {
@@ -241,10 +244,10 @@ describe('PostsController (e2e)', () => {
 		};
 
 		await request(httpServer)
-			.put('/posts/' + createdPost2.id)
+			.put('/sa/blogs/' + createdBlog1.id + '/posts/' + createdPost2.id)
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.send(data)
-			.expect(400, {
+			.expect(HttpStatus.BAD_REQUEST, {
 				errorsMessages: [
 					{
 						message: 'title must be shorter than or equal to 30 characters',
@@ -264,14 +267,14 @@ describe('PostsController (e2e)', () => {
 		};
 
 		await request(httpServer)
-			.put('/posts/' + createdPost2.id)
+			.put('/sa/blogs/' + createdBlog1.id + '/posts/' + createdPost2.id)
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.send(data)
-			.expect(204);
+			.expect(HttpStatus.NO_CONTENT);
 
 		const b = await request(httpServer)
 			.get('/posts/' + createdPost2.id)
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		createdPost2 = b.body;
 
@@ -304,14 +307,17 @@ describe('PostsController (e2e)', () => {
 		};
 
 		const createResponse = await request(httpServer)
-			.post('/users')
+			.post('/sa/users')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.send(data)
-			.expect(201);
+			.expect(HttpStatus.CREATED);
 
 		createdUser1 = createResponse.body;
 
-		const b = await request(httpServer).get('/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').expect(200);
+		const b = await request(httpServer)
+			.get('/sa/users')
+			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
+			.expect(HttpStatus.OK);
 
 		expect(b.body).toEqual({
 			pagesCount: 1,
@@ -339,14 +345,17 @@ describe('PostsController (e2e)', () => {
 		};
 
 		const createResponse = await request(httpServer)
-			.post('/users')
+			.post('/sa/users')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.send(data)
-			.expect(201);
+			.expect(HttpStatus.CREATED);
 
 		createdUser2 = createResponse.body;
 
-		const b = await request(httpServer).get('/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').expect(200);
+		const b = await request(httpServer)
+			.get('/sa/users')
+			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
+			.expect(HttpStatus.OK);
 
 		expect(b.body).toEqual({
 			pagesCount: 1,
@@ -379,7 +388,7 @@ describe('PostsController (e2e)', () => {
 			loginOrEmail: 'login1',
 		};
 
-		const createResponse = await request(httpServer).post('/auth/login').send(data).expect(200);
+		const createResponse = await request(httpServer).post('/auth/login').send(data).expect(HttpStatus.OK);
 
 		accessToken = createResponse.body.accessToken;
 	});
@@ -387,7 +396,7 @@ describe('PostsController (e2e)', () => {
 	it('should return status None without authorization', async () => {
 		const b = await request(httpServer)
 			.get('/posts/' + createdPost2.id)
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		expect(b.body).toEqual({
 			id: expect.any(String),
@@ -415,7 +424,7 @@ describe('PostsController (e2e)', () => {
 			loginOrEmail: 'login2',
 		};
 
-		const createResponse = await request(httpServer).post('/auth/login').send(data).expect(200);
+		const createResponse = await request(httpServer).post('/auth/login').send(data).expect(HttpStatus.OK);
 
 		accessToken2 = createResponse.body.accessToken;
 	});
@@ -430,12 +439,12 @@ describe('PostsController (e2e)', () => {
 			.put('/posts/' + createdPost2.id + '/like-status')
 			.set('Authorization', `Bearer ${accessToken}`)
 			.send(data)
-			.expect(204);
+			.expect(HttpStatus.NO_CONTENT);
 
 		const b = await request(httpServer)
 			.get('/posts/' + createdPost2.id)
 			.set('Authorization', `Bearer ${accessToken}`)
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		expect(b.body).toEqual({
 			id: expect.any(String),
@@ -462,12 +471,12 @@ describe('PostsController (e2e)', () => {
 			.put('/posts/' + createdPost2.id + '/like-status')
 			.set('Authorization', `Bearer ${accessToken}`)
 			.send(data)
-			.expect(204);
+			.expect(HttpStatus.NO_CONTENT);
 
 		const b = await request(httpServer)
 			.get('/posts/' + createdPost2.id)
 			.set('Authorization', `Bearer ${accessToken}`)
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		expect(b.body).toEqual({
 			id: expect.any(String),
@@ -500,12 +509,12 @@ describe('PostsController (e2e)', () => {
 			.put('/posts/' + createdPost2.id + '/like-status')
 			.set('Authorization', `Bearer ${accessToken2}`)
 			.send(data)
-			.expect(204);
+			.expect(HttpStatus.NO_CONTENT);
 
 		const b = await request(httpServer)
 			.get('/posts/' + createdPost2.id)
 			.set('Authorization', `Bearer ${accessToken2}`)
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		expect(b.body).toEqual({
 			id: expect.any(String),
@@ -541,7 +550,7 @@ describe('PostsController (e2e)', () => {
 		const createResponse = await request(httpServer)
 			.get('/posts')
 			.set('Authorization', `Bearer ${accessToken2}`)
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		const allPosts = createResponse.body;
 		expect(allPosts).toEqual({
@@ -579,23 +588,24 @@ describe('PostsController (e2e)', () => {
 			],
 		});
 
-		// const newestLikes = createResponse.body.items[0].extendedLikesInfo
-		//     expect(newestLikes).toEqual( {
-		//         dislikesCount: 0,
-		//         likesCount: 2,
-		//         myStatus: "Like",
-		//         newestLikes: [
-		//             {
-		//             addedAt: expect.any(String),
-		//             userId: createdUser2.id,
-		//             login: createdUser2.login
-		//         },
-		//         {
-		//             addedAt: expect.any(String),
-		//             userId: createdUser1.id,
-		//             login: createdUser1.login
-		//         }]
-		//     })
+		const newestLikes = createResponse.body.items[0].extendedLikesInfo;
+		expect(newestLikes).toEqual({
+			dislikesCount: 0,
+			likesCount: 2,
+			myStatus: 'Like',
+			newestLikes: [
+				{
+					addedAt: expect.any(String),
+					userId: createdUser2.id,
+					login: createdUser2.login,
+				},
+				{
+					addedAt: expect.any(String),
+					userId: createdUser1.id,
+					login: createdUser1.login,
+				},
+			],
+		});
 	});
 
 	it('should set like status, None', async () => {
@@ -606,12 +616,12 @@ describe('PostsController (e2e)', () => {
 			.put('/posts/' + createdPost2.id + '/like-status')
 			.set('Authorization', `Bearer ${accessToken}`)
 			.send(data)
-			.expect(204);
+			.expect(HttpStatus.NO_CONTENT);
 
 		const b = await request(httpServer)
 			.get('/posts/' + createdPost2.id)
 			.set('Authorization', `Bearer ${accessToken}`)
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		expect(b.body).toEqual({
 			id: expect.any(String),

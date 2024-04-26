@@ -24,19 +24,22 @@ describe('AuthController (e2e)', () => {
 		await request(httpServer).delete('/testing/all-data');
 	});
 
-	let createdUser1: any = { id: 0 };
+	let createdUser1: any = { id: '0' };
 	it('should create user with confirmed email', async () => {
 		const data = { password: 'qwerty1', email: 'rimskayama@outlook.com', login: 'login1' };
 
 		const createResponse = await request(httpServer)
-			.post('/users')
+			.post('/sa/users')
 			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
 			.send(data)
 			.expect(HttpStatus.CREATED);
 
 		createdUser1 = createResponse.body;
 
-		const b = await request(httpServer).get('/users').set('Authorization', 'Basic YWRtaW46cXdlcnR5').expect(200);
+		const b = await request(httpServer)
+			.get('/sa/users')
+			.set('Authorization', 'Basic YWRtaW46cXdlcnR5')
+			.expect(HttpStatus.OK);
 
 		expect(b.body).toEqual({
 			pagesCount: 1,
@@ -62,7 +65,7 @@ describe('AuthController (e2e)', () => {
 	it('should login user', async () => {
 		const data = { password: 'qwerty1', loginOrEmail: 'login1' };
 
-		const createResponse = await request(httpServer).post('/auth/login').send(data).expect(200);
+		const createResponse = await request(httpServer).post('/auth/login').send(data).expect(HttpStatus.OK);
 
 		accessToken = createResponse.body.accessToken;
 		refreshToken = createResponse.headers['set-cookie'][0];
@@ -73,7 +76,7 @@ describe('AuthController (e2e)', () => {
 			.get('/auth/me')
 			.set('Cookie', refreshToken)
 			.set('Authorization', `Bearer ${accessToken}`)
-			.expect(200, {
+			.expect(HttpStatus.OK, {
 				userId: createdUser1.id,
 				login: 'login1',
 				email: 'rimskayama@outlook.com',
@@ -84,26 +87,21 @@ describe('AuthController (e2e)', () => {
 		const createResponse = await request(httpServer)
 			.post('/auth/refresh-token')
 			.set('Cookie', refreshToken)
-			.expect(200);
+			.expect(HttpStatus.OK);
 
 		refreshToken = createResponse.headers['set-cookie'][0];
 		accessToken = createResponse.body.accessToken;
 
-		await request(httpServer)
-			.get('/auth/me')
-			.set('Authorization', `Bearer ${accessToken}`)
-			.set('Cookie', refreshToken)
-			.expect(200);
+		await request(httpServer).get('/auth/me').set('Authorization', `Bearer ${accessToken}`).expect(HttpStatus.OK);
 	});
 
 	it('should logout user', async () => {
-		await request(httpServer).post('/auth/logout').set('Cookie', refreshToken).expect(204);
+		await request(httpServer).post('/auth/logout').set('Cookie', refreshToken).expect(HttpStatus.NO_CONTENT);
 
 		await request(httpServer)
 			.get('/auth/me')
-			.set('Cookie', refreshToken)
 			.set('Authorization', `Bearer ${accessToken}`)
-			.expect(401);
+			.expect(HttpStatus.UNAUTHORIZED);
 	});
 
 	//registration of user 2
@@ -112,7 +110,10 @@ describe('AuthController (e2e)', () => {
 	it('should register the user', async () => {
 		const data = { login: 'login', password: 'qwertyyy', email: 'rimskaya.mary@yandex.ru' };
 
-		const createResponse = await request(httpServer).post('/auth/registration/').send(data).expect(204);
+		const createResponse = await request(httpServer)
+			.post('/auth/registration/')
+			.send(data)
+			.expect(HttpStatus.NO_CONTENT);
 		createdUser2 = createResponse.body;
 	});
 
@@ -121,7 +122,7 @@ describe('AuthController (e2e)', () => {
 		await request(httpServer)
 			.post('/auth/registration')
 			.send(data)
-			.expect(400, {
+			.expect(HttpStatus.BAD_REQUEST, {
 				errorsMessages: [
 					{ message: 'User with that login already exists', field: 'login' },
 					{ message: 'User with that email already exists', field: 'email' },
@@ -129,11 +130,11 @@ describe('AuthController (e2e)', () => {
 			});
 	});
 
-	it('should send confirmation mail', async () => {
+	it(`should not let resend confirmation mail is user doesn't exist`, async () => {
 		const data = {
 			email: 'useremail@outlook.com',
 		};
-		await request(httpServer).post('/auth/registration-email-resending').send(data).expect(204);
+		await request(httpServer).post('/auth/registration-email-resending').send(data).expect(HttpStatus.BAD_REQUEST);
 	});
 
 	it('should not let user resend mail if email is already confirmed', async () => {
@@ -143,7 +144,7 @@ describe('AuthController (e2e)', () => {
 		await request(httpServer)
 			.post('/auth/registration-email-resending')
 			.send(data)
-			.expect(400, {
+			.expect(HttpStatus.BAD_REQUEST, {
 				errorsMessages: [
 					{
 						message: 'Your email was already confirmed',
