@@ -2,21 +2,24 @@ import { UsersService } from './users.service';
 import { UsersQueryRepository } from './users.query.repository';
 import { getPagination } from '../utils/pagination';
 import { UserInputDto, QueryParameters } from './users.types';
-import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { exceptionHandler } from '../exceptions/exception.handler';
 import { StatusCode, userIdField, userNotFound } from '../exceptions/exception.constants';
 import { BasicAuthGuard } from '../auth/passport/guards/basic-auth.guard';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreateUserCommand } from './use-cases/create-user.use-case';
 
 @Controller('sa/users')
 export class SuperAdminUsersController {
 	constructor(
-		@Inject(UsersService) protected usersService: UsersService,
-		@Inject(UsersQueryRepository) protected usersQueryRepository: UsersQueryRepository
+		private commandBus: CommandBus,
+		private readonly usersService: UsersService,
+		private readonly usersQueryRepository: UsersQueryRepository
 	) {}
 
 	@UseGuards(BasicAuthGuard)
 	@Get()
-	@HttpCode(200)
+	@HttpCode(HttpStatus.OK)
 	async getUsers(@Query() query: QueryParameters) {
 		const { page, limit, sortDirection, sortBy, searchLoginTerm, searchEmailTerm, skip } = getPagination(query);
 		const result = await this.usersQueryRepository.findUsers(
@@ -33,7 +36,7 @@ export class SuperAdminUsersController {
 
 	@UseGuards(BasicAuthGuard)
 	@Get(':id')
-	@HttpCode(200)
+	@HttpCode(HttpStatus.OK)
 	async getUser(@Param('id') userId: string) {
 		const result = await this.usersQueryRepository.findUserById(userId);
 		if (result) return result;
@@ -42,15 +45,15 @@ export class SuperAdminUsersController {
 
 	@UseGuards(BasicAuthGuard)
 	@Post()
-	@HttpCode(201)
+	@HttpCode(HttpStatus.CREATED)
 	async createUser(@Body() inputModel: UserInputDto) {
-		const result = await this.usersService.createUser(inputModel);
+		const result = await this.commandBus.execute(new CreateUserCommand(inputModel));
 		return result;
 	}
 
 	@UseGuards(BasicAuthGuard)
 	@Delete(':id')
-	@HttpCode(204)
+	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteUser(@Param('id') userId: string) {
 		const result = await this.usersService.deleteUser(userId);
 		if (result) return;
