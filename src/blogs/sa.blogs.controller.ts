@@ -20,10 +20,14 @@ import {
 import { BasicAuthGuard } from '../auth/passport/guards/basic-auth.guard';
 import { QueryParameters } from '../users/users.types';
 import { getPagination } from '../utils/pagination';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreateBlogCommand } from './use-cases/create-blog.use-case';
+import { CreatePostCommand } from './use-cases/create-post.use-case';
 
 @Controller('sa/blogs')
 export class SuperAdminBlogsController {
 	constructor(
+		private commandBus: CommandBus,
 		private readonly blogsService: BlogsService,
 		private readonly blogsQueryRepository: BlogsQueryRepository
 	) {}
@@ -51,7 +55,7 @@ export class SuperAdminBlogsController {
 	@Post()
 	@HttpCode(HttpStatus.CREATED)
 	async createBlog(@Body() inputModel: BlogInputDto) {
-		const result = await this.blogsService.createBlog(inputModel);
+		const result = await this.commandBus.execute(new CreateBlogCommand(inputModel));
 		return result;
 	}
 
@@ -79,7 +83,7 @@ export class SuperAdminBlogsController {
 		const blog = await this.blogsQueryRepository.findBlogById(blogId);
 		if (!blog) return exceptionHandler(StatusCode.NotFound, blogNotFound, blogIdField);
 
-		const result = await this.blogsService.createPostForSpecifiedBlog(inputModel, blogId, blog.name);
+		const result = await this.commandBus.execute(new CreatePostCommand(inputModel, blogId, blog.name));
 		if (result) {
 			return result;
 		} else return exceptionHandler(StatusCode.NotFound, blogNotFound, blogIdField);
