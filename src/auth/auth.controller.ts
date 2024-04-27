@@ -1,15 +1,19 @@
 import { Controller, Post, UseGuards, Request, Get, HttpCode, Body, Res, HttpStatus } from '@nestjs/common';
 import { LocalAuthGuard } from './passport/guards/local-auth.guard';
-import { exceptionHandler } from '../exceptions/exception.handler';
-import { StatusCode, userIdField, userNotFound } from '../exceptions/exception.constants';
 import { UsersQueryRepository } from '../users/users.query.repository';
-import { UserInputDto, confirmationCodeInputDto, emailInputDto, newPasswordInputDto } from '../users/users.types';
+import {
+	UserFromGuard,
+	UserInputDto,
+	confirmationCodeInputDto,
+	emailInputDto,
+	newPasswordInputDto,
+} from '../users/users.types';
 import { DevicesService } from '../devices/devices.service';
 import { Response } from 'express';
 import { JwtBearerGuard } from './passport/guards/jwt-bearer.guard';
 import { JwtRefreshGuard } from './passport/guards/jwt-refresh.guard';
 import { UserFromReq } from './decorators/userId.decorator';
-import { DeviceDetais } from './decorators/device.details.decorator';
+import { DeviceDetails } from './decorators/device.details.decorator';
 import { DeviceIdFromReq } from './decorators/deviceId.decorator';
 import { v4 as uuidv4 } from 'uuid';
 import { CommandBus } from '@nestjs/cqrs';
@@ -19,12 +23,15 @@ import { RegistrationResendEmailCommand } from './use-cases/registration/registr
 import { PasswordRecoveryCommand } from './use-cases/password/password-recovery.use-case';
 import { PasswordUpdateCommand } from './use-cases/password/password-update.use-case';
 import { LoginUserCommand } from './use-cases/login/login-user.use-case';
+import { CreateDeviceCommand } from '../devices/use-cases/create-device.use-case';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { JwtService } from '@nestjs/jwt';
 
 @Controller('auth')
 export class AuthController {
 	constructor(
 		private commandBus: CommandBus,
+		private readonly jwtService: JwtService,
 		private readonly usersQueryRepository: UsersQueryRepository,
 		private readonly devicesService: DevicesService
 	) {}
@@ -40,16 +47,23 @@ export class AuthController {
 	@UseGuards(ThrottlerGuard, LocalAuthGuard)
 	@Post('login')
 	@HttpCode(HttpStatus.OK)
-	async login(@Res() res: Response, @UserFromReq() userId: string, @DeviceDetais() deviceDetais) {
+	async login(@Res() res: Response, @UserFromReq() user: UserFromGuard, @DeviceDetails() deviceDetails) {
 		const deviceId = uuidv4();
-		const result = await this.commandBus.execute(new LoginUserCommand(userId, deviceId));
+		const result = await this.commandBus.execute(new LoginUserCommand(user.id, deviceId));
 
-		await this.devicesService.createNewSession(
-			result.accessToken,
-			result.refreshToken,
-			deviceDetais.deviceName,
-			deviceDetais.ip,
-			userId
+		const decodedAccessToken = this.jwtService.decode(result.accessToken);
+		const decodedRefreshToken = this.jwtService.decode(result.refreshToken);
+
+		await this.commandBus.execute(
+			new CreateDeviceCommand(
+				user.id,
+				deviceDetails.deviceName,
+				deviceDetails.ip,
+				user.login,
+				decodedRefreshToken.iat,
+				decodedRefreshToken.deviceId,
+				decodedAccessToken.exp
+			)
 		);
 
 		return res
@@ -61,26 +75,26 @@ export class AuthController {
 	@UseGuards(JwtBearerGuard)
 	@Get('me')
 	@HttpCode(HttpStatus.OK)
-	async getProfile(@UserFromReq() userId: string) {
-		const user = await this.usersQueryRepository.findUserById(userId);
-
-		if (!user) {
-			return exceptionHandler(StatusCode.NotFound, userNotFound, userIdField);
-		}
+	async getProfile(@UserFromReq() user: UserFromGuard) {
+		const userEmail = (await this.usersQueryRepository.findUserById(user.id)).email;
 
 		return {
-			email: user.email,
+			email: userEmail,
 			login: user.login,
-			userId: userId.toString(),
+			userId: user.id,
 		};
 	}
 
 	@UseGuards(JwtRefreshGuard)
 	@Post('refresh-token')
 	@HttpCode(HttpStatus.OK)
-	async getRefreshToken(@UserFromReq() userId: string, @DeviceIdFromReq() deviceId: string, @Res() res: Response) {
-		const result = await this.commandBus.execute(new LoginUserCommand(userId, deviceId));
-		await this.devicesService.updateLastActiveDate(result.accessToken, result.refreshToken, deviceId);
+	async getRefreshToken(@UserFromReq() user: UserFromGuard, @DeviceIdFromReq() deviceId: string, @Res() res: Response) {
+		const result = await this.commandBus.execute(new LoginUserCommand(user.id, deviceId));
+
+		const decodedAccessToken = this.jwtService.decode(result.accessToken);
+		const decodedRefreshToken = this.jwtService.decode(result.refreshToken);
+		await this.devicesService.updateLastActiveDate(deviceId, decodedRefreshToken.iat, decodedAccessToken.exp);
+
 		return res
 			.cookie('refreshToken', result.refreshToken, { httpOnly: true, secure: true })
 			.status(HttpStatus.OK)

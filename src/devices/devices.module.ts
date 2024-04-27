@@ -10,11 +10,12 @@ import { JwtRefreshTokenStrategy } from '../auth/passport/strategies/jwt-refresh
 import { RefreshTokenValidationUseCase } from '../auth/use-cases/validations/validate-refresh-token.use-case';
 import { CqrsModule } from '@nestjs/cqrs';
 import { AccessTokenValidationUseCase } from '../auth/use-cases/validations/validate-access-token.use-case';
+import { CreateDeviceUseCase } from './use-cases/create-device.use-case';
 
 const strategies = [JwtRefreshTokenStrategy];
 const services = [JwtService, DevicesService];
 const adapters = [DevicesRepository, DevicesQueryRepository];
-const useCases = [RefreshTokenValidationUseCase, AccessTokenValidationUseCase];
+const useCases = [RefreshTokenValidationUseCase, AccessTokenValidationUseCase, CreateDeviceUseCase];
 
 @Module({
 	imports: [ConfigModule.forRoot(), PassportModule, CqrsModule],
