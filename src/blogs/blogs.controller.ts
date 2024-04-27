@@ -1,7 +1,7 @@
 import { getPagination } from '../utils/pagination';
 import { BlogsQueryRepository } from './blogs.query.repository';
 import { PostsQueryRepository } from '../posts/posts.query.repository';
-import { QueryParameters } from '../users/users.types';
+import { QueryParameters, UserFromGuard } from '../users/users.types';
 import { exceptionHandler } from '../exceptions/exception.handler';
 import { Get, HttpCode, Param, Query, UseGuards, Controller, HttpStatus } from '@nestjs/common';
 import { UserFromReq } from '../auth/decorators/userId.decorator';
@@ -38,7 +38,7 @@ export class BlogsController {
 	async getPostsOfBlog(
 		@Param('id') blogId: string,
 		@Query() query: QueryParameters,
-		@UserFromReq() userId: string | false
+		@UserFromReq() user: UserFromGuard
 	) {
 		const blog = await this.blogsQueryRepository.findBlogById(blogId);
 		const { page, limit, sortDirection, sortBy, skip } = getPagination(query);
@@ -51,7 +51,7 @@ export class BlogsController {
 				sortDirection,
 				sortBy,
 				skip,
-				userId
+				user.id
 			);
 			return result;
 		} else return exceptionHandler(StatusCode.NotFound, blogNotFound, blogIdField);

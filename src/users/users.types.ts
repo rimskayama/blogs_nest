@@ -55,6 +55,11 @@ export type UserDto = {
 	createdAt: string;
 };
 
+export class UserFromGuard {
+	id: string;
+	login: string;
+}
+
 export type UsersPaginationDto = {
 	pagesCount: number;
 	page: number;

@@ -1,34 +1,43 @@
-import { Controller, Delete, Get, HttpCode, Param, Request, UnauthorizedException, UseGuards } from '@nestjs/common';
+import {
+	Controller,
+	Delete,
+	Get,
+	HttpCode,
+	HttpStatus,
+	Param,
+	Request,
+	UnauthorizedException,
+	UseGuards,
+} from '@nestjs/common';
 import { DevicesService } from './devices.service';
 import { DevicesQueryRepository } from './devices.query.repository';
 import { exceptionHandler } from '../exceptions/exception.handler';
 import { StatusCode, deviceIdField, deviceNotFound, forbidden } from '../exceptions/exception.constants';
 import { JwtRefreshGuard } from '../auth/passport/guards/jwt-refresh.guard';
 import { UserFromReq } from '../auth/decorators/userId.decorator';
-import { DevicesRepository } from '../devices/devices.repository';
+import { UserFromGuard } from '../users/users.types';
 
 @Controller('security/devices')
 export class DevicesController {
 	constructor(
 		private readonly devicesService: DevicesService,
-		private readonly devicesQueryRepository: DevicesQueryRepository,
-		private readonly devicesRepository: DevicesRepository
+		private readonly devicesQueryRepository: DevicesQueryRepository
 	) {}
 
 	@UseGuards(JwtRefreshGuard)
 	@Get()
-	@HttpCode(200)
-	async getDevices(@Request() req, @UserFromReq() userId: string) {
-		const result = await this.devicesQueryRepository.findDevices(userId);
+	@HttpCode(HttpStatus.OK)
+	async getDevices(@Request() req, @UserFromReq() user: UserFromGuard) {
+		const result = await this.devicesQueryRepository.findDevices(user.id);
 		return result;
 	}
 
 	@UseGuards(JwtRefreshGuard)
 	@Delete()
-	@HttpCode(204)
+	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteAllOthersSessions(@Request() req) {
 		const deviceIdFromRT = req.user.deviceId;
-		const session = await this.devicesRepository.getSessionByDeviceId(deviceIdFromRT);
+		const session = await this.devicesQueryRepository.findDeviceByDeviceId(deviceIdFromRT);
 
 		if (session) {
 			return await this.devicesService.terminateAllSessions(session.userId, session.deviceId);
@@ -37,20 +46,20 @@ export class DevicesController {
 
 	@UseGuards(JwtRefreshGuard)
 	@Delete(':id')
-	@HttpCode(204)
+	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteSession(@Request() req, @Param('id') deviceIdFromReq: string) {
 		//Req
 		if (!deviceIdFromReq) {
 			return exceptionHandler(StatusCode.NotFound, deviceNotFound, deviceIdField);
 		}
-		const userFromReq = await this.devicesRepository.getSessionByDeviceId(deviceIdFromReq);
+		const userFromReq = await this.devicesQueryRepository.findDeviceByDeviceId(deviceIdFromReq);
 		if (!userFromReq) {
 			return exceptionHandler(StatusCode.NotFound, deviceNotFound, deviceIdField);
 		}
 
 		//RT
 		const deviceIdFromRT = req.user.deviceId;
-		const userFromRT = await this.devicesRepository.getSessionByDeviceId(deviceIdFromRT);
+		const userFromRT = await this.devicesQueryRepository.findDeviceByDeviceId(deviceIdFromRT);
 		if (!userFromRT) {
 			return exceptionHandler(StatusCode.NotFound, deviceNotFound, deviceIdField);
 		}

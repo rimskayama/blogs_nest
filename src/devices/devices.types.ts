@@ -14,6 +14,7 @@ export type DeviceDto = {
 
 export class DeviceType {
 	userId: string;
+	userLogin: string;
 	ip: string;
 	title: string;
 	lastActiveDate: number;
