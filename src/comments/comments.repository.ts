@@ -8,7 +8,7 @@ import { commentsMapping } from '../utils/mapping';
 export class CommentsRepository {
 	constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
-	async createComment(comment: commentDto): Promise<CommentViewDto> {
+	async createComment(comment: commentDto): Promise<CommentViewDto | null> {
 		const query = `INSERT INTO public."Comments"(
 			"id", "postId", "content", "createdAt", "commentatorId", "commentatorLogin", "likesCount", "dislikesCount")
         VALUES($1, $2, $3, $4, $5, $6, $7, $8)
@@ -31,6 +31,7 @@ export class CommentsRepository {
 			return commentsMapping(result)[0];
 		} catch (error) {
 			console.error('Error creating comment :', error);
+			return null;
 		}
 	}
 

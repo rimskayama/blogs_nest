@@ -105,4 +105,18 @@ export class CommentLikesRepository {
 			return null;
 		}
 	}
+
+	async updateCommentLikes(commentId: string, likesCount: number, dislikesCount: number) {
+		const query = `
+		UPDATE public."Comments" cl
+		SET "likesCount"=$1, "dislikesCount"=$2
+		WHERE cl."id" = $3;
+    `;
+		try {
+			await this.dataSource.query(query, [likesCount, dislikesCount, commentId]);
+			return true;
+		} catch (error) {
+			console.error('Error updating comment likes:', error);
+		}
+	}
 }
