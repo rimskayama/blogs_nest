@@ -1,4 +1,3 @@
-import { LikesService } from '../likes/likes.service';
 import { CommentsService } from './comments.service';
 import { CommentsQueryRepository } from './comments.query.repository';
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Put, UseGuards } from '@nestjs/common';
@@ -9,20 +8,25 @@ import { exceptionHandler } from '../exceptions/exception.handler';
 import { likeInputDto } from '../likes/likes.types';
 import { contentInputDto } from './comments.types';
 import { UserAuthGuard } from '../auth/passport/guards/userId.guard';
+import { CommandBus } from '@nestjs/cqrs';
+import { CheckCommentLikeStatusCommand } from '../likes/use-cases/comment likes/check-comment-like-status.use-case';
+import { SetCommentLikeStatusCommand } from '../likes/use-cases/comment likes/set-comment-like-status.use-case';
+import { UserFromGuard } from '../users/users.types';
+import { UpdateCommentLikesCommand } from '../likes/use-cases/comment likes/update-comment-likes.use-case';
 
 @Controller('comments')
 export class CommentsController {
 	constructor(
+		private commandBus: CommandBus,
 		private readonly commentsService: CommentsService,
-		private readonly likesService: LikesService,
 		private readonly commentsQueryRepository: CommentsQueryRepository
 	) {}
 
 	@UseGuards(UserAuthGuard)
 	@Get(':id')
 	@HttpCode(HttpStatus.OK)
-	async getComment(@Param('id') commentId: string, @UserFromReq() userId: string | false) {
-		const comment = await this.commentsQueryRepository.findCommentById(commentId, userId);
+	async getComment(@Param('id') commentId: string, @UserFromReq() user: UserFromGuard) {
+		const comment = await this.commentsQueryRepository.findCommentById(commentId, user.id);
 		if (comment) {
 			return comment;
 		}
@@ -34,14 +38,14 @@ export class CommentsController {
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async updateComment(
 		@Param('id') commentId: string,
-		@UserFromReq() userId: string | false,
+		@UserFromReq() user: UserFromGuard,
 		@Body() contentInputModel: contentInputDto
 	) {
-		const comment = await this.commentsQueryRepository.findCommentById(commentId, userId);
+		const comment = await this.commentsQueryRepository.findCommentById(commentId, user.id);
 		if (!comment) {
 			return exceptionHandler(StatusCode.NotFound, commentNotFound, commentIdField);
 		}
-		if (comment.commentatorInfo.userId !== userId) {
+		if (comment.commentatorInfo.userId !== user.id) {
 			return exceptionHandler(StatusCode.Forbidden, forbidden, commentIdField);
 		}
 		await this.commentsService.updateComment(commentId, contentInputModel.content);
@@ -53,32 +57,26 @@ export class CommentsController {
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async updateLikeStatus(
 		@Param('commentId') commentId: string,
-		@UserFromReq() userId: string,
+		@UserFromReq() user: UserFromGuard,
 		@Body() inputModel: likeInputDto
 	) {
-		const comment = await this.commentsQueryRepository.findCommentById(commentId, userId);
+		const comment = await this.commentsQueryRepository.findCommentById(commentId, user.id);
 
 		if (!comment) {
 			return exceptionHandler(StatusCode.NotFound, commentNotFound, commentIdField);
 		} else {
-			const checkLikeStatus = await this.likesService.checkCommentLikeStatus(inputModel.likeStatus, comment.id, userId);
+			const checkLikeStatus = await this.commandBus.execute(
+				new CheckCommentLikeStatusCommand(inputModel.likeStatus, comment.id, user.id)
+			);
 			if (checkLikeStatus) {
-				const likesInfo = await this.likesService.countCommentLikes(comment.id);
-				await this.commentsQueryRepository.updateCommentLikes(
-					comment.id,
-					likesInfo.likesCount,
-					likesInfo.dislikesCount
-				);
+				await this.commandBus.execute(new UpdateCommentLikesCommand(comment.id));
 				return;
 			} else {
-				const isCreated = await this.likesService.setCommentLikeStatus(inputModel.likeStatus, comment, userId);
+				const isCreated = await this.commandBus.execute(
+					new SetCommentLikeStatusCommand(inputModel.likeStatus, comment.id, user.id, user.login)
+				);
 				if (isCreated) {
-					const likesInfo = await this.likesService.countCommentLikes(comment.id);
-					await this.commentsQueryRepository.updateCommentLikes(
-						comment.id,
-						likesInfo.likesCount,
-						likesInfo.dislikesCount
-					);
+					await this.commandBus.execute(new UpdateCommentLikesCommand(comment.id));
 					return;
 				}
 				return exceptionHandler(StatusCode.NotFound, commentNotFound, commentIdField);
@@ -89,12 +87,12 @@ export class CommentsController {
 	@UseGuards(JwtBearerGuard)
 	@Delete(':id')
 	@HttpCode(HttpStatus.NO_CONTENT)
-	async deleteComment(@Param('id') commentId: string, @UserFromReq() userId: string | false) {
-		const comment = await this.commentsQueryRepository.findCommentById(commentId, userId);
+	async deleteComment(@Param('id') commentId: string, @UserFromReq() user: UserFromGuard) {
+		const comment = await this.commentsQueryRepository.findCommentById(commentId, user.id);
 		if (!comment) {
 			return exceptionHandler(StatusCode.NotFound, commentNotFound, commentIdField);
 		}
-		if (comment.commentatorInfo.userId !== userId) {
+		if (comment.commentatorInfo.userId !== user.id) {
 			return exceptionHandler(StatusCode.Forbidden, forbidden, commentIdField);
 		}
 
