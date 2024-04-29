@@ -7,7 +7,6 @@ import { CommentsService } from '../comments/comments.service';
 import { CommentsQueryRepository } from '../comments/comments.query.repository';
 import { CommentsRepository } from '../comments/comments.repository';
 import { UsersQueryRepository } from '../users/users.query.repository';
-import { LikesService } from '../likes/likes.service';
 import { PostLikesRepository } from '../likes/post.likes.repository';
 import { CommentLikesRepository } from '../likes/comment.likes.repository';
 import { JwtBearerStrategy } from '../auth/passport/strategies/jwt-bearer.strategy';
@@ -17,7 +16,7 @@ import { UserAuthStrategy } from '../auth/passport/strategies/userId.strategy';
 import { CqrsModule } from '@nestjs/cqrs';
 
 const strategies = [JwtBearerStrategy, UserAuthStrategy];
-const services = [JwtService, CommentsService, LikesService];
+const services = [JwtService, CommentsService];
 const adapters = [
 	BlogsQueryRepository,
 	PostsQueryRepository,

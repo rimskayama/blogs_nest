@@ -227,18 +227,4 @@ export class PostsQueryRepository {
 			items,
 		};
 	}
-
-	async updatePostLikes(postId: string, likesCount: number, dislikesCount: number) {
-		const query = `
-		UPDATE public."Posts" p
-		SET "likesCount"=$1, "dislikesCount"=$2
-		WHERE p."id" = $3;
-	`;
-		try {
-			await this.dataSource.query(query, [likesCount, dislikesCount, postId]);
-			return true;
-		} catch (error) {
-			console.error('Error updating post likes:', error);
-		}
-	}
 }
