@@ -1,9 +1,8 @@
-import { BlogsService } from './blogs.service';
 import { BlogsQueryRepository } from './blogs.query.repository';
 import { BlogInputDto } from './blogs.types';
 import { PostInputDto, SpecifiedPostInputDto } from '../posts/posts.types';
 import { exceptionHandler } from '../exceptions/exception.handler';
-import { StatusCode, blogIdField, blogNotFound, postIdField, postNotFound } from '../exceptions/exception.constants';
+import { StatusCode, blogIdField, blogNotFound } from '../exceptions/exception.constants';
 import {
 	Body,
 	Controller,
@@ -23,12 +22,15 @@ import { getPagination } from '../utils/pagination';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateBlogCommand } from './use-cases/create-blog.use-case';
 import { CreatePostCommand } from './use-cases/create-post.use-case';
+import { UpdateBlogCommand } from './use-cases/update-blog.use-case';
+import { DeleteBlogCommand } from './use-cases/delete-blog.use-case';
+import { UpdatePostCommand } from './use-cases/update-post.use-case';
+import { DeletePostCommand } from './use-cases/delete-post.use-case';
 
 @Controller('sa/blogs')
 export class SuperAdminBlogsController {
 	constructor(
 		private commandBus: CommandBus,
-		private readonly blogsService: BlogsService,
 		private readonly blogsQueryRepository: BlogsQueryRepository
 	) {}
 
@@ -63,17 +65,23 @@ export class SuperAdminBlogsController {
 	@Put(':blogId')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async updateBlog(@Body() inputModel: BlogInputDto, @Param('blogId') blogId: string) {
-		const result = await this.blogsService.updateBlog(blogId, inputModel);
-		if (result) return result;
-		else return exceptionHandler(StatusCode.NotFound, blogNotFound, blogIdField);
+		const result = await this.commandBus.execute(new UpdateBlogCommand(blogId, inputModel));
+
+		if (result.code !== StatusCode.Success) {
+			return exceptionHandler(result.code, result.message, result.field);
+		}
+		return result;
 	}
 
 	@UseGuards(BasicAuthGuard)
 	@Delete(':blogId')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteBlog(@Param('blogId') blogId: string) {
-		const result = await this.blogsService.deleteBlog(blogId);
-		if (!result) return exceptionHandler(StatusCode.NotFound, blogNotFound, blogIdField);
+		const result = await this.commandBus.execute(new DeleteBlogCommand(blogId));
+		if (result.code !== StatusCode.Success) {
+			return exceptionHandler(result.code, result.message, result.field);
+		}
+		return result;
 	}
 
 	@UseGuards(BasicAuthGuard)
@@ -93,23 +101,21 @@ export class SuperAdminBlogsController {
 	@Put(':blogId/posts/:postId')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async updatePost(@Body() inputModel: PostInputDto, @Param('blogId') blogId: string, @Param('postId') postId: string) {
-		const blog = await this.blogsQueryRepository.findBlogById(blogId);
-		if (!blog) return exceptionHandler(StatusCode.NotFound, blogNotFound, blogIdField);
-
-		const result = await this.blogsService.updatePost(blogId, postId, inputModel);
-		if (result) return;
-		else return exceptionHandler(StatusCode.NotFound, postNotFound, postIdField);
+		const result = await this.commandBus.execute(new UpdatePostCommand(blogId, postId, inputModel));
+		if (result.code !== StatusCode.Success) {
+			return exceptionHandler(result.code, result.message, result.field);
+		}
+		return result;
 	}
 
 	@UseGuards(BasicAuthGuard)
 	@Delete(':blogId/posts/:postId')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async deletePost(@Param('blogId') blogId: string, @Param('postId') postId: string) {
-		const blog = await this.blogsQueryRepository.findBlogById(blogId);
-		if (!blog) return exceptionHandler(StatusCode.NotFound, blogNotFound, blogIdField);
-
-		const result = await this.blogsService.deletePost(postId);
-		if (result) return;
-		else return exceptionHandler(StatusCode.NotFound, postNotFound, postIdField);
+		const result = await this.commandBus.execute(new DeletePostCommand(blogId, postId));
+		if (result.code !== StatusCode.Success) {
+			return exceptionHandler(result.code, result.message, result.field);
+		}
+		return result;
 	}
 }

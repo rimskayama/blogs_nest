@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TestingController } from './testing.controller';
-import { BlogsService } from '../blogs/blogs.service';
 import { BlogsRepository } from '../blogs/blogs.repository';
 import { BlogsQueryRepository } from '../blogs/blogs.query.repository';
 import { PostsQueryRepository } from '../posts/posts.query.repository';
@@ -13,7 +12,6 @@ import { UsersQueryRepository } from '../users/users.query.repository';
 	imports: [ConfigModule.forRoot()],
 	controllers: [TestingController],
 	providers: [
-		BlogsService,
 		BlogsRepository,
 		BlogsQueryRepository,
 		PostsQueryRepository,

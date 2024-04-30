@@ -37,7 +37,7 @@ export class BlogsRepository {
 		try {
 			const result = await this.dataSource.query(query, values);
 			if (result[1] === 0) {
-				return null;
+				return false;
 			}
 			return true;
 		} catch (error) {
@@ -55,12 +55,12 @@ export class BlogsRepository {
 		try {
 			const result = await this.dataSource.query(query, [id]);
 			if (result[1] === 0) {
-				return null;
+				return false;
 			}
 			return true;
 		} catch (error) {
 			console.error('Error deleting blog:', error);
-			return null;
+			return false;
 		}
 	}
 
