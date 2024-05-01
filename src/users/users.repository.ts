@@ -100,11 +100,9 @@ export class UsersRepository {
 		WHERE u."id" = $1;
     `;
 		try {
-			await this.dataSource.query(query, [id]);
-			return true;
+			return await this.dataSource.query(query, [id]);
 		} catch (error) {
 			console.error('Error updating emailConfirmationStatus:', error);
-			return true;
 		}
 	}
 
@@ -148,21 +146,20 @@ export class UsersRepository {
 		}
 	}
 
-	async updatePassword(id: string, passwordHash: string, passwordSalt: string): Promise<true> {
+	async updatePassword(id: string, passwordHash: string, passwordSalt: string) {
 		const query = `
 		UPDATE public."Users" u
 		SET "passwordHash"=$1, "passwordSalt"=$2
 		WHERE u."id" = $3;
     `;
 		try {
-			await this.dataSource.query(query, [passwordHash, passwordSalt, id]);
-			return true;
+			return await this.dataSource.query(query, [passwordHash, passwordSalt, id]);
 		} catch (error) {
 			console.error('Error updating password:', error);
 		}
 	}
 
-	async deleteUser(id: string): Promise<true | null> {
+	async deleteUser(id: string): Promise<boolean> {
 		const query = `
 		DELETE FROM public."Users" u
 		WHERE u."id" = $1;
@@ -171,12 +168,12 @@ export class UsersRepository {
 		try {
 			const result = await this.dataSource.query(query, [id]);
 			if (result[1] === 0) {
-				return null;
+				return false;
 			}
 			return true;
 		} catch (error) {
 			console.error('Error deleting user:', error);
-			return null;
+			return false;
 		}
 	}
 }

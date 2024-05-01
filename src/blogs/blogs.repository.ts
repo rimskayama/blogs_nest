@@ -115,7 +115,7 @@ export class BlogsRepository {
 		}
 	}
 
-	async deletePost(id: string): Promise<true | null> {
+	async deletePost(id: string): Promise<boolean> {
 		const query = `
 		DELETE FROM public."Posts" p
 		WHERE p."id" = $1;
@@ -124,12 +124,12 @@ export class BlogsRepository {
 		try {
 			const result = await this.dataSource.query(query, [id]);
 			if (result[1] === 0) {
-				return null;
+				return false;
 			}
 			return true;
 		} catch (error) {
 			console.error('Error deleting post:', error);
-			return null;
+			return false;
 		}
 	}
 }
