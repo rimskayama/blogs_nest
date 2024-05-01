@@ -1,4 +1,3 @@
-import { UsersService } from './users.service';
 import { UsersQueryRepository } from './users.query.repository';
 import { getPagination } from '../utils/pagination';
 import { UserInputDto, QueryParameters } from './users.types';
@@ -8,12 +7,12 @@ import { StatusCode, userIdField, userNotFound } from '../exceptions/exception.c
 import { BasicAuthGuard } from '../auth/passport/guards/basic-auth.guard';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateUserCommand } from './use-cases/create-user.use-case';
+import { DeleteUserCommand } from './use-cases/delete-user.use-case';
 
 @Controller('sa/users')
 export class SuperAdminUsersController {
 	constructor(
 		private commandBus: CommandBus,
-		private readonly usersService: UsersService,
 		private readonly usersQueryRepository: UsersQueryRepository
 	) {}
 
@@ -55,7 +54,7 @@ export class SuperAdminUsersController {
 	@Delete(':id')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteUser(@Param('id') userId: string) {
-		const result = await this.usersService.deleteUser(userId);
+		const result = await this.commandBus.execute(new DeleteUserCommand(userId));
 		if (result) return;
 		else return exceptionHandler(StatusCode.NotFound, userNotFound, userIdField);
 	}
