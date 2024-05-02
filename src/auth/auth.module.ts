@@ -3,12 +3,10 @@ import { ConfigModule } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
-import { UsersService } from '../users/users.service';
 import { UsersRepository } from '../users/users.repository';
 import { UsersQueryRepository } from '../users/users.query.repository';
 import { LocalStrategy } from './passport/strategies/local.strategy';
 import { PassportModule } from '@nestjs/passport';
-import { DevicesService } from '../devices/devices.service';
 import { DevicesRepository } from '../devices/devices.repository';
 import { DevicesQueryRepository } from '../devices/devices.query.repository';
 import { JwtBearerStrategy } from './passport/strategies/jwt-bearer.strategy';
@@ -30,9 +28,10 @@ import { RegistrationConfirmEmailUseCase } from './use-cases/registration/regist
 import { PasswordRecoveryUseCase } from './use-cases/password/password-recovery.use-case';
 import { PasswordUpdateUseCase } from './use-cases/password/password-update.use-case';
 import { CqrsModule } from '@nestjs/cqrs';
+import { DeviceLogoutUseCase } from '../devices/use-cases/delete-device-logout.use-case';
 
 const strategies = [LocalStrategy, JwtBearerStrategy, JwtRefreshTokenStrategy];
-const services = [JwtService, UsersService, DevicesService];
+const services = [JwtService];
 const adapters = [UsersRepository, UsersQueryRepository, DevicesRepository, DevicesQueryRepository];
 const validators = [
 	emailExistsRule,
@@ -50,6 +49,7 @@ const useCases = [
 	UserValidationUseCase,
 	PasswordRecoveryUseCase,
 	PasswordUpdateUseCase,
+	DeviceLogoutUseCase,
 ];
 
 @Module({

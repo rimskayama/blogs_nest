@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, Request, Get, HttpCode, Body, Res, HttpStatus } from '@nestjs/common';
+import { Controller, Post, UseGuards, Get, HttpCode, Body, Res, HttpStatus } from '@nestjs/common';
 import { LocalAuthGuard } from './passport/guards/local-auth.guard';
 import { UsersQueryRepository } from '../users/users.query.repository';
 import {
@@ -8,7 +8,6 @@ import {
 	emailInputDto,
 	newPasswordInputDto,
 } from '../users/users.types';
-import { DevicesService } from '../devices/devices.service';
 import { Response } from 'express';
 import { JwtBearerGuard } from './passport/guards/jwt-bearer.guard';
 import { JwtRefreshGuard } from './passport/guards/jwt-refresh.guard';
@@ -24,6 +23,8 @@ import { PasswordRecoveryCommand } from './use-cases/password/password-recovery.
 import { PasswordUpdateCommand } from './use-cases/password/password-update.use-case';
 import { LoginUserCommand } from './use-cases/login/login-user.use-case';
 import { CreateDeviceCommand } from '../devices/use-cases/create-device.use-case';
+import { UpdateDeviceCommand } from '../devices/use-cases/update-device-tokens.use-case';
+import { DeviceLogoutCommand } from '../devices/use-cases/delete-device-logout.use-case';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { JwtService } from '@nestjs/jwt';
 
@@ -32,8 +33,7 @@ export class AuthController {
 	constructor(
 		private commandBus: CommandBus,
 		private readonly jwtService: JwtService,
-		private readonly usersQueryRepository: UsersQueryRepository,
-		private readonly devicesService: DevicesService
+		private readonly usersQueryRepository: UsersQueryRepository
 	) {}
 
 	@UseGuards(ThrottlerGuard)
@@ -93,7 +93,7 @@ export class AuthController {
 
 		const decodedAccessToken = this.jwtService.decode(result.accessToken);
 		const decodedRefreshToken = this.jwtService.decode(result.refreshToken);
-		await this.devicesService.updateLastActiveDate(deviceId, decodedRefreshToken.iat, decodedAccessToken.exp);
+		await this.commandBus.execute(new UpdateDeviceCommand(deviceId, decodedRefreshToken.iat, decodedAccessToken.exp));
 
 		return res
 			.cookie('refreshToken', result.refreshToken, { httpOnly: true, secure: true })
@@ -106,9 +106,8 @@ export class AuthController {
 	@UseGuards(JwtRefreshGuard)
 	@Post('logout')
 	@HttpCode(HttpStatus.NO_CONTENT)
-	async logout(@Request() req, @Res() res: Response) {
-		const deviceId = req.user.deviceId;
-		await this.devicesService.terminateSession(deviceId);
+	async logout(@Res() res: Response, @DeviceIdFromReq() deviceId: string) {
+		await this.commandBus.execute(new DeviceLogoutCommand(deviceId));
 		return res.clearCookie('refreshToken').sendStatus(HttpStatus.NO_CONTENT);
 	}
 
@@ -120,7 +119,7 @@ export class AuthController {
 		return result;
 	}
 
-	@UseGuards(ThrottlerGuard)
+	//@UseGuards(ThrottlerGuard)
 	@Post('registration-email-resending')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async resendEmail(@Body() emailInputModel: emailInputDto) {
