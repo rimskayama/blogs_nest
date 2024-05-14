@@ -14,21 +14,23 @@ import { DevicesModule } from './devices/devices.module';
 import { PassportModule } from '@nestjs/passport';
 import { CommentsModule } from './comments/comments.module';
 import { CqrsModule } from '@nestjs/cqrs';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+
+export const options: TypeOrmModuleOptions = {
+	type: 'postgres',
+	host: 'localhost',
+	port: 5432,
+	username: process.env.PGUSER,
+	password: process.env.PGPASSWORD,
+	database: process.env.PGDATABASE,
+	autoLoadEntities: true,
+	synchronize: true,
+};
 
 @Module({
 	imports: [
 		configModule,
-		TypeOrmModule.forRoot({
-			type: 'postgres',
-			host: 'localhost',
-			port: 5432,
-			username: process.env.PGUSER,
-			password: process.env.PGPASSWORD,
-			database: process.env.PGDATABASE,
-			autoLoadEntities: false,
-			synchronize: false,
-		}),
+		TypeOrmModule.forRoot(options),
 		BlogsModule,
 		PostsModule,
 		UsersModule,

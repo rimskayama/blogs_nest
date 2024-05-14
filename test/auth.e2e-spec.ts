@@ -1,8 +1,9 @@
 import { Test, type TestingModule } from '@nestjs/testing';
 import { HttpStatus, type INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { AppModule } from '../src/app.module';
+import { AppModule, options } from '../src/app.module';
 import { appSettings } from '../src/app.settings';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 describe('AuthController (e2e)', () => {
 	let app: INestApplication;
@@ -10,7 +11,7 @@ describe('AuthController (e2e)', () => {
 
 	beforeAll(async () => {
 		const moduleFixture: TestingModule = await Test.createTestingModule({
-			imports: [AppModule],
+			imports: [AppModule, TypeOrmModule.forRoot(options)],
 		}).compile();
 
 		app = moduleFixture.createNestApplication();
