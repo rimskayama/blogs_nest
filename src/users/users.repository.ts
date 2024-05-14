@@ -2,76 +2,51 @@ import { UserDto, UserType, emailConfirmationDto, passwordConfirmationDto } from
 import { v4 as uuidv4 } from 'uuid';
 import { add } from 'date-fns';
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { usersMapping } from '../utils/mapping';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from './user.entity';
 
 @Injectable()
 export class UsersRepository {
-	constructor(@InjectDataSource() protected dataSource: DataSource) {}
+	constructor(@InjectRepository(User) private readonly usersRepository: Repository<User>) {}
 
-	async createUser(user: UserType): Promise<UserDto> {
-		const query = `
-        INSERT INTO public."Users"(
-            "id", "login", "email", "passwordHash", "passwordSalt", "createdAt", 
-            "emailConfirmationCode", "emailExpirationDate", "emailConfirmationStatus", 
-            "passwordRecoveryCode", "passwordExpirationDate")
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-        RETURNING *;
-    `;
-		const values = [
-			user.id,
-			user.login,
-			user.email,
-			user.passwordHash,
-			user.passwordSalt,
-			user.createdAt,
-			user.emailConfirmationCode,
-			user.emailExpirationDate,
-			user.emailConfirmationStatus,
-			user.passwordRecoveryCode,
-			user.passwordExpirationDate,
-		];
-
+	async createUser(user: User): Promise<UserDto> {
 		try {
-			const result = await this.dataSource.query(query, values);
-			return usersMapping(result)[0];
+			const result = await this.usersRepository.save(user);
+			return User.getViewUser(result);
 		} catch (error) {
 			console.error('Error creating user:', error);
 		}
 	}
 
 	async findByLoginOrEmail(loginOrEmail: string): Promise<UserType | null> {
-		const query = `
-        SELECT "id", "login", "email", "createdAt", "emailConfirmationStatus", "passwordSalt", "passwordHash"
-		FROM public."Users" u
-		WHERE u."login" = $1 OR u."email" = $1;
-    `;
-
 		try {
-			const result = await this.dataSource.query(query, [loginOrEmail]);
-			if (result.length === 0) {
-				return null;
-			}
-			return result[0];
+			const result = await this.usersRepository
+				.createQueryBuilder('u')
+				.where(`u.login = :login`, {
+					login: loginOrEmail,
+				})
+				.orWhere(`u.email = :email`, {
+					email: loginOrEmail,
+				})
+				.getOne();
+			return result;
 		} catch (error) {
 			console.error('Error finding user:', error);
 		}
 	}
 
 	async findByConfirmationCode(code: string): Promise<emailConfirmationDto | null> {
-		const query = `
-        SELECT "id", "emailConfirmationCode", "emailExpirationDate", "emailConfirmationStatus"
-		FROM public."Users" u
-		WHERE u."emailConfirmationCode" = $1;
-    `;
-
 		try {
-			const result = await this.dataSource.query(query, [code]);
-			if (result.length === 0) {
-				return null;
-			}
-			return result[0];
+			const result = await this.usersRepository
+				.createQueryBuilder('u')
+				.select(['u.id', 'u.emailConfirmationCode', 'u.emailExpirationDate', 'u.emailConfirmationStatus'])
+				.where(`u.emailConfirmationCode = :code`, {
+					code: code,
+				})
+				.getOne();
+			console.log(result, 'confirmationCode');
+			return result;
 		} catch (error) {
 			console.error('Error finding emailConfirmationCode:', error);
 			return null;
@@ -79,13 +54,14 @@ export class UsersRepository {
 	}
 
 	async findByRecoveryCode(recoveryCode: string): Promise<passwordConfirmationDto | null> {
-		const query = `
-        SELECT "id", "passwordRecoveryCode", "passwordExpirationDate"
-		FROM public."Users" u
-		WHERE u."passwordRecoveryCode" = $1;
-    `;
 		try {
-			const result = await this.dataSource.query(query, [recoveryCode]);
+			const result = await this.usersRepository
+				.createQueryBuilder('u')
+				.select(['u.id', 'u.passwordRecoveryCode', 'u.passwordExpirationDate'])
+				.where(`u.passwordRecoveryCode = :code`, {
+					code: recoveryCode,
+				})
+				.getOne();
 			return result;
 		} catch (error) {
 			console.error('Error finding recoveryCode:', error);
@@ -94,13 +70,16 @@ export class UsersRepository {
 	}
 
 	async updateConfirmation(id: string): Promise<true> {
-		const query = `
-		UPDATE public."Users" u
-		SET "emailConfirmationStatus"=true
-		WHERE u."id" = $1;
-    `;
 		try {
-			return await this.dataSource.query(query, [id]);
+			const user = await this.usersRepository
+				.createQueryBuilder('u')
+				.where('u.id = :userId', {
+					userId: id,
+				})
+				.getOne();
+			user.emailConfirmationStatus = true;
+			await this.usersRepository.save(user);
+			return true;
 		} catch (error) {
 			console.error('Error updating emailConfirmationStatus:', error);
 		}
@@ -112,13 +91,16 @@ export class UsersRepository {
 			hours: 1,
 			minutes: 3,
 		});
-		const query = `
-		UPDATE public."Users" u
-		SET "emailConfirmationCode"=$1, "emailExpirationDate"=$2
-		WHERE u."id" = $3;
-    `;
 		try {
-			await this.dataSource.query(query, [confirmationCode, expirationDate, id]);
+			const user = await this.usersRepository
+				.createQueryBuilder('u')
+				.where(`u.id = :userId`, {
+					userId: id,
+				})
+				.getOne();
+			user.emailConfirmationCode = confirmationCode;
+			user.emailExpirationDate = expirationDate;
+			await this.usersRepository.save(user);
 			return confirmationCode;
 		} catch (error) {
 			console.error('Error updating emailConfirmationCode:', error);
@@ -132,13 +114,17 @@ export class UsersRepository {
 			hours: 1,
 			minutes: 3,
 		});
-		const query = `
-		UPDATE public."Users" u
-		SET "passwordConfirmationCode"=$1, "passwordExpirationDate"=$2
-		WHERE u."id" = $3;
-    `;
 		try {
-			await this.dataSource.query(query, [confirmationCode, expirationDate, id]);
+			await this.usersRepository
+				.createQueryBuilder('u')
+				.update('u')
+				.set({
+					passwordConfirmationCode: confirmationCode,
+					passwordExpirationDate: expirationDate,
+				})
+				.where(`u.id = :userId`, {
+					userId: id,
+				});
 			return confirmationCode;
 		} catch (error) {
 			console.error('Error updating passwordConfirmationCode:', error);
@@ -147,33 +133,34 @@ export class UsersRepository {
 	}
 
 	async updatePassword(id: string, passwordHash: string, passwordSalt: string) {
-		const query = `
-		UPDATE public."Users" u
-		SET "passwordHash"=$1, "passwordSalt"=$2
-		WHERE u."id" = $3;
-    `;
 		try {
-			return await this.dataSource.query(query, [passwordHash, passwordSalt, id]);
+			await this.usersRepository
+				.createQueryBuilder('u')
+				.update('u')
+				.set({
+					passwordHash: passwordHash,
+					passwordSalt: passwordSalt,
+				})
+				.where(`u.id = :userId`, {
+					userId: id,
+				});
+			return true;
 		} catch (error) {
 			console.error('Error updating password:', error);
 		}
 	}
 
 	async deleteUser(id: string): Promise<boolean> {
-		const query = `
-		DELETE FROM public."Users" u
-		WHERE u."id" = $1;
-    `;
-
 		try {
-			const result = await this.dataSource.query(query, [id]);
-			if (result[1] === 0) {
-				return false;
-			}
-			return true;
+			const result = await this.usersRepository
+				.createQueryBuilder('u')
+				.delete()
+				.from(User)
+				.where('id = :userId', { userId: id })
+				.execute();
+			return result.affected === 1;
 		} catch (error) {
 			console.error('Error deleting user:', error);
-			return false;
 		}
 	}
 }

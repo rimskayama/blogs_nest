@@ -1,73 +1,47 @@
-import mongoose, { HydratedDocument } from 'mongoose';
-import { ObjectId } from 'mongodb';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { format } from 'date-fns';
 
-export type UserDocument = HydratedDocument<User>;
+@Entity('users')
+export class User {
+	@PrimaryGeneratedColumn('uuid')
+	id: string;
 
-@Schema()
-export class accountData {
-	@Prop({ require: true })
+	@Column({ type: 'varchar', length: 10, unique: true })
 	login: string;
 
-	@Prop({ require: true })
+	@Column({ type: 'varchar', length: 30, unique: true })
 	email: string;
 
-	@Prop({ require: true })
+	@Column({ type: 'varchar' })
 	passwordHash: string;
 
-	@Prop({ require: true })
+	@Column({ type: 'varchar' })
 	passwordSalt: string;
 
-	@Prop({ require: true, default: new Date().toISOString() })
-	createdAt: string;
-}
+	@CreateDateColumn({ type: 'timestamp with time zone' })
+	createdAt: Date;
 
-@Schema()
-export class emailConfirmation {
-	@Prop({ require: true })
-	confirmationCode: string;
+	@Column({ type: 'varchar' })
+	emailConfirmationCode: string;
 
-	@Prop({ require: true })
-	expirationDate: Date;
+	@Column({ type: 'varchar' })
+	emailExpirationDate: Date;
 
-	@Prop({ require: true })
-	isConfirmed: boolean;
-}
+	@Column({ type: 'bool' })
+	emailConfirmationStatus: boolean;
 
-@Schema()
-export class passwordConfirmation {
-	@Prop({ require: true })
-	recoveryCode: string;
+	@Column({ type: 'varchar' })
+	passwordRecoveryCode: string;
 
-	@Prop({ require: true })
-	expirationDate: Date;
-}
-
-@Schema()
-export class User {
-	@Prop({
-		required: true,
-		type: mongoose.Schema.Types.ObjectId,
-	})
-	_id: ObjectId;
-
-	@Prop({ required: true })
-	accountData: accountData;
-
-	@Prop({ required: true })
-	emailConfirmation: emailConfirmation;
-
-	@Prop({ required: true })
-	passwordConfirmation: passwordConfirmation;
+	@Column({ type: 'varchar' })
+	passwordExpirationDate: Date;
 
 	static getViewUser(userFromDb: User) {
 		return {
-			id: userFromDb._id.toString(),
-			login: userFromDb.accountData.login,
-			email: userFromDb.accountData.email,
-			createdAt: userFromDb.accountData.createdAt,
+			id: userFromDb.id,
+			login: userFromDb.login,
+			email: userFromDb.email,
+			createdAt: format(userFromDb.createdAt, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"),
 		};
 	}
 }
-
-export const UserSchema = SchemaFactory.createForClass(User);

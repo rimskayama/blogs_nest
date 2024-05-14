@@ -1,68 +1,79 @@
-import { UserType, UsersPaginationDto } from './users.types';
+import { UserDto, UsersPaginationDto } from './users.types';
 import { Injectable } from '@nestjs/common';
 import { usersMapping } from '../utils/mapping';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from './user.entity';
 
 @Injectable()
 export class UsersQueryRepository {
-	constructor(@InjectDataSource() protected dataSource: DataSource) {}
+	constructor(@InjectRepository(User) private readonly usersRepository: Repository<User>) {}
 
 	async findUsers(
-		page: number,
-		limit: number,
-		sortDirection: string,
+		pageNumber: number,
+		pageSize: number,
+		sortDirection: 'ASC' | 'DESC',
 		sortBy: string,
-		skip: number,
 		searchLoginTerm: string,
 		searchEmailTerm: string
 	): Promise<UsersPaginationDto> {
-		let result;
-		let count;
-		const query = `
-		SELECT u.*
-		FROM public."Users" u
-		WHERE u."login" ILIKE '%' || $1 || '%' 
-		OR u."email" ILIKE '%' || $2 || '%'
-		GROUP BY u."id"
-		ORDER BY "${sortBy}" ${sortDirection === 'asc' ? 'ASC' : 'DESC'}
-		LIMIT $3 OFFSET $4;`;
+		const result = await this.usersRepository
+			.createQueryBuilder('u')
+			.where(
+				`${
+					searchLoginTerm || searchEmailTerm
+						? `(u.login ilike :loginTerm OR u.email ilike :emailTerm)`
+						: 'u.login is not null'
+				}`,
+				{
+					loginTerm: `%${searchLoginTerm}%`,
+					emailTerm: `%${searchEmailTerm}%`,
+				}
+			)
+			.orderBy(`u.${sortBy}`, sortDirection)
+			.skip((pageNumber - 1) * pageSize)
+			.take(pageSize)
+			.getMany();
 
-		const queryToCountTotal = `
-		SELECT count(*) as total
-		FROM public."Users" u
-		WHERE u."login" ILIKE '%' || $1 || '%' 
-		OR u."email" ILIKE '%' || $2 || '%';`;
+		const count = await this.usersRepository
+			.createQueryBuilder('u')
+			.where(
+				`${
+					searchLoginTerm || searchEmailTerm
+						? `(u.login ilike :loginTerm OR u.email ilike :emailTerm)`
+						: 'u.login is not null'
+				}`,
+				{
+					loginTerm: `%${searchLoginTerm}%`,
+					emailTerm: `%${searchEmailTerm}%`,
+				}
+			)
+			.orderBy(`u.${sortBy}`, sortDirection)
+			.skip((pageNumber - 1) * pageSize)
+			.take(pageSize)
+			.getCount();
 
-		try {
-			result = await this.dataSource.query(query, [searchLoginTerm, searchEmailTerm, limit, skip]);
-			count = await this.dataSource.query(queryToCountTotal, [searchLoginTerm, searchEmailTerm]);
-		} catch (error) {
-			console.error('Error finding users', error);
-		}
-
-		const total = parseInt(count[0].total);
-		const pagesCount = Math.ceil(total / limit);
+		const pagesCount = Math.ceil(count / pageSize);
 
 		return {
 			pagesCount: pagesCount,
-			page: page,
-			pageSize: limit,
-			totalCount: total,
+			page: pageNumber,
+			pageSize: pageSize,
+			totalCount: count,
 			items: usersMapping(result),
 		};
 	}
 
-	async findUserById(id: string): Promise<UserType | null> {
-		const query = `
-        SELECT "id", "login", "email", "createdAt"
-		FROM public."Users" u
-		WHERE u."id" = $1;
-    `;
-
+	async findUserById(id: string): Promise<UserDto | null> {
 		try {
-			const result = await this.dataSource.query(query, [id]);
-			return result[0];
+			const result = await this.usersRepository
+				.createQueryBuilder('u')
+				.select(['u.id', 'u.login', 'u.email', 'u.createdAt'])
+				.where(`u.id = :userId`, {
+					userId: id,
+				})
+				.getMany();
+			return User.getViewUser(result[0]);
 		} catch (error) {
 			console.error('Error finding user:', error);
 		}

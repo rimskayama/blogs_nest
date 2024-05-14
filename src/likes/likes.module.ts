@@ -11,6 +11,7 @@ import { UpdatePostLikesUseCase } from './use-cases/post likes/update-post-like-
 import { CheckPostLikeStatusUseCase } from './use-cases/post likes/check-post-likes-status.use-case';
 import { SetPostLikeStatusUseCase } from './use-cases/post likes/set-post-like-status.use-case';
 import { UpdateCommentLikesUseCase } from './use-cases/comment likes/update-comment-likes.use-case';
+import { UsersModule } from '../users/users.module';
 
 const adapters = [PostLikesRepository, CommentLikesRepository, UsersQueryRepository];
 const strategies = [JwtBearerStrategy];
@@ -24,7 +25,7 @@ const useCases = [
 ];
 
 @Module({
-	imports: [ConfigModule.forRoot(), CqrsModule],
+	imports: [ConfigModule.forRoot(), CqrsModule, UsersModule],
 	controllers: [],
 	providers: [...adapters, ...strategies, ...useCases],
 })
