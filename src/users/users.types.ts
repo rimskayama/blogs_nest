@@ -71,7 +71,7 @@ export type UsersPaginationDto = {
 export class QueryParameters {
 	pageNumber: number;
 	pageSize: number;
-	sortDirection: string;
+	sortDirection: 'ASC' | 'DESC';
 	sortBy: string;
 	searchNameTerm: string;
 	searchLoginTerm: string;

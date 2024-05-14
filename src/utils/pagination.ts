@@ -3,7 +3,7 @@ import { QueryParameters } from '../users/users.types';
 export const getPagination = (query: QueryParameters) => {
 	const page: number = Number(query.pageNumber) || 1;
 	const limit: number = Number(query.pageSize) || 10;
-	const sortDirection: string = query.sortDirection || 'desc';
+	const sortDirection = query.sortDirection || 'DESC';
 	const sortBy: string = query.sortBy || 'createdAt';
 	const searchNameTerm = query.searchNameTerm || '';
 	const searchLoginTerm = query.searchLoginTerm || '';

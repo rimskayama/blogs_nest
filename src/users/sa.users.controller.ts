@@ -20,13 +20,12 @@ export class SuperAdminUsersController {
 	@Get()
 	@HttpCode(HttpStatus.OK)
 	async getUsers(@Query() query: QueryParameters) {
-		const { page, limit, sortDirection, sortBy, searchLoginTerm, searchEmailTerm, skip } = getPagination(query);
+		const { page, limit, sortDirection, sortBy, searchLoginTerm, searchEmailTerm } = getPagination(query);
 		const result = await this.usersQueryRepository.findUsers(
 			page,
 			limit,
 			sortDirection,
 			sortBy,
-			skip,
 			searchLoginTerm,
 			searchEmailTerm
 		);
