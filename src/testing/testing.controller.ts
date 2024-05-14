@@ -9,14 +9,18 @@ export class TestingController {
 	@Delete('all-data')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteAll() {
-		await this.dataSource.query(`
-		DELETE FROM public."CommentLikes";
-		DELETE FROM public."PostLikes";
-		DELETE FROM public."Comments";
-		DELETE FROM public."Posts";
-		DELETE FROM public."Devices";
-		DELETE FROM public."Users";
-		DELETE FROM public."Blogs";
-		`);
+		return this.dataSource.query(`
+		CREATE OR REPLACE FUNCTION truncate_tables(username IN VARCHAR) RETURNS void AS $$
+		DECLARE
+    	statements CURSOR FOR
+        	SELECT tablename FROM pg_tables
+        	WHERE tableowner = username AND schemaname = 'public';
+		BEGIN
+    		FOR stmt IN statements LOOP
+        		EXECUTE 'TRUNCATE TABLE ' || quote_ident(stmt.tablename) || ' CASCADE;';
+    		END LOOP;
+		END;
+		$$ LANGUAGE plpgsql;
+		SELECT truncate_tables('rimskayama');`);
 	}
 }
