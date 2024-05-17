@@ -1,5 +1,6 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { format } from 'date-fns';
+import { Device } from '../devices/device.entity';
 
 @Entity('users')
 export class User {
@@ -35,6 +36,9 @@ export class User {
 
 	@Column({ type: 'varchar' })
 	passwordExpirationDate: Date;
+
+	@OneToMany(() => Device, (device) => device.user)
+	device: Device[];
 
 	static getViewUser(userFromDb: User) {
 		return {

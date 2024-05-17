@@ -1,25 +1,27 @@
-import { HydratedDocument } from 'mongoose';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { DeviceViewDto } from './devices.types';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { DeviceDto } from './devices.types';
+import { User } from '../users/user.entity';
 
-export type DeviceDocument = HydratedDocument<Device>;
-
-@Schema()
+@Entity('devices')
 export class Device {
-	@Prop({ required: true })
-	userId: string;
-	@Prop({ required: true })
-	ip: string;
-	@Prop({ required: true })
-	title: string;
-	@Prop({ required: true })
-	lastActiveDate: number;
-	@Prop({ required: true })
+	@PrimaryGeneratedColumn('uuid')
 	deviceId: string;
-	@Prop({ required: true })
-	expDate: string;
-
-	static getViewDevice(deviceFromDb: Device): DeviceViewDto {
+	@Column({ type: 'varchar' })
+	ip: string;
+	@Column({ type: 'varchar' })
+	title: string;
+	@Column({ type: 'integer' })
+	lastActiveDate: number;
+	@Column({ type: 'integer' })
+	tokenExpirationDate: number;
+	@Column({ type: 'varchar' })
+	userId: string;
+	@ManyToOne(() => User, (user) => user.device, {
+		onDelete: 'CASCADE',
+	})
+	@JoinColumn()
+	user: User[];
+	static getViewDevice(deviceFromDb: Device): DeviceDto {
 		return {
 			ip: deviceFromDb.ip,
 			title: deviceFromDb.title,
@@ -28,5 +30,3 @@ export class Device {
 		};
 	}
 }
-
-export const DeviceSchema = SchemaFactory.createForClass(Device);

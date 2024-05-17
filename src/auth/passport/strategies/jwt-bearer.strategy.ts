@@ -22,7 +22,7 @@ export class JwtBearerStrategy extends PassportStrategy(Strategy, 'bearer') {
 		else
 			return {
 				id: payload.sub,
-				login: result.userLogin,
+				login: result.user.login,
 			};
 	}
 }

@@ -13,6 +13,8 @@ import { CreateDeviceUseCase } from './use-cases/create-device.use-case';
 import { UpdateDeviceUseCase } from './use-cases/update-device-tokens.use-case';
 import { TerminateAllSessionsUseCase } from './use-cases/terminate-all-sessions.use-case';
 import { TerminateSessionUseCase } from './use-cases/terminate-session.use-case';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Device } from './device.entity';
 
 const strategies = [JwtRefreshTokenStrategy];
 const services = [JwtService];
@@ -27,8 +29,9 @@ const useCases = [
 ];
 
 @Module({
-	imports: [ConfigModule.forRoot(), PassportModule, CqrsModule],
+	imports: [ConfigModule.forRoot(), PassportModule, CqrsModule, TypeOrmModule.forFeature([Device])],
 	controllers: [DevicesController],
 	providers: [...services, ...adapters, ...strategies, ...useCases],
+	exports: [TypeOrmModule],
 })
 export class DevicesModule {}

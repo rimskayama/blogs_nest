@@ -59,7 +59,6 @@ export class AuthController {
 				user.id,
 				deviceDetails.deviceName,
 				deviceDetails.ip,
-				user.login,
 				decodedRefreshToken.iat,
 				decodedRefreshToken.deviceId,
 				decodedAccessToken.exp
@@ -119,7 +118,7 @@ export class AuthController {
 		return result;
 	}
 
-	//@UseGuards(ThrottlerGuard)
+	@UseGuards(ThrottlerGuard)
 	@Post('registration-email-resending')
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async resendEmail(@Body() emailInputModel: emailInputDto) {

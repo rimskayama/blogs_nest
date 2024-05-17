@@ -29,6 +29,7 @@ import { PasswordRecoveryUseCase } from './use-cases/password/password-recovery.
 import { PasswordUpdateUseCase } from './use-cases/password/password-update.use-case';
 import { CqrsModule } from '@nestjs/cqrs';
 import { DeviceLogoutUseCase } from '../devices/use-cases/delete-device-logout.use-case';
+import { DevicesModule } from '../devices/devices.module';
 
 const strategies = [LocalStrategy, JwtBearerStrategy, JwtRefreshTokenStrategy];
 const services = [JwtService];
@@ -56,6 +57,7 @@ const useCases = [
 	imports: [
 		ConfigModule.forRoot(),
 		UsersModule,
+		DevicesModule,
 		PassportModule,
 		CqrsModule,
 		ThrottlerModule.forRoot([
