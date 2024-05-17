@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { DeviceDto } from 'src/devices/devices.types';
 import { DevicesQueryRepository } from '../../../devices/devices.query.repository';
+import { DeviceType } from 'src/devices/devices.types';
 
 export class AccessTokenValidationCommand {
 	constructor(public payload: any) {}
@@ -11,7 +11,7 @@ export class AccessTokenValidationUseCase implements ICommandHandler<AccessToken
 	constructor(private readonly devicesQueryRepository: DevicesQueryRepository) {}
 
 	async execute(command: AccessTokenValidationCommand) {
-		let device: DeviceDto | false;
+		let device: DeviceType | false;
 		try {
 			device = await this.devicesQueryRepository.findDeviceByToken(
 				command.payload.sub,

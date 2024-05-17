@@ -6,7 +6,6 @@ import {
 	loginExistsRule,
 	recoveryCodeExistsRule,
 } from '../auth/authentification';
-import { format } from 'date-fns';
 export const loginPattern = /^[a-zA-Z0-9_-]*$/;
 
 export class UserInputDto {
@@ -101,15 +100,6 @@ export class UserType {
 	passwordRecoveryCode: string;
 
 	passwordExpirationDate: Date;
-
-	static getViewUser(userFromDb: UserType) {
-		return {
-			id: userFromDb.id,
-			login: userFromDb.login,
-			email: userFromDb.email,
-			createdAt: format(userFromDb.createdAt, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"),
-		};
-	}
 }
 
 export class emailConfirmationDto {

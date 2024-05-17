@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DevicesRepository } from '../devices.repository';
-import { DeviceViewDto } from '../devices.types';
+import { DeviceDto } from '../devices.types';
 
 export class TerminateAllSessionsCommand {
 	constructor(
@@ -12,7 +12,7 @@ export class TerminateAllSessionsCommand {
 @CommandHandler(TerminateAllSessionsCommand)
 export class TerminateAllSessionsUseCase implements ICommandHandler<TerminateAllSessionsCommand> {
 	constructor(private readonly devicesRepository: DevicesRepository) {}
-	async execute(command: TerminateAllSessionsCommand): Promise<DeviceViewDto | boolean> {
+	async execute(command: TerminateAllSessionsCommand): Promise<DeviceDto | boolean> {
 		return await this.devicesRepository.terminateAllSessions(command.userId, command.deviceId);
 	}
 }

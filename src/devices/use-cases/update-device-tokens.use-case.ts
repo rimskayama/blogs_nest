@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DevicesRepository } from '../devices.repository';
-import { DeviceViewDto } from '../devices.types';
+import { DeviceDto } from '../devices.types';
 
 export class UpdateDeviceCommand {
 	constructor(
@@ -13,7 +13,7 @@ export class UpdateDeviceCommand {
 @CommandHandler(UpdateDeviceCommand)
 export class UpdateDeviceUseCase implements ICommandHandler<UpdateDeviceCommand> {
 	constructor(private readonly devicesRepository: DevicesRepository) {}
-	async execute(command: UpdateDeviceCommand): Promise<DeviceViewDto | boolean> {
+	async execute(command: UpdateDeviceCommand): Promise<DeviceDto | boolean> {
 		return await this.devicesRepository.updateLastActiveDate(
 			command.deviceId,
 			command.lastActiveDate,

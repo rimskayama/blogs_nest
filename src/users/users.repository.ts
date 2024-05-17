@@ -10,7 +10,7 @@ import { User } from './user.entity';
 export class UsersRepository {
 	constructor(@InjectRepository(User) private readonly usersRepository: Repository<User>) {}
 
-	async createUser(user: User): Promise<UserDto> {
+	async createUser(user: UserType): Promise<UserDto> {
 		try {
 			const result = await this.usersRepository.save(user);
 			return User.getViewUser(result);
@@ -19,7 +19,7 @@ export class UsersRepository {
 		}
 	}
 
-	async findByLoginOrEmail(loginOrEmail: string): Promise<UserType | null> {
+	async findByLoginOrEmail(loginOrEmail: string): Promise<User | null> {
 		try {
 			const result = await this.usersRepository
 				.createQueryBuilder('u')
@@ -45,7 +45,6 @@ export class UsersRepository {
 					code: code,
 				})
 				.getOne();
-			console.log(result, 'confirmationCode');
 			return result;
 		} catch (error) {
 			console.error('Error finding emailConfirmationCode:', error);
