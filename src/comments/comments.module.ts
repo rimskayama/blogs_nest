@@ -13,6 +13,7 @@ import { CreateCommentUseCase } from './use-cases/create-comment.use-case';
 import { UpdateCommentUseCase } from './use-cases/update-comment.use-case';
 import { DeleteCommentUseCase } from './use-cases/delete-comment.use-case';
 import { UsersModule } from '../users/users.module';
+import { PostsModule } from '../posts/posts.module';
 
 const strategies = [JwtBearerStrategy];
 const adapters = [
@@ -26,7 +27,7 @@ const adapters = [
 const useCases = [CreateCommentUseCase, UpdateCommentUseCase, DeleteCommentUseCase];
 
 @Module({
-	imports: [ConfigModule.forRoot(), CqrsModule, UsersModule],
+	imports: [ConfigModule.forRoot(), CqrsModule, UsersModule, PostsModule],
 	controllers: [CommentsController],
 	providers: [...adapters, ...strategies, ...useCases],
 })

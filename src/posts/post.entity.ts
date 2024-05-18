@@ -1,10 +1,8 @@
-import mongoose, { HydratedDocument } from 'mongoose';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { PostViewDto } from './posts.types';
-import { likeDetailsMapping } from '../utils/mapping';
-import { ObjectId } from 'mongodb';
-
-export type PostDocument = HydratedDocument<Post>;
+import { Prop, Schema } from '@nestjs/mongoose';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { PostViewDto, PostDto } from './posts.types';
+import { Blog } from '../blogs/blog.entity';
+import { LikeStatus } from '../likes/likes.types';
 
 @Schema()
 export class likeDetails {
@@ -18,67 +16,47 @@ export class likeDetails {
 	login: string;
 }
 
-@Schema()
-export class extendedLikesInfo {
-	@Prop({ default: 0 })
-	likesCount: number;
-
-	@Prop({ default: 0 })
-	dislikesCount: number;
-
-	@Prop({ default: 'None' })
-	myStatus: string;
-
-	@Prop({ default: [] })
-	newestLikes: likeDetails[];
-}
-
-@Schema()
+@Entity('posts')
 export class Post {
-	@Prop({
-		required: true,
-		type: mongoose.Schema.Types.ObjectId,
-	})
-	_id: ObjectId;
+	@PrimaryGeneratedColumn('uuid')
+	id: string;
 
-	@Prop({ required: true })
+	@Column({ type: 'varchar' })
 	title: string;
 
-	@Prop({ required: true })
+	@Column({ type: 'varchar' })
 	shortDescription: string;
 
-	@Prop({ required: true })
+	@Column({ type: 'varchar' })
 	content: string;
 
-	@Prop({ required: true })
+	@Column({ type: 'timestamp with time zone' })
+	createdAt: Date;
+
+	@Column({ type: 'varchar' })
 	blogId: string;
 
-	@Prop({ required: true })
-	blogName: string;
+	@ManyToOne(() => Blog, (blog) => blog.post, {
+		onDelete: 'CASCADE',
+	})
+	@JoinColumn()
+	blog: Blog;
 
-	@Prop({ default: new Date().toISOString() })
-	createdAt: string;
-
-	@Prop({ default: [] })
-	extendedLikesInfo: extendedLikesInfo;
-
-	static getViewPost(postFromDb: Post): PostViewDto {
+	static getViewPost(postFromDb: PostDto): PostViewDto {
 		return {
-			id: postFromDb._id.toString(),
+			id: postFromDb.id,
 			title: postFromDb.title,
 			shortDescription: postFromDb.shortDescription,
 			content: postFromDb.content,
 			blogId: postFromDb.blogId,
 			blogName: postFromDb.blogName,
-			createdAt: postFromDb.createdAt,
+			createdAt: postFromDb.createdAt.toISOString(),
 			extendedLikesInfo: {
-				likesCount: postFromDb.extendedLikesInfo.likesCount,
-				dislikesCount: postFromDb.extendedLikesInfo.dislikesCount,
-				myStatus: postFromDb.extendedLikesInfo.myStatus,
-				newestLikes: likeDetailsMapping(postFromDb.extendedLikesInfo.newestLikes),
+				likesCount: postFromDb.likesCount,
+				dislikesCount: postFromDb.dislikesCount,
+				myStatus: postFromDb.myStatus || LikeStatus.None,
+				newestLikes: postFromDb.newestLikes || [],
 			},
 		};
 	}
 }
-
-export const PostSchema = SchemaFactory.createForClass(Post);

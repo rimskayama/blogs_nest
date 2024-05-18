@@ -28,7 +28,7 @@ export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand> {
 				field: blogIdField,
 			};
 
-		const result = await this.blogsRepository.updatePost(command.blogId, command.postId, command.inputModel);
+		const result = await this.blogsRepository.updatePost(command.postId, command.inputModel);
 		if (!result) {
 			return {
 				code: StatusCode.NotFound,
