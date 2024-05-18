@@ -17,7 +17,7 @@ import {
 	UseGuards,
 } from '@nestjs/common';
 import { BasicAuthGuard } from '../auth/passport/guards/basic-auth.guard';
-import { QueryParameters } from '../users/users.types';
+import { QueryParameters, UserFromGuard } from '../users/users.types';
 import { getPagination } from '../utils/pagination';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateBlogCommand } from './use-cases/create-blog.use-case';
@@ -26,20 +26,24 @@ import { UpdateBlogCommand } from './use-cases/update-blog.use-case';
 import { DeleteBlogCommand } from './use-cases/delete-blog.use-case';
 import { UpdatePostCommand } from './use-cases/update-post.use-case';
 import { DeletePostCommand } from './use-cases/delete-post.use-case';
+import { PostsQueryRepository } from '../posts/posts.query.repository';
+import { UserFromReq } from '../auth/decorators/userId.decorator';
+import { UserAuthGuard } from '../auth/passport/guards/userId.guard';
 
 @Controller('sa/blogs')
 export class SuperAdminBlogsController {
 	constructor(
 		private commandBus: CommandBus,
-		private readonly blogsQueryRepository: BlogsQueryRepository
+		private readonly blogsQueryRepository: BlogsQueryRepository,
+		private readonly postsQueryRepository: PostsQueryRepository
 	) {}
 
 	@UseGuards(BasicAuthGuard)
 	@Get()
 	@HttpCode(HttpStatus.OK)
 	async getBlogs(@Query() query: QueryParameters) {
-		const { page, limit, sortDirection, sortBy, searchNameTerm, skip } = getPagination(query);
-		const result = await this.blogsQueryRepository.findBlogs(page, limit, sortDirection, sortBy, searchNameTerm, skip);
+		const { page, limit, sortDirection, sortBy, searchNameTerm } = getPagination(query);
+		const result = await this.blogsQueryRepository.findBlogs(page, limit, sortDirection, sortBy, searchNameTerm);
 		return result;
 	}
 
@@ -82,6 +86,30 @@ export class SuperAdminBlogsController {
 			return exceptionHandler(result.code, result.message, result.field);
 		}
 		return result;
+	}
+
+	@UseGuards(UserAuthGuard)
+	@Get(':id/posts')
+	@HttpCode(HttpStatus.OK)
+	async getPostsOfBlog(
+		@Param('id') blogId: string,
+		@Query() query: QueryParameters,
+		@UserFromReq() user: UserFromGuard
+	) {
+		const blog = await this.blogsQueryRepository.findBlogById(blogId);
+		const { page, limit, sortDirection, sortBy } = getPagination(query);
+
+		if (blog) {
+			const result = await this.postsQueryRepository.findPostsByBlogId(
+				blogId,
+				page,
+				limit,
+				sortDirection,
+				sortBy,
+				user.id
+			);
+			return result;
+		} else return exceptionHandler(StatusCode.NotFound, blogNotFound, blogIdField);
 	}
 
 	@UseGuards(BasicAuthGuard)
