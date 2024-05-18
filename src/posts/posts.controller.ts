@@ -34,8 +34,8 @@ export class PostsController {
 	@Get()
 	@HttpCode(HttpStatus.OK)
 	async getPosts(@Query() query: QueryParameters, @UserFromReq() user: UserFromGuard) {
-		const { page, limit, sortDirection, sortBy, skip } = getPagination(query);
-		const result = await this.postsQueryRepository.findPosts(page, limit, sortDirection, sortBy, skip, user.id);
+		const { page, limit, sortDirection, sortBy } = getPagination(query);
+		const result = await this.postsQueryRepository.findPosts(page, limit, sortDirection, sortBy, user.id);
 		return result;
 	}
 
