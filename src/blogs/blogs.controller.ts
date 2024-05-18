@@ -18,8 +18,8 @@ export class BlogsController {
 	@Get()
 	@HttpCode(HttpStatus.OK)
 	async getBlogs(@Query() query: QueryParameters) {
-		const { page, limit, sortDirection, sortBy, searchNameTerm, skip } = getPagination(query);
-		const result = await this.blogsQueryRepository.findBlogs(page, limit, sortDirection, sortBy, searchNameTerm, skip);
+		const { page, limit, sortDirection, sortBy, searchNameTerm } = getPagination(query);
+		const result = await this.blogsQueryRepository.findBlogs(page, limit, sortDirection, sortBy, searchNameTerm);
 		return result;
 	}
 
@@ -41,7 +41,7 @@ export class BlogsController {
 		@UserFromReq() user: UserFromGuard
 	) {
 		const blog = await this.blogsQueryRepository.findBlogById(blogId);
-		const { page, limit, sortDirection, sortBy, skip } = getPagination(query);
+		const { page, limit, sortDirection, sortBy } = getPagination(query);
 
 		if (blog) {
 			const result = await this.postsQueryRepository.findPostsByBlogId(
@@ -50,7 +50,6 @@ export class BlogsController {
 				limit,
 				sortDirection,
 				sortBy,
-				skip,
 				user.id
 			);
 			return result;
