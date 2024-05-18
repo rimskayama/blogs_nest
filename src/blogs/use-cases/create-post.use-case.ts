@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BlogsRepository } from '../blogs.repository';
-import { PostInputDto, PostViewDto } from '../../posts/posts.types';
+import { PostViewDto, PostInputDto } from '../../posts/posts.types';
 
 export class CreatePostCommand {
 	constructor(
@@ -21,10 +21,7 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
 			shortDescription: command.inputModel.shortDescription,
 			content: command.inputModel.content,
 			blogId: command.blogId,
-			blogName: command.blogName,
 			createdAt: new Date(),
-			likesCount: 0,
-			dislikesCount: 0,
 		};
 		return this.blogsRepository.createPostForSpecifiedBlog(newPost);
 	}

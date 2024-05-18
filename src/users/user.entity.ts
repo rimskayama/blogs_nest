@@ -25,7 +25,7 @@ export class User {
 	@Column({ type: 'varchar' })
 	emailConfirmationCode: string;
 
-	@Column({ type: 'varchar' })
+	@Column({ type: 'timestamp with time zone' })
 	emailExpirationDate: Date;
 
 	@Column({ type: 'bool' })
@@ -34,7 +34,7 @@ export class User {
 	@Column({ type: 'varchar' })
 	passwordRecoveryCode: string;
 
-	@Column({ type: 'varchar' })
+	@Column({ type: 'timestamp with time zone' })
 	passwordExpirationDate: Date;
 
 	@OneToMany(() => Device, (device) => device.user)

@@ -2,7 +2,6 @@ import { Length } from 'class-validator';
 import { likeDetails } from './post.entity';
 import { Transform } from 'class-transformer';
 import validator from 'validator';
-import { LikeStatus } from '../likes/likes.types';
 
 export class PostInputDto {
 	@Transform(({ value }) => validator.trim(value))
@@ -52,19 +51,16 @@ export type postsPaginationDto = {
 	items: PostViewDto[];
 };
 
-export class PostDto {
+export class PostType {
 	id: string;
 	title: string;
 	shortDescription: string;
 	content: string;
 	blogId: string;
-	blogName: string;
 	createdAt: Date;
-	likesCount: number;
-	dislikesCount: number;
 }
 
-export class PostType {
+export type PostDto = {
 	id: string;
 	title: string;
 	shortDescription: string;
@@ -76,22 +72,4 @@ export class PostType {
 	dislikesCount: number;
 	myStatus: string;
 	newestLikes: likeDetails[];
-
-	static getViewPost(postFromDb: PostType): PostViewDto {
-		return {
-			id: postFromDb.id,
-			title: postFromDb.title,
-			shortDescription: postFromDb.shortDescription,
-			content: postFromDb.content,
-			blogId: postFromDb.blogId,
-			blogName: postFromDb.blogName,
-			createdAt: postFromDb.createdAt.toISOString(),
-			extendedLikesInfo: {
-				likesCount: postFromDb.likesCount,
-				dislikesCount: postFromDb.dislikesCount,
-				myStatus: postFromDb.myStatus || LikeStatus.None,
-				newestLikes: postFromDb.newestLikes || [],
-			},
-		};
-	}
-}
+};
