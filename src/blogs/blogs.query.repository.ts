@@ -2,64 +2,61 @@ import { BlogDto } from './blogs.types';
 import { blogsMapping } from '../utils/mapping';
 import { BlogsPaginationDto } from './blogs.types';
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Blog } from './blog.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class BlogsQueryRepository {
-	constructor(@InjectDataSource() protected dataSource: DataSource) {}
+	constructor(@InjectRepository(Blog) private readonly blogsRepository: Repository<Blog>) {}
 	async findBlogs(
-		page: number,
-		limit: number,
-		sortDirection: string,
+		pageNumber: number,
+		pageSize: number,
+		sortDirection: 'ASC' | 'DESC',
 		sortBy: string,
-		searchNameTerm: string,
-		skip: number
+		searchNameTerm: string
 	): Promise<BlogsPaginationDto> {
-		let result;
-		let count;
-		const query = `
-		SELECT b.*
-		FROM public."Blogs" b
-		WHERE b."name" ILIKE '%' || $1 || '%' 
-		GROUP BY b."id"
-		ORDER BY "${sortBy}" ${sortDirection === 'asc' ? 'ASC' : 'DESC'}
-		LIMIT $2 OFFSET $3;`;
+		const result = await this.blogsRepository
+			.createQueryBuilder('b')
+			.where(`${searchNameTerm ? `(b.name ilike :nameTerm)` : 'b.name is not null'}`, {
+				nameTerm: `%${searchNameTerm}%`,
+			})
+			.orderBy(`b.${sortBy}`, sortDirection)
+			.skip((pageNumber - 1) * pageSize)
+			.take(pageSize)
+			.getMany();
 
-		const queryToCountTotal = `
-		SELECT count(*) as total
-		FROM public."Blogs" b
-		WHERE b."name" ILIKE '%' || $1 || '%';`;
+		const count = await this.blogsRepository
+			.createQueryBuilder('b')
+			.where(`${searchNameTerm ? `(b.name ilike :nameTerm)` : 'b.name is not null'}`, {
+				nameTerm: `%${searchNameTerm}%`,
+			})
+			.orderBy(`b.${sortBy}`, sortDirection)
+			.skip((pageNumber - 1) * pageSize)
+			.take(pageSize)
+			.getCount();
 
-		try {
-			result = await this.dataSource.query(query, [searchNameTerm, limit, skip]);
-			count = await this.dataSource.query(queryToCountTotal, [searchNameTerm]);
-		} catch (error) {
-			console.error('Error finding blogs', error);
-		}
-
-		const total = parseInt(count[0].total);
-		const pagesCount = Math.ceil(total / limit);
+		const pagesCount = Math.ceil(count / pageSize);
 
 		return {
 			pagesCount: pagesCount,
-			page: page,
-			pageSize: limit,
-			totalCount: total,
+			page: pageNumber,
+			pageSize: pageSize,
+			totalCount: count,
 			items: blogsMapping(result),
 		};
 	}
 
 	async findBlogById(blogId: string): Promise<BlogDto | null> {
-		const query = `
-        SELECT "id", "name", "description", "websiteUrl", "isMembership", "createdAt"
-		FROM public."Blogs" b
-		WHERE b."id" = $1;
-    `;
-
 		try {
-			const result = await this.dataSource.query(query, [blogId]);
-			return result[0];
+			const result = await this.blogsRepository
+				.createQueryBuilder('b')
+				.select(['b.id', 'b.name', 'b.description', 'b.websiteUrl', 'b.isMembership', 'b.createdAt'])
+				.where(`b.id = :blogId`, {
+					blogId: blogId,
+				})
+				.getMany();
+			return Blog.getViewBlog(result[0]);
 		} catch (error) {
 			console.error('Error finding blog:', error);
 			return null;

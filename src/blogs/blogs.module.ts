@@ -15,6 +15,9 @@ import { UpdateBlogUseCase } from './use-cases/update-blog.use-case';
 import { UpdatePostUseCase } from './use-cases/update-post.use-case';
 import { DeleteBlogUseCase } from './use-cases/delete-blog.use-case';
 import { DeletePostUseCase } from './use-cases/delete-post.use-case';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Blog } from './blog.entity';
+import { PostsModule } from '../posts/posts.module';
 
 const adapters = [BlogsRepository, BlogsQueryRepository, PostsQueryRepository];
 const strategies = [UserAuthStrategy, BasicStrategy];
@@ -28,7 +31,7 @@ const useCases = [
 ];
 
 @Module({
-	imports: [ConfigModule.forRoot(), PassportModule, CqrsModule],
+	imports: [ConfigModule.forRoot(), PassportModule, CqrsModule, TypeOrmModule.forFeature([Blog]), PostsModule],
 	controllers: [BlogsController, SuperAdminBlogsController],
 	providers: [...adapters, ...strategies, ...useCases],
 })

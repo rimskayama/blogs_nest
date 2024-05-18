@@ -1,44 +1,41 @@
 import { BlogDto, BlogInputDto, BlogType } from './blogs.types';
 import { Injectable } from '@nestjs/common';
-import { DataSource } from 'typeorm';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { blogsMapping, postsMapping } from '../utils/mapping';
-import { PostViewDto, PostDto, PostInputDto } from 'src/posts/posts.types';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { PostInputDto, PostType } from 'src/posts/posts.types';
+import { Blog } from './blog.entity';
+import { Post } from '../posts/post.entity';
 
 @Injectable()
 export class BlogsRepository {
-	constructor(@InjectDataSource() protected dataSource: DataSource) {}
+	constructor(
+		@InjectRepository(Blog) private readonly blogsRepository: Repository<Blog>,
+		@InjectRepository(Post) private readonly postsRepository: Repository<Post>
+	) {}
 
 	async createBlog(blog: BlogType): Promise<BlogDto> {
-		const query = `INSERT INTO public."Blogs"(
-			"id", "name", "description", "websiteUrl", "createdAt", "isMembership")
-        VALUES($1, $2, $3, $4, $5, $6)
-        RETURNING *
-        `;
-
-		const values = [blog.id, blog.name, blog.description, blog.websiteUrl, blog.createdAt, blog.isMembership];
-
 		try {
-			const result = await this.dataSource.query(query, values);
-			return blogsMapping(result)[0];
+			const result = await this.blogsRepository.save(blog);
+			return Blog.getViewBlog(result);
 		} catch (error) {
 			console.error('Error creating blog :', error);
 		}
 	}
 
 	async updateBlog(id: string, inputModel: BlogInputDto): Promise<boolean> {
-		const query = `
-		UPDATE public."Blogs" b
-		SET "name"=$1, "description"=$2, "websiteUrl"=$3
-		WHERE b."id" = $4;
-    `;
-		const values = [inputModel.name, inputModel.description, inputModel.websiteUrl, id];
-
 		try {
-			const result = await this.dataSource.query(query, values);
-			if (result[1] === 0) {
-				return false;
-			}
+			const blog = await this.blogsRepository
+				.createQueryBuilder('b')
+				.where('b.id = :blogId', {
+					blogId: id,
+				})
+				.getOne();
+
+			blog.name = inputModel.name;
+			blog.description = inputModel.description;
+			blog.websiteUrl = inputModel.websiteUrl;
+
+			await this.blogsRepository.save(blog);
 			return true;
 		} catch (error) {
 			console.error('Error updating blog:', error);
@@ -47,67 +44,60 @@ export class BlogsRepository {
 	}
 
 	async deleteBlog(id: string): Promise<boolean> {
-		const query = `
-		DELETE FROM public."Blogs" b
-        WHERE b."id" = $1
-	`;
-
 		try {
-			const result = await this.dataSource.query(query, [id]);
-			if (result[1] === 0) {
-				return false;
-			}
-			return true;
+			const result = await this.blogsRepository
+				.createQueryBuilder('b')
+				.delete()
+				.from(Blog)
+				.where('id = :blogId', { blogId: id })
+				.execute();
+			return result.affected === 1;
 		} catch (error) {
 			console.error('Error deleting blog:', error);
 			return false;
 		}
 	}
 
-	async createPostForSpecifiedBlog(post: PostDto): Promise<PostViewDto> {
-		const query = `INSERT INTO public."Posts"(
-			"id", "title", "shortDescription", "content", "blogId", "blogName", "createdAt", "likesCount", "dislikesCount")
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
-        RETURNING *
-        `;
-
-		const values = [
-			post.id,
-			post.title,
-			post.shortDescription,
-			post.content,
-			post.blogId,
-			post.blogName,
-			post.createdAt,
-			post.likesCount,
-			post.dislikesCount,
-		];
-
+	async createPostForSpecifiedBlog(post: PostType) {
 		try {
-			const result = await this.dataSource.query(query, values);
-			return postsMapping(result)[0];
+			const postInfo = await this.postsRepository.save(post);
+			const blogInfo = await this.postsRepository
+				.createQueryBuilder('p')
+				.leftJoin('p.blog', 'b')
+				.select(['p.id', 'p.title', 'p.shortDescription', 'p.content', 'p.blogId', 'p.createdAt', 'b.name'])
+				.where(`p.blogId = :id`, {
+					id: post.blogId,
+				})
+				.getOne();
+			const blogName = blogInfo.blog.name;
+			const result = {
+				...postInfo,
+				blogName,
+				likesCount: 0,
+				dislikesCount: 0,
+				myStatus: 'None',
+				newestLikes: [],
+			};
+			return Post.getViewPost(result);
 		} catch (error) {
 			console.error('Error creating post :', error);
 		}
 	}
 
-	async updatePost(blogId: string, postId: string, inputModel: PostInputDto): Promise<boolean> {
-		const query = `
-		UPDATE public."Posts" p
-		SET "title"=$1, "shortDescription"=$2, "content"=$3, "blogId"=$4
-		WHERE p."id" = $5;
-    `;
+	async updatePost(postId: string, inputModel: PostInputDto): Promise<boolean> {
 		try {
-			const result = await this.dataSource.query(query, [
-				inputModel.title,
-				inputModel.shortDescription,
-				inputModel.content,
-				blogId,
-				postId,
-			]);
-			if (result[1] === 0) {
-				return false;
-			}
+			const post = await this.postsRepository
+				.createQueryBuilder('p')
+				.where('p.id = :postId', {
+					postId: postId,
+				})
+				.getOne();
+			console.log(post);
+			post.title = inputModel.title;
+			post.shortDescription = inputModel.shortDescription;
+			post.content = inputModel.content;
+
+			await this.postsRepository.save(post);
 			return true;
 		} catch (error) {
 			console.error('Error updating post:', error);
@@ -116,17 +106,14 @@ export class BlogsRepository {
 	}
 
 	async deletePost(id: string): Promise<boolean> {
-		const query = `
-		DELETE FROM public."Posts" p
-		WHERE p."id" = $1;
-    `;
-
 		try {
-			const result = await this.dataSource.query(query, [id]);
-			if (result[1] === 0) {
-				return false;
-			}
-			return true;
+			const result = await this.postsRepository
+				.createQueryBuilder('p')
+				.delete()
+				.from(Post)
+				.where('id = :postId', { postId: id })
+				.execute();
+			return result.affected === 1;
 		} catch (error) {
 			console.error('Error deleting post:', error);
 			return false;

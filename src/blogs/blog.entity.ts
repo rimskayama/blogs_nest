@@ -1,43 +1,39 @@
-import mongoose, { HydratedDocument } from 'mongoose';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { BlogDto } from './blogs.types';
-import { ObjectId } from 'mongodb';
+import { Post } from '../posts/post.entity';
+import { BlogDto, BlogType } from './blogs.types';
+import { Column, Entity, JoinColumn, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
-export type BlogDocument = HydratedDocument<Blog>;
-
-@Schema()
+@Entity('blogs')
 export class Blog {
-	@Prop({
-		required: true,
-		type: mongoose.Schema.Types.ObjectId,
-	})
-	_id: ObjectId;
+	@PrimaryGeneratedColumn('uuid')
+	id: string;
 
-	@Prop({ required: true })
+	@Column({ type: 'varchar' })
 	name: string;
 
-	@Prop({ required: true })
+	@Column({ type: 'varchar' })
 	description: string;
 
-	@Prop({ required: true })
+	@Column({ type: 'varchar' })
 	websiteUrl: string;
 
-	@Prop({ default: new Date().toISOString() })
-	createdAt: string;
+	@Column({ type: 'timestamp with time zone' })
+	createdAt: Date;
 
-	@Prop({ default: false })
+	@Column({ type: 'bool' })
 	isMembership: boolean;
 
-	static getViewBlog(blogFromDb: Blog): BlogDto {
+	@OneToMany(() => Post, (post) => post.blog)
+	@JoinColumn()
+	post: Post;
+
+	static getViewBlog(blogFromDb: BlogType): BlogDto {
 		return {
-			id: blogFromDb._id.toString(),
+			id: blogFromDb.id,
 			name: blogFromDb.name,
 			description: blogFromDb.description,
 			websiteUrl: blogFromDb.websiteUrl,
 			isMembership: blogFromDb.isMembership,
-			createdAt: blogFromDb.createdAt,
+			createdAt: blogFromDb.createdAt.toISOString(),
 		};
 	}
 }
-
-export const BlogSchema = SchemaFactory.createForClass(Blog);
