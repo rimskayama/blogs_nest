@@ -21,10 +21,7 @@ export class CreateCommentUseCase implements ICommandHandler<CreateCommentComman
 			postId: command.postId,
 			content: command.inputModel.content,
 			createdAt: new Date(),
-			commentatorId: command.userId,
-			commentatorLogin: command.userLogin,
-			likesCount: 0,
-			dislikesCount: 0,
+			userId: command.userId,
 		};
 		return await this.commentsRepository.createComment(newComment);
 	}
