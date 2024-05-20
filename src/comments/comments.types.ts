@@ -1,7 +1,6 @@
 import { Length } from 'class-validator';
 import { Transform } from 'class-transformer';
 import validator from 'validator';
-import { LikeStatus } from '../likes/likes.types';
 
 export class CommentViewDto {
 	id: string;
@@ -18,15 +17,16 @@ export class CommentViewDto {
 	};
 }
 
-export class commentDto {
+export class CommentDto {
 	id: string;
 	postId: string;
 	content: string;
-	commentatorId: string;
-	commentatorLogin: string;
+	userId: string;
+	userLogin: string;
 	createdAt: Date;
-	likesCount: number;
-	dislikesCount: number;
+	likesCount?: number;
+	dislikesCount?: number;
+	myStatus?: string;
 }
 
 export class contentInputDto {
@@ -40,26 +40,5 @@ export class CommentType {
 	postId: string;
 	content: string;
 	createdAt: Date;
-	commentatorId: string;
-	commentatorLogin: string;
-	likesCount: number;
-	dislikesCount: number;
-	myStatus: string;
-
-	static getViewComment(commentFromDb: CommentType): CommentViewDto {
-		return {
-			id: commentFromDb.id,
-			content: commentFromDb.content,
-			commentatorInfo: {
-				userId: commentFromDb.commentatorId,
-				userLogin: commentFromDb.commentatorLogin,
-			},
-			createdAt: commentFromDb.createdAt.toISOString(),
-			likesInfo: {
-				likesCount: commentFromDb.likesCount,
-				dislikesCount: commentFromDb.dislikesCount,
-				myStatus: commentFromDb.myStatus || LikeStatus.None,
-			},
-		};
-	}
+	userId: string;
 }

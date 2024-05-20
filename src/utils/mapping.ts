@@ -1,11 +1,12 @@
-import { PostLike } from '../likes/like.entity';
+import { PostLike } from '../likes/post-like.entity';
 import { Post, likeDetails } from '../posts/post.entity';
 import { BlogType } from '../blogs/blogs.types';
 import { PostDto } from '../posts/posts.types';
-import { CommentType } from '../comments/comments.types';
+import { CommentDto } from '../comments/comments.types';
 import { User } from '../users/user.entity';
 import { Device } from '../devices/device.entity';
 import { Blog } from '../blogs/blog.entity';
+import { Comment } from '../comments/comment.entity';
 
 export const blogsMapping = (array: BlogType[]) => {
 	return array.map((b: BlogType) => Blog.getViewBlog(b));
@@ -19,8 +20,8 @@ export const usersMapping = (array: User[]) => {
 	return array.map((u: User) => User.getViewUser(u));
 };
 
-export const commentsMapping = (array: CommentType[]) => {
-	return array.map((c: CommentType) => CommentType.getViewComment(c));
+export const commentsMapping = (array: CommentDto[]) => {
+	return array.map((c: CommentDto) => Comment.getViewComment(c));
 };
 
 export const devicesMapping = (array: Device[]) => {

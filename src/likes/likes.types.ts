@@ -39,7 +39,6 @@ export class CommentLikeType {
 	commentId: string;
 	status: string;
 	userId: string;
-	login: string;
 	addedAt: Date;
 
 	static getViewLikeDetails(likeDetails: PostLikeType): likeDetailsDto {

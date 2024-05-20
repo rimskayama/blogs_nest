@@ -6,21 +6,28 @@ import { User } from '../users/user.entity';
 export class Device {
 	@PrimaryGeneratedColumn('uuid')
 	deviceId: string;
+
 	@Column({ type: 'varchar' })
 	ip: string;
+
 	@Column({ type: 'varchar' })
 	title: string;
+
 	@Column({ type: 'integer' })
 	lastActiveDate: number;
+
 	@Column({ type: 'integer' })
 	tokenExpirationDate: number;
+
 	@Column({ type: 'varchar' })
 	userId: string;
+
 	@ManyToOne(() => User, (user) => user.device, {
 		onDelete: 'CASCADE',
 	})
 	@JoinColumn()
-	user: User[];
+	user: User;
+
 	static getViewDevice(deviceFromDb: Device): DeviceDto {
 		return {
 			ip: deviceFromDb.ip,
