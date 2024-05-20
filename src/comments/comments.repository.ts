@@ -1,34 +1,30 @@
-import { commentDto, CommentViewDto } from './comments.types';
+import { CommentType, CommentViewDto } from './comments.types';
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { commentsMapping } from '../utils/mapping';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Comment } from './comment.entity';
 
 @Injectable()
 export class CommentsRepository {
-	constructor(@InjectDataSource() protected dataSource: DataSource) {}
+	constructor(@InjectRepository(Comment) private readonly commentsRepository: Repository<Comment>) {}
 
-	async createComment(comment: commentDto): Promise<CommentViewDto | null> {
-		const query = `INSERT INTO public."Comments"(
-			"id", "postId", "content", "createdAt", "commentatorId", "commentatorLogin", "likesCount", "dislikesCount")
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8)
-        RETURNING *
-        `;
-
-		const values = [
-			comment.id,
-			comment.postId,
-			comment.content,
-			comment.createdAt,
-			comment.commentatorId,
-			comment.commentatorLogin,
-			comment.likesCount,
-			comment.dislikesCount,
-		];
-
+	async createComment(comment: CommentType): Promise<CommentViewDto | null> {
 		try {
-			const result = await this.dataSource.query(query, values);
-			return commentsMapping(result)[0];
+			const result = await this.commentsRepository.save(comment);
+			const userInfo = await this.commentsRepository
+				.createQueryBuilder('c')
+				.leftJoin('c.user', 'u')
+				.select(['c.id', 'c.content', 'c.userId', 'c.createdAt', 'u.login'])
+				.where(`c.userId = :id`, {
+					id: comment.userId,
+				})
+				.getOne();
+
+			const userLogin = userInfo.user.login;
+			return Comment.getViewComment({
+				...result,
+				userLogin: userLogin,
+			});
 		} catch (error) {
 			console.error('Error creating comment :', error);
 			return null;
@@ -36,35 +32,34 @@ export class CommentsRepository {
 	}
 
 	async updateComment(id: string, content: string) {
-		const query = `
-		UPDATE public."Comments" c
-		SET "content"=$1
-		WHERE c."id" = $2;
-    `;
 		try {
-			const result = await this.dataSource.query(query, [content, id]);
-			return result;
+			const comment = await this.commentsRepository
+				.createQueryBuilder('b')
+				.where('b.id = :blogId', {
+					blogId: id,
+				})
+				.getOne();
+			comment.content = content;
+			await this.commentsRepository.save(comment);
+			return true;
 		} catch (error) {
 			console.error('Error updating comment:', error);
 			return false;
 		}
 	}
 
-	async deleteComment(id: string): Promise<true | null> {
-		const query = `
-		DELETE FROM public."Comments" c
-		WHERE c."id" = $1;
-	`;
-
+	async deleteComment(id: string): Promise<boolean> {
 		try {
-			const result = await this.dataSource.query(query, [id]);
-			if (result[1] === 0) {
-				return null;
-			}
-			return true;
+			const result = await this.commentsRepository
+				.createQueryBuilder('c')
+				.delete()
+				.from(Comment)
+				.where('id = :commentId', { commentId: id })
+				.execute();
+			return result.affected === 1;
 		} catch (error) {
 			console.error('Error deleting comment:', error);
-			return null;
+			return false;
 		}
 	}
 }

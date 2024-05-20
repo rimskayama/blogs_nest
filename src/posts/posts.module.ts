@@ -10,13 +10,22 @@ import { UserAuthStrategy } from '../auth/passport/strategies/userId.strategy';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Post } from './post.entity';
+import { Comment } from '../comments/comment.entity';
+import { CommentLike } from '../likes/like.entity';
 
 const strategies = [JwtBearerStrategy, UserAuthStrategy];
 const services = [JwtService];
 const adapters = [PostsQueryRepository, CommentsQueryRepository];
 
 @Module({
-	imports: [ConfigModule.forRoot(), PassportModule, CqrsModule, TypeOrmModule.forFeature([Post])],
+	imports: [
+		ConfigModule.forRoot(),
+		PassportModule,
+		CqrsModule,
+		TypeOrmModule.forFeature([Post]),
+		TypeOrmModule.forFeature([Comment]),
+		TypeOrmModule.forFeature([CommentLike]),
+	],
 	controllers: [PostsController],
 	providers: [...services, ...adapters, ...strategies],
 	exports: [TypeOrmModule],

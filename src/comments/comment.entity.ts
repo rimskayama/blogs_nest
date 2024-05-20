@@ -1,61 +1,63 @@
-import mongoose, { HydratedDocument } from 'mongoose';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ObjectId } from 'mongodb';
-import { CommentViewDto } from './comments.types';
+import { CommentViewDto, CommentDto } from './comments.types';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Post } from '../posts/post.entity';
+import { User } from '../users/user.entity';
+import { LikeStatus } from '../likes/likes.types';
+import { CommentLike } from '../likes/like.entity';
 
-export type CommentDocument = HydratedDocument<Comment>;
-
-@Schema()
 export class commentanorInfo {
-	@Prop({ required: true })
 	userId: string;
-	@Prop({ required: true })
 	userLogin: string;
 }
 
-@Schema()
 export class likesInfo {
-	@Prop({ required: true, default: 0 })
 	likesCount: number;
-	@Prop({ required: true, default: 0 })
 	dislikesCount: number;
-	@Prop({ required: true, default: 'None' })
 	myStatus: string;
 }
 
-@Schema()
+@Entity('comments')
 export class Comment {
-	@Prop({
-		required: true,
-		type: mongoose.Schema.Types.ObjectId,
-	})
-	_id: ObjectId;
-	@Prop({ required: true })
-	postId: string;
-	@Prop({ required: true })
-	content: string;
-	@Prop({ required: true })
-	commentatorInfo: commentanorInfo;
-	@Prop({ required: true })
-	createdAt: string;
-	@Prop({ required: true })
-	likesInfo: likesInfo;
+	@PrimaryGeneratedColumn('uuid')
+	id: string;
 
-	static getViewComment(commentFromDb: Comment): CommentViewDto {
+	@Column({ type: 'varchar' })
+	postId: string;
+
+	@ManyToOne(() => Post, (post) => post.comment)
+	@JoinColumn()
+	post: Post;
+
+	@Column({ type: 'varchar' })
+	content: string;
+
+	@Column({ type: 'timestamp with time zone' })
+	createdAt: Date;
+
+	@Column({ type: 'varchar' })
+	userId: string;
+
+	@ManyToOne(() => User, (user) => user.comment)
+	@JoinColumn()
+	user: User;
+
+	@OneToMany(() => CommentLike, (commentLike) => commentLike.comment)
+	commentLike: CommentLike[];
+
+	static getViewComment(commentFromDb: CommentDto): CommentViewDto {
 		return {
-			id: commentFromDb._id.toString(),
+			id: commentFromDb.id,
 			content: commentFromDb.content,
 			commentatorInfo: {
-				userId: commentFromDb.commentatorInfo.userId,
-				userLogin: commentFromDb.commentatorInfo.userLogin,
+				userId: commentFromDb.userId,
+				userLogin: commentFromDb.userLogin,
 			},
-			createdAt: commentFromDb.createdAt,
+			createdAt: commentFromDb.createdAt.toISOString(),
 			likesInfo: {
-				likesCount: commentFromDb.likesInfo.likesCount,
-				dislikesCount: commentFromDb.likesInfo.dislikesCount,
-				myStatus: commentFromDb.likesInfo.myStatus,
+				likesCount: commentFromDb.likesCount || 0,
+				dislikesCount: commentFromDb.dislikesCount || 0,
+				myStatus: commentFromDb.myStatus || LikeStatus.None,
 			},
 		};
 	}
 }
-export const CommentSchema = SchemaFactory.createForClass(Comment);

@@ -14,6 +14,8 @@ import { UpdateCommentUseCase } from './use-cases/update-comment.use-case';
 import { DeleteCommentUseCase } from './use-cases/delete-comment.use-case';
 import { UsersModule } from '../users/users.module';
 import { PostsModule } from '../posts/posts.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Comment } from './comment.entity';
 
 const strategies = [JwtBearerStrategy];
 const adapters = [
@@ -27,7 +29,7 @@ const adapters = [
 const useCases = [CreateCommentUseCase, UpdateCommentUseCase, DeleteCommentUseCase];
 
 @Module({
-	imports: [ConfigModule.forRoot(), CqrsModule, UsersModule, PostsModule],
+	imports: [ConfigModule.forRoot(), CqrsModule, UsersModule, PostsModule, TypeOrmModule.forFeature([Comment])],
 	controllers: [CommentsController],
 	providers: [...adapters, ...strategies, ...useCases],
 })

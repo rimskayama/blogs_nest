@@ -1,18 +1,14 @@
-import { Prop, Schema } from '@nestjs/mongoose';
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { PostViewDto, PostDto } from './posts.types';
 import { Blog } from '../blogs/blog.entity';
 import { LikeStatus } from '../likes/likes.types';
+import { Comment } from '../comments/comment.entity';
 
-@Schema()
 export class likeDetails {
-	@Prop({})
 	addedAt: string;
 
-	@Prop({})
 	userId: string;
 
-	@Prop({})
 	login: string;
 }
 
@@ -41,6 +37,12 @@ export class Post {
 	})
 	@JoinColumn()
 	blog: Blog;
+
+	@OneToMany(() => Comment, (comment) => comment.post, {
+		onDelete: 'CASCADE',
+	})
+	@JoinColumn()
+	comment: Comment[];
 
 	static getViewPost(postFromDb: PostDto): PostViewDto {
 		return {
