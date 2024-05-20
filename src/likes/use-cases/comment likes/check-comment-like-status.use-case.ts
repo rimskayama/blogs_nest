@@ -1,5 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CommentLikesRepository } from '../../comment.likes.repository';
+import { LikeStatus } from '../../likes.types';
 
 export class CheckCommentLikeStatusCommand {
 	constructor(
@@ -13,7 +14,7 @@ export class CheckCommentLikeStatusCommand {
 export class CheckCommentLikeStatusUseCase implements ICommandHandler<CheckCommentLikeStatusCommand> {
 	constructor(private readonly commentLikesRepository: CommentLikesRepository) {}
 	async execute(command: CheckCommentLikeStatusCommand): Promise<boolean> {
-		if (command.likeStatus === 'None') {
+		if (command.likeStatus === LikeStatus.None) {
 			await this.commentLikesRepository.removeLike(command.commentId, command.userId);
 			return true;
 		} else {

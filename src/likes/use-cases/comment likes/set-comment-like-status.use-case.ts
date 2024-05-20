@@ -20,7 +20,6 @@ export class SetCommentLikeStatusUseCase implements ICommandHandler<SetCommentLi
 			commentId: command.commentId,
 			status: command.likeStatus,
 			userId: command.userId,
-			login: command.userLogin,
 			addedAt: new Date(),
 		};
 		return await this.commentLikesRepository.setLikeStatus(like);

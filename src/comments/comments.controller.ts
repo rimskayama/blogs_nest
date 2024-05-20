@@ -11,7 +11,6 @@ import { CommandBus } from '@nestjs/cqrs';
 import { CheckCommentLikeStatusCommand } from '../likes/use-cases/comment likes/check-comment-like-status.use-case';
 import { SetCommentLikeStatusCommand } from '../likes/use-cases/comment likes/set-comment-like-status.use-case';
 import { UserFromGuard } from '../users/users.types';
-import { UpdateCommentLikesCommand } from '../likes/use-cases/comment likes/update-comment-likes.use-case';
 import { UpdateCommentCommand } from './use-cases/update-comment.use-case';
 import { DeleteCommentCommand } from './use-cases/delete-comment.use-case';
 
@@ -64,19 +63,14 @@ export class CommentsController {
 			const checkLikeStatus = await this.commandBus.execute(
 				new CheckCommentLikeStatusCommand(inputModel.likeStatus, comment.id, user.id)
 			);
-			if (checkLikeStatus) {
-				await this.commandBus.execute(new UpdateCommentLikesCommand(comment.id));
-				return;
-			} else {
+			if (!checkLikeStatus) {
 				const isCreated = await this.commandBus.execute(
 					new SetCommentLikeStatusCommand(inputModel.likeStatus, comment.id, user.id, user.login)
 				);
-				if (isCreated) {
-					await this.commandBus.execute(new UpdateCommentLikesCommand(comment.id));
-					return;
+				if (!isCreated) {
+					return exceptionHandler(StatusCode.NotFound, commentNotFound, commentIdField);
 				}
-				return exceptionHandler(StatusCode.NotFound, commentNotFound, commentIdField);
-			}
+			} else return;
 		}
 	}
 
