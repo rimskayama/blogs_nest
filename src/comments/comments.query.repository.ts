@@ -1,131 +1,172 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { CommentType, CommentViewDto } from './comments.types';
-import { likeDetails } from '../posts/post.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { CommentViewDto } from './comments.types';
 import { LikeStatus } from '../likes/likes.types';
+import { Comment } from './comment.entity';
+import { CommentLike } from '../likes/like.entity';
 
 @Injectable()
 export class CommentsQueryRepository {
-	constructor(@InjectDataSource() protected dataSource: DataSource) {}
+	constructor(
+		@InjectRepository(Comment) private readonly commentsRepository: Repository<Comment>,
+		@InjectRepository(CommentLike) private readonly commentLikesRepository: Repository<CommentLike>
+	) {}
 	async findCommentsByPostId(
 		postId: string,
-		page: number,
-		limit: number,
-		sortDirection: string,
+		pageNumber: number,
+		pageSize: number,
+		sortDirection: 'ASC' | 'DESC',
 		sortBy: string,
-		skip: number,
 		userId: string | false
 	) {
-		let result;
-		let count;
-		const query = `
-		SELECT c.*
-		FROM public."Comments" c
-		WHERE c."postId" ILIKE '%' || $1 || '%'
-		GROUP BY c."id"
-		ORDER BY "${sortBy}" ${sortDirection === 'asc' ? 'ASC' : 'DESC'}
-		LIMIT $2 OFFSET $3;`;
+		const result = await this.commentsRepository
+			.createQueryBuilder('c')
+			.leftJoin('c.user', 'u')
+			.select(['c.id', 'c.content', 'c.userId', 'c.createdAt', 'u.login'])
+			.where(`c.postId = :id`, {
+				id: postId,
+			})
+			.orderBy(`c.${sortBy}`, sortDirection)
+			.skip((pageNumber - 1) * pageSize)
+			.take(pageSize)
+			.getMany();
 
-		const queryToCountTotal = `
-		SELECT count(*) as total
-		FROM public."Comments" c
-		WHERE c."postId" ILIKE '%' || $1 || '%' ;`;
+		const count = await this.commentsRepository
+			.createQueryBuilder('c')
+			.where(`c.postId = :id`, {
+				id: postId,
+			})
+			.orderBy(`c.${sortBy}`, sortDirection)
+			.skip((pageNumber - 1) * pageSize)
+			.take(pageSize)
+			.getCount();
 
-		try {
-			result = await this.dataSource.query(query, [postId, limit, skip]);
-			count = await this.dataSource.query(queryToCountTotal, [postId]);
-		} catch (error) {
-			console.error('Error finding comments by postId', error);
-		}
-
-		const total = parseInt(count[0].total);
-		const pagesCount = Math.ceil(total / limit);
+		const pagesCount = Math.ceil(count / pageSize);
 
 		const items = await Promise.all(
 			result.map(async (comment) => {
+				let result;
 				let likeStatus = 'None';
+				let likesCount = 0;
+				let dislikesCount = 0;
+				const userLogin = comment.user.login;
 				//set like
 				if (userId) {
-					const query = `
-					SELECT "status"
-					FROM public."CommentLikes" cl
-					WHERE cl."commentId" = $1 AND cl."userId" = $2
-				`;
-					try {
-						const result = await this.dataSource.query(query, [comment.id, userId]);
-						likeStatus = result[0].status;
-					} catch (error) {
-						console.error('Error finding comment likes:', error);
-					}
+					result = await this.commentLikesRepository
+						.createQueryBuilder('cl')
+						.select(['cl.id', 'cl.commentId', 'cl.status', 'cl.userId'])
+						.where(`cl.commentId = :commentId`, {
+							commentId: comment.id,
+						})
+						.andWhere(`cl.userId = :userId`, {
+							userId: userId,
+						})
+						.getOne();
+					likeStatus = result.status;
+					likesCount = await this.commentLikesRepository
+						.createQueryBuilder('cl')
+						.where(`cl.commentId = :id`, {
+							id: comment.id,
+						})
+						.andWhere(`cl.status = :status`, {
+							status: LikeStatus.Like,
+						})
+						.getCount();
+
+					dislikesCount = await this.commentLikesRepository
+						.createQueryBuilder('cl')
+						.where(`cl.commentId = :id`, {
+							id: comment.id,
+						})
+						.andWhere(`cl.status = :status`, {
+							status: LikeStatus.Dislike,
+						})
+						.getCount();
 				}
 
-				//get newestLikes
-				let newestLikes: likeDetails[] = [];
-				const queryToGetLikes = `
-				SELECT "userId", "login", "addedAt"
-				FROM public."CommentLikes" cl
-				WHERE cl."commentId" = $1 AND cl."status" = $2
-				ORDER BY "addedAt" DESC
-				LIMIT $3 OFFSET $4;
-				`;
-				try {
-					newestLikes = await this.dataSource.query(queryToGetLikes, [comment.id, LikeStatus.Like, 3, 0]);
-				} catch (error) {
-					console.error('Error finding comment likes:', error);
-				}
-
-				return CommentType.getViewComment({
+				return Comment.getViewComment({
 					...comment,
 					myStatus: likeStatus,
-					newestLikes,
+					userLogin: userLogin,
+					likesCount,
+					dislikesCount,
 				});
 			})
 		);
 		return {
 			pagesCount: pagesCount,
-			page: page,
-			pageSize: limit,
-			totalCount: total,
+			page: pageNumber,
+			pageSize: pageSize,
+			totalCount: count,
 			items,
 		};
 	}
 
 	async findCommentById(commentId: string, userId: string | false): Promise<CommentViewDto | null> {
-		const query = `
-		SELECT "id", "content", "createdAt", "commentatorId", "commentatorLogin", "likesCount", "dislikesCount"
-		FROM public."Comments" c
-		WHERE c."id" = $1;
-	`;
+		let result;
+		let userLogin;
 		try {
-			const result = await this.dataSource.query(query, [commentId]);
-			if (result.length === 0) {
-				return null;
-			}
-			//set like
-			let likeStatus = 'None';
-			if (userId) {
-				const query = `
-				SELECT "status"
-				FROM public."CommentLikes" cl
-				WHERE cl."commentId" = $1 AND cl."userId" = $2
-			`;
-				try {
-					const likeResult = await this.dataSource.query(query, [commentId, userId]);
-					if (likeResult.length === 0) {
-						likeStatus = 'None';
-					} else likeStatus = likeResult[0].status;
-				} catch (error) {
-					console.error('Error finding comment likes:', error);
-				}
-			}
-			return CommentType.getViewComment({
-				...result[0],
-				myStatus: likeStatus,
-			});
+			result = await this.commentsRepository
+				.createQueryBuilder('c')
+				.leftJoin('c.user', 'u')
+				.select(['c.id', 'c.content', 'c.userId', 'c.createdAt', 'u.login'])
+				.where(`c.id = :id`, {
+					id: commentId,
+				})
+				.getOne();
+			userLogin = result.user.login;
 		} catch (error) {
 			console.error('Error finding comment:', error);
 			return null;
 		}
+
+		//set like
+		let likeStatus = 'None';
+		let likesCount = 0;
+		let dislikesCount = 0;
+		if (userId) {
+			const result = await this.commentLikesRepository
+				.createQueryBuilder('cl')
+				.select(['cl.id', 'cl.userId', 'cl.status', 'cl.commentId'])
+				.where(`cl.commentId = :commentId`, {
+					commentId: commentId,
+				})
+				.andWhere(`cl.userId = :userId`, {
+					userId: userId,
+				})
+				.getOne();
+			if (result) {
+				likeStatus = result.status;
+			}
+		}
+
+		likesCount = await this.commentLikesRepository
+			.createQueryBuilder('cl')
+			.where(`cl.commentId = :id`, {
+				id: commentId,
+			})
+			.andWhere(`cl.status = :status`, {
+				status: LikeStatus.Like,
+			})
+			.getCount();
+
+		dislikesCount = await this.commentLikesRepository
+			.createQueryBuilder('cl')
+			.where(`cl.commentId = :id`, {
+				id: commentId,
+			})
+			.andWhere(`cl.status = :status`, {
+				status: LikeStatus.Dislike,
+			})
+			.getCount();
+
+		return Comment.getViewComment({
+			...result,
+			userLogin: userLogin,
+			myStatus: likeStatus,
+			likesCount,
+			dislikesCount,
+		});
 	}
 }

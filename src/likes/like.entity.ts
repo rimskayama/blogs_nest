@@ -1,33 +1,25 @@
-import mongoose, { HydratedDocument } from 'mongoose';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { likeDetails } from 'src/posts/post.entity';
 import { likeDetailsDto } from './likes.types';
-import { ObjectId } from 'mongodb';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Comment } from '../comments/comment.entity';
+import { User } from '../users/user.entity';
 
-export type PostLikeDocument = HydratedDocument<PostLike>;
-
-@Schema()
+@Entity('postLikes')
 export class PostLike {
-	@Prop({
-		required: true,
-		type: mongoose.Schema.Types.ObjectId,
-	})
-	_id: ObjectId;
+	@PrimaryGeneratedColumn('uuid')
+	id: string;
 
-	@Prop({ required: true })
+	@Column({ type: 'varchar' })
 	postId: string;
 
-	@Prop({ required: true })
+	@Column({ type: 'varchar' })
 	status: string;
 
-	@Prop({ required: true })
+	@Column({ type: 'varchar' })
 	userId: string;
 
-	@Prop({ required: true })
-	login: string;
-
-	@Prop({ required: true })
-	addedAt: string;
+	@Column({ type: 'timestamp with time zone' })
+	addedAt: Date;
 
 	static getViewLikeDetails(likeDetails: likeDetails): likeDetailsDto {
 		return {
@@ -37,32 +29,33 @@ export class PostLike {
 		};
 	}
 }
-export const PostLikeSchema = SchemaFactory.createForClass(PostLike);
 
-export type CommentLikeDocument = HydratedDocument<CommentLike>;
-
-@Schema()
+@Entity('commentLikes')
 export class CommentLike {
-	@Prop({
-		required: true,
-		type: mongoose.Schema.Types.ObjectId,
-	})
-	_id: ObjectId;
+	@PrimaryGeneratedColumn('uuid')
+	id: string;
 
-	@Prop({ required: true })
+	@Column({ type: 'varchar' })
 	commentId: string;
 
-	@Prop({ required: true })
+	@Column({ type: 'varchar' })
 	status: string;
 
-	@Prop({ required: true })
+	@Column({ type: 'varchar' })
 	userId: string;
 
-	@Prop({ required: true })
-	login: string;
+	@Column({ type: 'timestamp with time zone' })
+	addedAt: Date;
 
-	@Prop({ required: true })
-	addedAt: string;
+	@ManyToOne(() => Comment, (comment) => comment.commentLike, {
+		onDelete: 'CASCADE',
+	})
+	@JoinColumn()
+	comment: Comment;
+
+	@ManyToOne(() => User, (user) => user.commentLike, {
+		onDelete: 'CASCADE',
+	})
+	@JoinColumn()
+	user: User;
 }
-
-export const CommentLikeSchema = SchemaFactory.createForClass(CommentLike);
