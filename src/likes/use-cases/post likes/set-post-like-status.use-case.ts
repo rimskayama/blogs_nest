@@ -20,7 +20,6 @@ export class SetPostLikeStatusUseCase implements ICommandHandler<SetPostLikeStat
 			postId: command.postId,
 			status: command.likeStatus,
 			userId: command.userId,
-			login: command.userLogin,
 			addedAt: new Date(),
 		};
 		return await this.postLikesRepository.setLikeStatus(like);

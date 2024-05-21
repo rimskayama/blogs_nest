@@ -20,7 +20,6 @@ import { CommandBus } from '@nestjs/cqrs';
 import { CreateCommentCommand } from '../comments/use-cases/create-comment.use-case';
 import { CheckPostLikeStatusCommand } from '../likes/use-cases/post likes/check-post-likes-status.use-case';
 import { SetPostLikeStatusCommand } from '../likes/use-cases/post likes/set-post-like-status.use-case';
-import { UpdatePostLikesCommand } from '../likes/use-cases/post likes/update-post-like-status.use-case';
 
 @Controller('posts')
 export class PostsController {
@@ -58,7 +57,7 @@ export class PostsController {
 	) {
 		const checkPost = await this.postsQueryRepository.findPostById(postId, user.id);
 
-		const { page, limit, sortDirection, sortBy, skip } = getPagination(query);
+		const { page, limit, sortDirection, sortBy } = getPagination(query);
 
 		if (checkPost) {
 			const result = await this.commentsQueryRepository.findCommentsByPostId(
@@ -67,7 +66,6 @@ export class PostsController {
 				limit,
 				sortDirection,
 				sortBy,
-				skip,
 				user.id
 			);
 			return result;
@@ -107,18 +105,13 @@ export class PostsController {
 			const checkLikeStatus = await this.commandBus.execute(
 				new CheckPostLikeStatusCommand(inputModel.likeStatus, post.id, user.id)
 			);
-			if (checkLikeStatus) {
-				await this.commandBus.execute(new UpdatePostLikesCommand(post.id));
-				return;
-			} else {
+			if (!checkLikeStatus) {
 				const newStatus = await this.commandBus.execute(
 					new SetPostLikeStatusCommand(inputModel.likeStatus, post.id, user.id, user.login)
 				);
-				if (newStatus) {
-					await this.commandBus.execute(new UpdatePostLikesCommand(post.id));
-					return;
-				}
-				return exceptionHandler(StatusCode.NotFound, postNotFound, postIdField);
+				if (!newStatus) {
+					return exceptionHandler(StatusCode.NotFound, postNotFound, postIdField);
+				} else return;
 			}
 		}
 	}
