@@ -64,10 +64,10 @@ export class CommentsController {
 				new CheckCommentLikeStatusCommand(inputModel.likeStatus, comment.id, user.id)
 			);
 			if (!checkLikeStatus) {
-				const isCreated = await this.commandBus.execute(
+				const newStatus = await this.commandBus.execute(
 					new SetCommentLikeStatusCommand(inputModel.likeStatus, comment.id, user.id, user.login)
 				);
-				if (!isCreated) {
+				if (!newStatus) {
 					return exceptionHandler(StatusCode.NotFound, commentNotFound, commentIdField);
 				}
 			} else return;

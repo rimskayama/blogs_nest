@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { CommentViewDto } from './comments.types';
 import { LikeStatus } from '../likes/likes.types';
 import { Comment } from './comment.entity';
-import { CommentLike } from '../likes/like.entity';
+import { CommentLike } from '../likes/comment-like.entity';
 
 @Injectable()
 export class CommentsQueryRepository {

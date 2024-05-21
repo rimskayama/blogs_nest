@@ -26,7 +26,7 @@ export class Device {
 		onDelete: 'CASCADE',
 	})
 	@JoinColumn()
-	user: User;
+	user: User[];
 
 	static getViewDevice(deviceFromDb: Device): DeviceDto {
 		return {

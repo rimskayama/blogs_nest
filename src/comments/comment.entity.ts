@@ -3,7 +3,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColum
 import { Post } from '../posts/post.entity';
 import { User } from '../users/user.entity';
 import { LikeStatus } from '../likes/likes.types';
-import { CommentLike } from '../likes/like.entity';
+import { CommentLike } from '../likes/comment-like.entity';
 
 export class commentanorInfo {
 	userId: string;
