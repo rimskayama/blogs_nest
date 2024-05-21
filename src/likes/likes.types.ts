@@ -22,16 +22,7 @@ export class PostLikeType {
 	postId: string;
 	status: string;
 	userId: string;
-	login: string;
 	addedAt: Date;
-
-	static getViewLikeDetails(likeDetails: PostLikeType): likeDetailsDto {
-		return {
-			addedAt: likeDetails.addedAt.toISOString(),
-			userId: likeDetails.userId,
-			login: likeDetails.login,
-		};
-	}
 }
 
 export class CommentLikeType {
@@ -40,12 +31,4 @@ export class CommentLikeType {
 	status: string;
 	userId: string;
 	addedAt: Date;
-
-	static getViewLikeDetails(likeDetails: PostLikeType): likeDetailsDto {
-		return {
-			addedAt: likeDetails.addedAt.toISOString(),
-			userId: likeDetails.userId,
-			login: likeDetails.login,
-		};
-	}
 }

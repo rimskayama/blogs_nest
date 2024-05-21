@@ -2,6 +2,7 @@ import { Length } from 'class-validator';
 import { likeDetails } from './post.entity';
 import { Transform } from 'class-transformer';
 import validator from 'validator';
+import { likeDetailsDto } from '../likes/likes.types';
 
 export class PostInputDto {
 	@Transform(({ value }) => validator.trim(value))
@@ -39,7 +40,7 @@ export type PostViewDto = {
 		likesCount: number;
 		dislikesCount: number;
 		myStatus: string;
-		newestLikes: likeDetails[];
+		newestLikes: likeDetailsDto[];
 	};
 };
 
