@@ -12,7 +12,8 @@ import { CheckPostLikeStatusUseCase } from './use-cases/post likes/check-post-li
 import { SetPostLikeStatusUseCase } from './use-cases/post likes/set-post-like-status.use-case';
 import { UsersModule } from '../users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CommentLike, PostLike } from './like.entity';
+import { CommentLike } from './comment-like.entity';
+import { PostLike } from './post-like.entity';
 
 const adapters = [PostLikesRepository, CommentLikesRepository, UsersQueryRepository];
 const strategies = [JwtBearerStrategy];
@@ -31,6 +32,7 @@ const useCases = [
 		UsersModule,
 		TypeOrmModule.forFeature([PostLike]),
 		TypeOrmModule.forFeature([CommentLike]),
+		TypeOrmModule.forFeature([PostLike]),
 	],
 	controllers: [],
 	providers: [...adapters, ...strategies, ...useCases],

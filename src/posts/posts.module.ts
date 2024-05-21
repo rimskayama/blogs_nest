@@ -11,7 +11,8 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Post } from './post.entity';
 import { Comment } from '../comments/comment.entity';
-import { CommentLike } from '../likes/like.entity';
+import { CommentLike } from '../likes/comment-like.entity';
+import { PostLike } from '../likes/post-like.entity';
 
 const strategies = [JwtBearerStrategy, UserAuthStrategy];
 const services = [JwtService];
@@ -25,6 +26,7 @@ const adapters = [PostsQueryRepository, CommentsQueryRepository];
 		TypeOrmModule.forFeature([Post]),
 		TypeOrmModule.forFeature([Comment]),
 		TypeOrmModule.forFeature([CommentLike]),
+		TypeOrmModule.forFeature([PostLike]),
 	],
 	controllers: [PostsController],
 	providers: [...services, ...adapters, ...strategies],

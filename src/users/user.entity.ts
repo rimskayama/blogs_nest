@@ -2,7 +2,8 @@ import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, PrimaryGenerat
 import { format } from 'date-fns';
 import { Device } from '../devices/device.entity';
 import { Comment } from '../comments/comment.entity';
-import { CommentLike } from '../likes/like.entity';
+import { CommentLike } from '../likes/comment-like.entity';
+import { PostLike } from '../likes/post-like.entity';
 
 @Entity('users')
 export class User {
@@ -48,6 +49,9 @@ export class User {
 
 	@OneToMany(() => CommentLike, (commentLike) => commentLike.user)
 	commentLike: CommentLike[];
+
+	@OneToMany(() => PostLike, (postLike) => postLike.user)
+	postLike: PostLike[];
 
 	static getViewUser(userFromDb: User) {
 		return {
