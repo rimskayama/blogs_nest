@@ -7,7 +7,6 @@ import { JwtBearerStrategy } from '../auth/passport/strategies/jwt-bearer.strate
 import { CqrsModule } from '@nestjs/cqrs';
 import { CheckCommentLikeStatusUseCase } from './use-cases/comment likes/check-comment-like-status.use-case';
 import { SetCommentLikeStatusUseCase } from './use-cases/comment likes/set-comment-like-status.use-case';
-import { UpdatePostLikesUseCase } from './use-cases/post likes/update-post-like-status.use-case';
 import { CheckPostLikeStatusUseCase } from './use-cases/post likes/check-post-likes-status.use-case';
 import { SetPostLikeStatusUseCase } from './use-cases/post likes/set-post-like-status.use-case';
 import { UsersModule } from '../users/users.module';
@@ -22,7 +21,6 @@ const useCases = [
 	SetCommentLikeStatusUseCase,
 	CheckPostLikeStatusUseCase,
 	SetPostLikeStatusUseCase,
-	UpdatePostLikesUseCase,
 ];
 
 @Module({

@@ -46,14 +46,14 @@ export class CommentsQueryRepository {
 
 		const items = await Promise.all(
 			result.map(async (comment) => {
-				let result;
+				let likeInfo;
 				let likeStatus = 'None';
 				let likesCount = 0;
 				let dislikesCount = 0;
 				const userLogin = comment.user.login;
 				//set like
 				if (userId) {
-					result = await this.commentLikesRepository
+					likeInfo = await this.commentLikesRepository
 						.createQueryBuilder('cl')
 						.select(['cl.id', 'cl.commentId', 'cl.status', 'cl.userId'])
 						.where(`cl.commentId = :commentId`, {
@@ -63,27 +63,29 @@ export class CommentsQueryRepository {
 							userId: userId,
 						})
 						.getOne();
-					likeStatus = result.status;
-					likesCount = await this.commentLikesRepository
-						.createQueryBuilder('cl')
-						.where(`cl.commentId = :id`, {
-							id: comment.id,
-						})
-						.andWhere(`cl.status = :status`, {
-							status: LikeStatus.Like,
-						})
-						.getCount();
-
-					dislikesCount = await this.commentLikesRepository
-						.createQueryBuilder('cl')
-						.where(`cl.commentId = :id`, {
-							id: comment.id,
-						})
-						.andWhere(`cl.status = :status`, {
-							status: LikeStatus.Dislike,
-						})
-						.getCount();
+					if (likeInfo) {
+						likeStatus = likeInfo.status;
+					}
 				}
+				likesCount = await this.commentLikesRepository
+					.createQueryBuilder('cl')
+					.where(`cl.commentId = :id`, {
+						id: comment.id,
+					})
+					.andWhere(`cl.status = :status`, {
+						status: LikeStatus.Like,
+					})
+					.getCount();
+
+				dislikesCount = await this.commentLikesRepository
+					.createQueryBuilder('cl')
+					.where(`cl.commentId = :id`, {
+						id: comment.id,
+					})
+					.andWhere(`cl.status = :status`, {
+						status: LikeStatus.Dislike,
+					})
+					.getCount();
 
 				return Comment.getViewComment({
 					...comment,
@@ -126,7 +128,7 @@ export class CommentsQueryRepository {
 		let likesCount = 0;
 		let dislikesCount = 0;
 		if (userId) {
-			const result = await this.commentLikesRepository
+			const likeInfo = await this.commentLikesRepository
 				.createQueryBuilder('cl')
 				.select(['cl.id', 'cl.userId', 'cl.status', 'cl.commentId'])
 				.where(`cl.commentId = :commentId`, {
@@ -136,8 +138,8 @@ export class CommentsQueryRepository {
 					userId: userId,
 				})
 				.getOne();
-			if (result) {
-				likeStatus = result.status;
+			if (likeInfo) {
+				likeStatus = likeInfo.status;
 			}
 		}
 
