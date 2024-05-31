@@ -10,58 +10,29 @@ export type UserFromGuard = {
 	login: string;
 };
 
-export type UsersPaginationDto = {
-	pagesCount: number;
-	page: number;
-	pageSize: number;
-	totalCount: number;
-	items: UserDto[];
+export type UserType = {
+	id: string;
+	login: string;
+	email: string;
+	passwordHash: string;
+	passwordSalt: string;
+	createdAt: Date;
+	emailConfirmationCode: string;
+	emailExpirationDate: Date;
+	emailConfirmationStatus: boolean;
+	passwordRecoveryCode: string;
+	passwordExpirationDate: Date;
 };
 
-export class QueryParameters {
-	pageNumber: number;
-	pageSize: number;
-	sortDirection: 'ASC' | 'DESC';
-	sortBy: string;
-	searchNameTerm: string;
-	searchLoginTerm: string;
-	searchEmailTerm: string;
-	skip: number;
-}
-
-export class UserType {
-	id: string;
-
-	login: string;
-
-	email: string;
-
-	passwordHash: string;
-
-	passwordSalt: string;
-
-	createdAt: Date;
-
-	emailConfirmationCode: string;
-
-	emailExpirationDate: Date;
-
-	emailConfirmationStatus: boolean;
-
-	passwordRecoveryCode: string;
-
-	passwordExpirationDate: Date;
-}
-
-export class emailConfirmationDto {
+export type emailConfirmationDto = {
 	id: string;
 	emailConfirmationCode: string;
 	emailExpirationDate: Date;
 	emailConfirmationStatus: boolean;
-}
+};
 
-export class passwordConfirmationDto {
+export type passwordConfirmationDto = {
 	id: string;
 	passwordRecoveryCode: string;
 	passwordExpirationDate: Date;
-}
+};
