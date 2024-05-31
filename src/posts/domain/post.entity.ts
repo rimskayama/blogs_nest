@@ -3,7 +3,7 @@ import { PostViewDto, PostDto } from '../posts.types';
 import { Blog } from '../../blogs/domain/blog.entity';
 import { LikeStatus } from '../../likes/likes.types';
 import { Comment } from '../../comments/domain/comment.entity';
-import { PostLike } from '../../likes/post-like.entity';
+import { PostLike } from '../../likes/domain/post-like.entity';
 import { likeDetailsMapping } from '../../utils/mapping';
 
 @Entity('posts')

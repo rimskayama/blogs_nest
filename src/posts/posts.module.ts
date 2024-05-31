@@ -11,8 +11,8 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Post } from './domain/post.entity';
 import { Comment } from '../comments/domain/comment.entity';
-import { CommentLike } from '../likes/comment-like.entity';
-import { PostLike } from '../likes/post-like.entity';
+import { CommentLike } from '../likes/domain/comment-like.entity';
+import { PostLike } from '../likes/domain/post-like.entity';
 
 const strategies = [JwtBearerStrategy, UserAuthStrategy];
 const services = [JwtService];

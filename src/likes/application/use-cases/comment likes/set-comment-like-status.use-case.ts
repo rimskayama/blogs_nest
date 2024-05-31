@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { v4 as uuidv4 } from 'uuid';
-import { CommentLikesRepository } from '../../comment.likes.repository';
+import { CommentLikesRepository } from '../../../repositories/comment.likes.repository';
 
 export class SetCommentLikeStatusCommand {
 	constructor(

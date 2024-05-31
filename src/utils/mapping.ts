@@ -1,4 +1,4 @@
-import { PostLike } from '../likes/post-like.entity';
+import { PostLike } from '../likes/domain/post-like.entity';
 import { Post } from '../posts/domain/post.entity';
 import { likeDetails } from '../likes/likes.types';
 import { BlogType } from '../blogs/blogs.types';
