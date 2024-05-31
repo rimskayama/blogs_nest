@@ -1,5 +1,5 @@
 import { Controller, Delete, Get, HttpCode, HttpStatus, Param, UnauthorizedException, UseGuards } from '@nestjs/common';
-import { DevicesQueryRepository } from './devices.query.repository';
+import { DevicesQueryRepository } from './repositories/devices.query.repository';
 import { exceptionHandler } from '../exceptions/exception.handler';
 import { StatusCode } from '../exceptions/exception.constants';
 import { JwtRefreshGuard } from '../auth/passport/guards/jwt-refresh.guard';
@@ -7,8 +7,8 @@ import { UserFromReq } from '../auth/decorators/userId.decorator';
 import { UserFromGuard } from '../users/users.types';
 import { DeviceIdFromReq } from '../auth/decorators/deviceId.decorator';
 import { CommandBus } from '@nestjs/cqrs';
-import { TerminateAllSessionsCommand } from './use-cases/terminate-all-sessions.use-case';
-import { TerminateSessionCommand } from './use-cases/terminate-session.use-case';
+import { TerminateAllSessionsCommand } from './application/use-cases/terminate-all-sessions.use-case';
+import { TerminateSessionCommand } from './application/use-cases/terminate-session.use-case';
 
 @Controller('security/devices')
 export class DevicesController {

@@ -5,9 +5,9 @@ export type DeviceDto = {
 	deviceId: string;
 };
 
-export class DeviceType {
+export type DeviceType = {
 	ip: string;
 	title: string;
 	lastActiveDate: number;
 	deviceId: string;
-}
+};

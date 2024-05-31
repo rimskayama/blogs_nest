@@ -1,9 +1,9 @@
-import { DeviceDto } from './devices.types';
-import { devicesMapping } from '../utils/mapping';
+import { DeviceDto } from '../devices.types';
+import { devicesMapping } from '../../utils/mapping';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Device } from './device.entity';
+import { Device } from '../domain/device.entity';
 
 @Injectable()
 export class DevicesQueryRepository {

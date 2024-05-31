@@ -7,8 +7,8 @@ import { UsersRepository } from '../users/repositories/users.repository';
 import { UsersQueryRepository } from '../users/repositories/users.query.repository';
 import { LocalStrategy } from './passport/strategies/local.strategy';
 import { PassportModule } from '@nestjs/passport';
-import { DevicesRepository } from '../devices/devices.repository';
-import { DevicesQueryRepository } from '../devices/devices.query.repository';
+import { DevicesRepository } from '../devices/repositories/devices.repository';
+import { DevicesQueryRepository } from '../devices/repositories/devices.query.repository';
 import { JwtBearerStrategy } from './passport/strategies/jwt-bearer.strategy';
 import { JwtRefreshTokenStrategy } from './passport/strategies/jwt-refresh.strategy';
 import {
@@ -28,7 +28,7 @@ import { RegistrationConfirmEmailUseCase } from './use-cases/registration/regist
 import { PasswordRecoveryUseCase } from './use-cases/password/password-recovery.use-case';
 import { PasswordUpdateUseCase } from './use-cases/password/password-update.use-case';
 import { CqrsModule } from '@nestjs/cqrs';
-import { DeviceLogoutUseCase } from '../devices/use-cases/delete-device-logout.use-case';
+import { DeviceLogoutUseCase } from '../devices/application/use-cases/delete-device-logout.use-case';
 import { DevicesModule } from '../devices/devices.module';
 
 const strategies = [LocalStrategy, JwtBearerStrategy, JwtRefreshTokenStrategy];

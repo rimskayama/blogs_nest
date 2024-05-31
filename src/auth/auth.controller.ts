@@ -17,9 +17,9 @@ import { RegistrationResendEmailCommand } from './use-cases/registration/registr
 import { PasswordRecoveryCommand } from './use-cases/password/password-recovery.use-case';
 import { PasswordUpdateCommand } from './use-cases/password/password-update.use-case';
 import { LoginUserCommand } from './use-cases/login/login-user.use-case';
-import { CreateDeviceCommand } from '../devices/use-cases/create-device.use-case';
-import { UpdateDeviceCommand } from '../devices/use-cases/update-device-tokens.use-case';
-import { DeviceLogoutCommand } from '../devices/use-cases/delete-device-logout.use-case';
+import { CreateDeviceCommand } from '../devices/application/use-cases/create-device.use-case';
+import { UpdateDeviceCommand } from '../devices/application/use-cases/update-device-tokens.use-case';
+import { DeviceLogoutCommand } from '../devices/application/use-cases/delete-device-logout.use-case';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { JwtService } from '@nestjs/jwt';
 

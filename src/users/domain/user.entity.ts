@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { format } from 'date-fns';
-import { Device } from '../../devices/device.entity';
+import { Device } from '../../devices/domain/device.entity';
 import { Comment } from '../../comments/domain/comment.entity';
 import { CommentLike } from '../../likes/comment-like.entity';
 import { PostLike } from '../../likes/post-like.entity';

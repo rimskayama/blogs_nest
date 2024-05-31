@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { DevicesRepository } from '../devices.repository';
-import { DeviceDto } from '../devices.types';
+import { DevicesRepository } from '../../repositories/devices.repository';
+import { DeviceDto } from '../../devices.types';
 
 export class UpdateDeviceCommand {
 	constructor(

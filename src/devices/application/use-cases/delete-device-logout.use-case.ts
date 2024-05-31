@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { DevicesRepository } from '../devices.repository';
-import { exceptionResultType } from '../../exceptions/exception.types';
+import { DevicesRepository } from '../../repositories/devices.repository';
+import { exceptionResultType } from '../../../exceptions/exception.types';
 
 export class DeviceLogoutCommand {
 	constructor(public deviceId: string) {}

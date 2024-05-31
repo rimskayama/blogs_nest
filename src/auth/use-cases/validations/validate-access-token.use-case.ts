@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { DevicesQueryRepository } from '../../../devices/devices.query.repository';
+import { DevicesQueryRepository } from '../../../devices/repositories/devices.query.repository';
 import { DeviceType } from 'src/devices/devices.types';
 
 export class AccessTokenValidationCommand {

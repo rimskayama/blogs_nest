@@ -1,8 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { DevicesRepository } from '../devices.repository';
-import { exceptionResultType } from '../../exceptions/exception.types';
-import { StatusCode, deviceIdField, deviceNotFound, forbidden } from '../../exceptions/exception.constants';
-import { DevicesQueryRepository } from '../devices.query.repository';
+import { DevicesRepository } from '../../repositories/devices.repository';
+import { exceptionResultType } from '../../../exceptions/exception.types';
+import { StatusCode, deviceIdField, deviceNotFound, forbidden } from '../../../exceptions/exception.constants';
+import { DevicesQueryRepository } from '../../repositories/devices.query.repository';
 
 export class TerminateSessionCommand {
 	constructor(

@@ -4,7 +4,7 @@ import { BlogType } from '../blogs/blogs.types';
 import { PostDto } from '../posts/posts.types';
 import { CommentDto } from '../comments/comments.types';
 import { User } from '../users/domain/user.entity';
-import { Device } from '../devices/device.entity';
+import { Device } from '../devices/domain/device.entity';
 import { Blog } from '../blogs/domain/blog.entity';
 import { Comment } from '../comments/domain/comment.entity';
 
