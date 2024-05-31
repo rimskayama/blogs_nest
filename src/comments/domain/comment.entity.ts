@@ -1,6 +1,6 @@
 import { CommentViewDto, CommentDto } from '../comments.types';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Post } from '../../posts/post.entity';
+import { Post } from '../../posts/domain/post.entity';
 import { User } from '../../users/domain/user.entity';
 import { LikeStatus } from '../../likes/likes.types';
 import { CommentLike } from '../../likes/comment-like.entity';

@@ -1,6 +1,6 @@
 import { BlogsQueryRepository } from './repositories/blogs.query.repository';
 import { BlogInputDto } from './blogs.dto';
-import { PostInputDto, SpecifiedPostInputDto } from '../posts/posts.types';
+import { PostInputDto, SpecifiedPostInputDto } from '../posts/posts.dto';
 import { exceptionHandler } from '../exceptions/exception.handler';
 import { StatusCode, blogIdField, blogNotFound } from '../exceptions/exception.constants';
 import {
@@ -27,7 +27,7 @@ import { UpdateBlogCommand } from './application/use-cases/update-blog.use-case'
 import { DeleteBlogCommand } from './application/use-cases/delete-blog.use-case';
 import { UpdatePostCommand } from './application/use-cases/update-post.use-case';
 import { DeletePostCommand } from './application/use-cases/delete-post.use-case';
-import { PostsQueryRepository } from '../posts/posts.query.repository';
+import { PostsQueryRepository } from '../posts/repositories/posts.query.repository';
 import { UserFromReq } from '../auth/decorators/userId.decorator';
 import { UserAuthGuard } from '../auth/passport/guards/userId.guard';
 

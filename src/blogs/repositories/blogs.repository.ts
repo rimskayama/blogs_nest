@@ -3,9 +3,10 @@ import { BlogInputDto } from '../blogs.dto';
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PostInputDto, PostType } from 'src/posts/posts.types';
+import { PostType } from 'src/posts/posts.types';
+import { PostInputDto } from 'src/posts/posts.dto';
 import { Blog } from '../domain/blog.entity';
-import { Post } from '../../posts/post.entity';
+import { Post } from '../../posts/domain/post.entity';
 
 @Injectable()
 export class BlogsRepository {

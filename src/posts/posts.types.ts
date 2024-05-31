@@ -1,32 +1,4 @@
-import { Length } from 'class-validator';
-import { likeDetails } from './post.entity';
-import { Transform } from 'class-transformer';
-import validator from 'validator';
-import { likeDetailsDto } from '../likes/likes.types';
-
-export class PostInputDto {
-	@Transform(({ value }) => validator.trim(value))
-	@Length(1, 30)
-	title: string;
-	@Transform(({ value }) => validator.trim(value))
-	@Length(1, 100)
-	shortDescription: string;
-	@Transform(({ value }) => validator.trim(value))
-	@Length(1, 1000)
-	content: string;
-}
-
-export class SpecifiedPostInputDto {
-	@Transform(({ value }) => validator.trim(value))
-	@Length(1, 30)
-	title: string;
-	@Transform(({ value }) => validator.trim(value))
-	@Length(1, 100)
-	shortDescription: string;
-	@Transform(({ value }) => validator.trim(value))
-	@Length(1, 1000)
-	content: string;
-}
+import { likeDetails, likeDetailsDto } from '../likes/likes.types';
 
 export type PostViewDto = {
 	id: string;
@@ -52,14 +24,14 @@ export type postsPaginationDto = {
 	items: PostViewDto[];
 };
 
-export class PostType {
+export type PostType = {
 	id: string;
 	title: string;
 	shortDescription: string;
 	content: string;
 	blogId: string;
 	createdAt: Date;
-}
+};
 
 export type PostDto = {
 	id: string;

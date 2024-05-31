@@ -1,6 +1,6 @@
 import { getPagination } from '../utils/pagination';
 import { BlogsQueryRepository } from './repositories/blogs.query.repository';
-import { PostsQueryRepository } from '../posts/posts.query.repository';
+import { PostsQueryRepository } from '../posts/repositories/posts.query.repository';
 import { UserFromGuard } from '../users/users.types';
 import { QueryParameters } from '../utils/pagination.types';
 import { exceptionHandler } from '../exceptions/exception.handler';

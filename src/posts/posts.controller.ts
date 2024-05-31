@@ -1,4 +1,4 @@
-import { PostsQueryRepository } from './posts.query.repository';
+import { PostsQueryRepository } from './repositories/posts.query.repository';
 import { getPagination } from '../utils/pagination';
 import { UserFromGuard } from '../users/users.types';
 import { QueryParameters } from '../utils/pagination.types';

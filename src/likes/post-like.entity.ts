@@ -1,4 +1,5 @@
-import { Post, likeDetails } from '../posts/post.entity';
+import { Post } from '../posts/domain/post.entity';
+import { likeDetails } from './likes.types';
 import { likeDetailsDto } from './likes.types';
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from '../users/domain/user.entity';

@@ -1,9 +1,18 @@
 import { IsEnum } from 'class-validator';
+import { User } from '../users/domain/user.entity';
 
 export enum LikeStatus {
 	None = 'None',
 	Like = 'Like',
 	Dislike = 'Dislike',
+}
+
+export class likeDetails {
+	addedAt: string;
+
+	userId: string;
+
+	user: User;
 }
 
 export type likeDetailsDto = {

@@ -9,7 +9,7 @@ import {
 } from '../../../exceptions/exception.constants';
 import { exceptionResultType } from '../../../exceptions/exception.types';
 import { BlogsQueryRepository } from '../../repositories/blogs.query.repository';
-import { PostInputDto } from '../../../posts/posts.types';
+import { PostInputDto } from '../../../posts/posts.dto';
 
 export class UpdatePostCommand {
 	constructor(

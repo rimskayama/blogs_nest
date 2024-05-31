@@ -1,10 +1,10 @@
-import { PostViewDto, postsPaginationDto } from './posts.types';
-import { Post } from './post.entity';
+import { PostViewDto, postsPaginationDto } from '../posts.types';
+import { Post } from '../domain/post.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { PostLike } from '../likes/post-like.entity';
-import { LikeStatus } from '../likes/likes.types';
+import { PostLike } from '../../likes/post-like.entity';
+import { LikeStatus } from '../../likes/likes.types';
 
 @Injectable()
 export class PostsQueryRepository {

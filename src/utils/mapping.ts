@@ -1,5 +1,6 @@
 import { PostLike } from '../likes/post-like.entity';
-import { Post, likeDetails } from '../posts/post.entity';
+import { Post } from '../posts/domain/post.entity';
+import { likeDetails } from '../likes/likes.types';
 import { BlogType } from '../blogs/blogs.types';
 import { PostDto } from '../posts/posts.types';
 import { CommentDto } from '../comments/comments.types';

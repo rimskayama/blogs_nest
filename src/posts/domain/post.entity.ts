@@ -1,19 +1,10 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { PostViewDto, PostDto } from './posts.types';
-import { Blog } from '../blogs/domain/blog.entity';
-import { LikeStatus } from '../likes/likes.types';
-import { Comment } from '../comments/domain/comment.entity';
-import { PostLike } from '../likes/post-like.entity';
-import { likeDetailsMapping } from '../utils/mapping';
-import { User } from '../users/domain/user.entity';
-
-export class likeDetails {
-	addedAt: string;
-
-	userId: string;
-
-	user: User;
-}
+import { PostViewDto, PostDto } from '../posts.types';
+import { Blog } from '../../blogs/domain/blog.entity';
+import { LikeStatus } from '../../likes/likes.types';
+import { Comment } from '../../comments/domain/comment.entity';
+import { PostLike } from '../../likes/post-like.entity';
+import { likeDetailsMapping } from '../../utils/mapping';
 
 @Entity('posts')
 export class Post {

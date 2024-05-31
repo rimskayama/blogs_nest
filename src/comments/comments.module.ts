@@ -4,7 +4,7 @@ import { CommentsController } from './comments.controller';
 import { CommentsRepository } from './repositories/comments.repository';
 import { CommentsQueryRepository } from './repositories/comments.query.repository';
 import { CommentLikesRepository } from '../likes/comment.likes.repository';
-import { PostsQueryRepository } from '../posts/posts.query.repository';
+import { PostsQueryRepository } from '../posts/repositories/posts.query.repository';
 import { UsersQueryRepository } from '../users/repositories/users.query.repository';
 import { PostLikesRepository } from '../likes/post.likes.repository';
 import { JwtBearerStrategy } from '../auth/passport/strategies/jwt-bearer.strategy';
