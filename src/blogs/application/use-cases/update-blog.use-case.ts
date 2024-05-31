@@ -1,8 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { BlogInputDto } from '../blogs.types';
-import { BlogsRepository } from '../blogs.repository';
-import { StatusCode, blogIdField, blogNotFound } from '../../exceptions/exception.constants';
-import { exceptionResultType } from '../../exceptions/exception.types';
+import { BlogInputDto } from 'src/blogs/blogs.dto';
+import { BlogsRepository } from '../../repositories/blogs.repository';
+import { StatusCode, blogIdField, blogNotFound } from '../../../exceptions/exception.constants';
+import { exceptionResultType } from '../../../exceptions/exception.types';
 
 export class UpdateBlogCommand {
 	constructor(

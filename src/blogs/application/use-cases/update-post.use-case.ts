@@ -1,9 +1,15 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { BlogsRepository } from '../blogs.repository';
-import { StatusCode, blogIdField, blogNotFound, postIdField, postNotFound } from '../../exceptions/exception.constants';
-import { exceptionResultType } from '../../exceptions/exception.types';
-import { BlogsQueryRepository } from '../blogs.query.repository';
-import { PostInputDto } from '../../posts/posts.types';
+import { BlogsRepository } from '../../repositories/blogs.repository';
+import {
+	StatusCode,
+	blogIdField,
+	blogNotFound,
+	postIdField,
+	postNotFound,
+} from '../../../exceptions/exception.constants';
+import { exceptionResultType } from '../../../exceptions/exception.types';
+import { BlogsQueryRepository } from '../../repositories/blogs.query.repository';
+import { PostInputDto } from '../../../posts/posts.types';
 
 export class UpdatePostCommand {
 	constructor(

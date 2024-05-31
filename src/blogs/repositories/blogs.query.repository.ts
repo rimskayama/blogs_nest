@@ -1,10 +1,10 @@
-import { BlogDto } from './blogs.types';
-import { blogsMapping } from '../utils/mapping';
-import { BlogsPaginationDto } from './blogs.types';
+import { BlogDto } from '../blogs.types';
+import { blogsMapping } from '../../utils/mapping';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Blog } from './blog.entity';
+import { Blog } from '../domain/blog.entity';
 import { Repository } from 'typeorm';
+import { PaginationDto } from 'src/utils/pagination.types';
 
 @Injectable()
 export class BlogsQueryRepository {
@@ -15,7 +15,7 @@ export class BlogsQueryRepository {
 		sortDirection: 'ASC' | 'DESC',
 		sortBy: string,
 		searchNameTerm: string
-	): Promise<BlogsPaginationDto> {
+	): Promise<PaginationDto<BlogDto>> {
 		const result = await this.blogsRepository
 			.createQueryBuilder('b')
 			.where(`${searchNameTerm ? `(b.name ilike :nameTerm)` : 'b.name is not null'}`, {

@@ -1,5 +1,5 @@
-import { Post } from '../posts/post.entity';
-import { BlogDto, BlogType } from './blogs.types';
+import { Post } from '../../posts/post.entity';
+import { BlogDto, BlogType } from '../blogs.types';
 import { Column, Entity, JoinColumn, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('blogs')

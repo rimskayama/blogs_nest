@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { BlogsRepository } from '../blogs.repository';
-import { StatusCode, blogIdField, blogNotFound } from '../../exceptions/exception.constants';
-import { exceptionResultType } from '../../exceptions/exception.types';
+import { BlogsRepository } from '../../repositories/blogs.repository';
+import { StatusCode, blogIdField, blogNotFound } from '../../../exceptions/exception.constants';
+import { exceptionResultType } from '../../../exceptions/exception.types';
 
 export class DeleteBlogCommand {
 	constructor(public id: string) {}

@@ -1,7 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { BlogDto, BlogInputDto } from '../blogs.types';
-import { BlogsRepository } from '../blogs.repository';
+import { BlogDto } from '../../blogs.types';
+import { BlogInputDto } from 'src/blogs/blogs.dto';
+import { BlogsRepository } from '../../repositories/blogs.repository';
 
 export class CreateBlogCommand {
 	constructor(public inputModel: BlogInputDto) {}

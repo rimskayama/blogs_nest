@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { PostViewDto, PostDto } from './posts.types';
-import { Blog } from '../blogs/blog.entity';
+import { Blog } from '../blogs/domain/blog.entity';
 import { LikeStatus } from '../likes/likes.types';
 import { Comment } from '../comments/comment.entity';
 import { PostLike } from '../likes/post-like.entity';

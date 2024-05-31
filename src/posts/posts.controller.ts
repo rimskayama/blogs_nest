@@ -1,6 +1,7 @@
 import { PostsQueryRepository } from './posts.query.repository';
 import { getPagination } from '../utils/pagination';
-import { QueryParameters, UserFromGuard } from '../users/users.types';
+import { UserFromGuard } from '../users/users.types';
+import { QueryParameters } from '../utils/pagination.types';
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { exceptionHandler } from '../exceptions/exception.handler';
 import {

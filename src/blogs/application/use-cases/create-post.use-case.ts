@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { BlogsRepository } from '../blogs.repository';
-import { PostViewDto, PostInputDto } from '../../posts/posts.types';
+import { BlogsRepository } from '../../repositories/blogs.repository';
+import { PostViewDto, PostInputDto } from '../../../posts/posts.types';
 
 export class CreatePostCommand {
 	constructor(
