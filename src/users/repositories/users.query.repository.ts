@@ -1,9 +1,10 @@
-import { UserDto, UsersPaginationDto } from '../users.types';
+import { UserDto } from '../users.types';
 import { Injectable } from '@nestjs/common';
 import { usersMapping } from '../../utils/mapping';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../domain/user.entity';
+import { PaginationDto } from '../../utils/pagination.types';
 
 @Injectable()
 export class UsersQueryRepository {
@@ -16,7 +17,7 @@ export class UsersQueryRepository {
 		sortBy: string,
 		searchLoginTerm: string,
 		searchEmailTerm: string
-	): Promise<UsersPaginationDto> {
+	): Promise<PaginationDto<UserDto>> {
 		const result = await this.usersRepository
 			.createQueryBuilder('u')
 			.where(

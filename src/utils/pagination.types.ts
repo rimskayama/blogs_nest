@@ -8,3 +8,11 @@ export class QueryParameters {
 	searchEmailTerm: string;
 	skip: number;
 }
+
+export type PaginationDto<T> = {
+	pagesCount: number;
+	page: number;
+	pageSize: number;
+	totalCount: number;
+	items: T[];
+};
