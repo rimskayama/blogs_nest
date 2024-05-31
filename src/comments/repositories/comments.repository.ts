@@ -1,8 +1,8 @@
-import { CommentType, CommentViewDto } from './comments.types';
+import { CommentType, CommentViewDto } from '../comments.types';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Comment } from './comment.entity';
+import { Comment } from '../domain/comment.entity';
 
 @Injectable()
 export class CommentsRepository {

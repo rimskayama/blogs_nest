@@ -1,8 +1,4 @@
-import { Length } from 'class-validator';
-import { Transform } from 'class-transformer';
-import validator from 'validator';
-
-export class CommentViewDto {
+export type CommentViewDto = {
 	id: string;
 	content: string;
 	commentatorInfo: {
@@ -15,9 +11,9 @@ export class CommentViewDto {
 		dislikesCount: number;
 		myStatus: string;
 	};
-}
+};
 
-export class CommentDto {
+export type CommentDto = {
 	id: string;
 	postId: string;
 	content: string;
@@ -27,18 +23,23 @@ export class CommentDto {
 	likesCount?: number;
 	dislikesCount?: number;
 	myStatus?: string;
-}
+};
 
-export class contentInputDto {
-	@Transform(({ value }) => validator.trim(value))
-	@Length(20, 300)
-	content: string;
-}
-
-export class CommentType {
+export type CommentType = {
 	id: string;
 	postId: string;
 	content: string;
 	createdAt: Date;
 	userId: string;
-}
+};
+
+export type commentanorInfo = {
+	userId: string;
+	userLogin: string;
+};
+
+export type likesInfo = {
+	likesCount: number;
+	dislikesCount: number;
+	myStatus: string;
+};

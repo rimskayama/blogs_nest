@@ -1,18 +1,18 @@
-import { CommentsQueryRepository } from './comments.query.repository';
+import { CommentsQueryRepository } from '../comments/repositories/comments.query.repository';
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Put, UseGuards } from '@nestjs/common';
 import { JwtBearerGuard } from '../auth/passport/guards/jwt-bearer.guard';
 import { StatusCode, commentIdField, commentNotFound } from '../exceptions/exception.constants';
 import { UserFromReq } from '../auth/decorators/userId.decorator';
 import { exceptionHandler } from '../exceptions/exception.handler';
 import { likeInputDto } from '../likes/likes.types';
-import { contentInputDto } from './comments.types';
+import { contentInputDto } from './comments.dto';
 import { UserAuthGuard } from '../auth/passport/guards/userId.guard';
 import { CommandBus } from '@nestjs/cqrs';
 import { CheckCommentLikeStatusCommand } from '../likes/use-cases/comment likes/check-comment-like-status.use-case';
 import { SetCommentLikeStatusCommand } from '../likes/use-cases/comment likes/set-comment-like-status.use-case';
 import { UserFromGuard } from '../users/users.types';
-import { UpdateCommentCommand } from './use-cases/update-comment.use-case';
-import { DeleteCommentCommand } from './use-cases/delete-comment.use-case';
+import { UpdateCommentCommand } from './application/use-cases/update-comment.use-case';
+import { DeleteCommentCommand } from './application/use-cases/delete-comment.use-case';
 
 @Controller('comments')
 export class CommentsController {

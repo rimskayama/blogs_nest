@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CommentViewDto } from './comments.types';
-import { LikeStatus } from '../likes/likes.types';
-import { Comment } from './comment.entity';
-import { CommentLike } from '../likes/comment-like.entity';
+import { CommentViewDto } from '../comments.types';
+import { LikeStatus } from '../../likes/likes.types';
+import { Comment } from '../domain/comment.entity';
+import { CommentLike } from '../../likes/comment-like.entity';
+import { PaginationDto } from 'src/utils/pagination.types';
 
 @Injectable()
 export class CommentsQueryRepository {
@@ -19,7 +20,7 @@ export class CommentsQueryRepository {
 		sortDirection: 'ASC' | 'DESC',
 		sortBy: string,
 		userId: string | false
-	) {
+	): Promise<PaginationDto<CommentViewDto>> {
 		const result = await this.commentsRepository
 			.createQueryBuilder('c')
 			.leftJoin('c.user', 'u')

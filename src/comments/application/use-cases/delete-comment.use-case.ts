@@ -1,8 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { StatusCode, commentIdField, commentNotFound, forbidden } from '../../exceptions/exception.constants';
-import { exceptionResultType } from '../../exceptions/exception.types';
-import { CommentsQueryRepository } from '../comments.query.repository';
-import { CommentsRepository } from '../comments.repository';
+import { StatusCode, commentIdField, commentNotFound, forbidden } from '../../../exceptions/exception.constants';
+import { exceptionResultType } from '../../../exceptions/exception.types';
+import { CommentsQueryRepository } from '../../repositories/comments.query.repository';
+import { CommentsRepository } from '../../repositories/comments.repository';
 
 export class DeleteCommentCommand {
 	constructor(

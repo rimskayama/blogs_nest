@@ -1,20 +1,9 @@
-import { CommentViewDto, CommentDto } from './comments.types';
+import { CommentViewDto, CommentDto } from '../comments.types';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Post } from '../posts/post.entity';
-import { User } from '../users/domain/user.entity';
-import { LikeStatus } from '../likes/likes.types';
-import { CommentLike } from '../likes/comment-like.entity';
-
-export class commentanorInfo {
-	userId: string;
-	userLogin: string;
-}
-
-export class likesInfo {
-	likesCount: number;
-	dislikesCount: number;
-	myStatus: string;
-}
+import { Post } from '../../posts/post.entity';
+import { User } from '../../users/domain/user.entity';
+import { LikeStatus } from '../../likes/likes.types';
+import { CommentLike } from '../../likes/comment-like.entity';
 
 @Entity('comments')
 export class Comment {

@@ -1,21 +1,21 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { CommentsController } from './comments.controller';
-import { CommentsRepository } from './comments.repository';
-import { CommentsQueryRepository } from './comments.query.repository';
+import { CommentsRepository } from './repositories/comments.repository';
+import { CommentsQueryRepository } from './repositories/comments.query.repository';
 import { CommentLikesRepository } from '../likes/comment.likes.repository';
 import { PostsQueryRepository } from '../posts/posts.query.repository';
 import { UsersQueryRepository } from '../users/repositories/users.query.repository';
 import { PostLikesRepository } from '../likes/post.likes.repository';
 import { JwtBearerStrategy } from '../auth/passport/strategies/jwt-bearer.strategy';
 import { CqrsModule } from '@nestjs/cqrs';
-import { CreateCommentUseCase } from './use-cases/create-comment.use-case';
-import { UpdateCommentUseCase } from './use-cases/update-comment.use-case';
-import { DeleteCommentUseCase } from './use-cases/delete-comment.use-case';
+import { CreateCommentUseCase } from './application/use-cases/create-comment.use-case';
+import { UpdateCommentUseCase } from './application/use-cases/update-comment.use-case';
+import { DeleteCommentUseCase } from './application/use-cases/delete-comment.use-case';
 import { UsersModule } from '../users/users.module';
 import { PostsModule } from '../posts/posts.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Comment } from './comment.entity';
+import { Comment } from './domain/comment.entity';
 
 const strategies = [JwtBearerStrategy];
 const adapters = [

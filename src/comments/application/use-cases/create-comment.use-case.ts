@@ -1,7 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { CommentViewDto, contentInputDto } from '../comments.types';
-import { CommentsRepository } from '../comments.repository';
+import { CommentViewDto } from '../../comments.types';
+import { contentInputDto } from 'src/comments/comments.dto';
+import { CommentsRepository } from '../../repositories/comments.repository';
 
 export class CreateCommentCommand {
 	constructor(

@@ -13,12 +13,12 @@ import {
 } from '../exceptions/exception.constants';
 import { UserFromReq } from '../auth/decorators/userId.decorator';
 import { JwtBearerGuard } from '../auth/passport/guards/jwt-bearer.guard';
-import { contentInputDto } from '../comments/comments.types';
+import { contentInputDto } from '../comments/comments.dto';
 import { UserAuthGuard } from '../auth/passport/guards/userId.guard';
 import { likeInputDto } from '../likes/likes.types';
-import { CommentsQueryRepository } from '../comments/comments.query.repository';
+import { CommentsQueryRepository } from '../comments/repositories/comments.query.repository';
 import { CommandBus } from '@nestjs/cqrs';
-import { CreateCommentCommand } from '../comments/use-cases/create-comment.use-case';
+import { CreateCommentCommand } from '../comments/application/use-cases/create-comment.use-case';
 import { CheckPostLikeStatusCommand } from '../likes/use-cases/post likes/check-post-likes-status.use-case';
 import { SetPostLikeStatusCommand } from '../likes/use-cases/post likes/set-post-like-status.use-case';
 

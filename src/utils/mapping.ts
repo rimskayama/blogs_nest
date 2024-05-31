@@ -6,7 +6,7 @@ import { CommentDto } from '../comments/comments.types';
 import { User } from '../users/domain/user.entity';
 import { Device } from '../devices/device.entity';
 import { Blog } from '../blogs/domain/blog.entity';
-import { Comment } from '../comments/comment.entity';
+import { Comment } from '../comments/domain/comment.entity';
 
 export const blogsMapping = (array: BlogType[]) => {
 	return array.map((b: BlogType) => Blog.getViewBlog(b));
