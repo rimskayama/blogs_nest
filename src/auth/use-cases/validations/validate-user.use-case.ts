@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UsersRepository } from '../../../users/users.repository';
+import { UsersRepository } from '../../../users/repositories/users.repository';
 import * as bcrypt from 'bcrypt';
-import { User } from 'src/users/user.entity';
+import { User } from 'src/users/domain/user.entity';
 
 export class UserValidationCommand {
 	constructor(

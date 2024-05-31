@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { DeviceDto } from './devices.types';
-import { User } from '../users/user.entity';
+import { User } from '../users/domain/user.entity';
 
 @Entity('devices')
 export class Device {

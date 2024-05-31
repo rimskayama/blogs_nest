@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PostLikesRepository } from './post.likes.repository';
 import { CommentLikesRepository } from './comment.likes.repository';
-import { UsersQueryRepository } from '../users/users.query.repository';
+import { UsersQueryRepository } from '../users/repositories/users.query.repository';
 import { JwtBearerStrategy } from '../auth/passport/strategies/jwt-bearer.strategy';
 import { CqrsModule } from '@nestjs/cqrs';
 import { CheckCommentLikeStatusUseCase } from './use-cases/comment likes/check-comment-like-status.use-case';

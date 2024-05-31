@@ -1,4 +1,4 @@
-import { UsersRepository } from '../../../users/users.repository';
+import { UsersRepository } from '../../../users/repositories/users.repository';
 import { emailManager } from '../../mail/email.manager';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 

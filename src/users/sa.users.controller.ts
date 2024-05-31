@@ -1,13 +1,14 @@
-import { UsersQueryRepository } from './users.query.repository';
+import { UsersQueryRepository } from './repositories/users.query.repository';
 import { getPagination } from '../utils/pagination';
-import { UserInputDto, QueryParameters } from './users.types';
+import { QueryParameters } from '../utils/pagination.types';
+import { UserInputDto } from './users.dto';
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { exceptionHandler } from '../exceptions/exception.handler';
 import { StatusCode, userIdField, userNotFound } from '../exceptions/exception.constants';
 import { BasicAuthGuard } from '../auth/passport/guards/basic-auth.guard';
 import { CommandBus } from '@nestjs/cqrs';
-import { CreateUserCommand } from './use-cases/create-user.use-case';
-import { DeleteUserCommand } from './use-cases/delete-user.use-case';
+import { CreateUserCommand } from './application/use-cases/create-user.use-case';
+import { DeleteUserCommand } from './application/use-cases/delete-user.use-case';
 
 @Controller('sa/users')
 export class SuperAdminUsersController {

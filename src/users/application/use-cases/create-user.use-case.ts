@@ -2,8 +2,9 @@ import { v4 as uuidv4 } from 'uuid';
 import * as bcrypt from 'bcrypt';
 import { add } from 'date-fns/add';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UserDto, UserInputDto } from '../users.types';
-import { UsersRepository } from '../users.repository';
+import { UserDto } from '../../users.types';
+import { UserInputDto } from '../../../users/users.dto';
+import { UsersRepository } from '../../repositories/users.repository';
 
 export class CreateUserCommand {
 	constructor(public inputModel: UserInputDto) {}

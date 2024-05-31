@@ -17,7 +17,8 @@ import {
 	UseGuards,
 } from '@nestjs/common';
 import { BasicAuthGuard } from '../auth/passport/guards/basic-auth.guard';
-import { QueryParameters, UserFromGuard } from '../users/users.types';
+import { UserFromGuard } from '../users/users.types';
+import { QueryParameters } from '../utils/pagination.types';
 import { getPagination } from '../utils/pagination';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateBlogCommand } from './use-cases/create-blog.use-case';

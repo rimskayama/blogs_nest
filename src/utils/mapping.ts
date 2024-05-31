@@ -3,7 +3,7 @@ import { Post, likeDetails } from '../posts/post.entity';
 import { BlogType } from '../blogs/blogs.types';
 import { PostDto } from '../posts/posts.types';
 import { CommentDto } from '../comments/comments.types';
-import { User } from '../users/user.entity';
+import { User } from '../users/domain/user.entity';
 import { Device } from '../devices/device.entity';
 import { Blog } from '../blogs/blog.entity';
 import { Comment } from '../comments/comment.entity';

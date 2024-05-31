@@ -1,13 +1,8 @@
 import { Controller, Post, UseGuards, Get, HttpCode, Body, Res, HttpStatus } from '@nestjs/common';
 import { LocalAuthGuard } from './passport/guards/local-auth.guard';
-import { UsersQueryRepository } from '../users/users.query.repository';
-import {
-	UserFromGuard,
-	UserInputDto,
-	confirmationCodeInputDto,
-	emailInputDto,
-	newPasswordInputDto,
-} from '../users/users.types';
+import { UsersQueryRepository } from '../users/repositories/users.query.repository';
+import { UserFromGuard } from '../users/users.types';
+import { UserInputDto, confirmationCodeInputDto, emailInputDto, newPasswordInputDto } from '../users/users.dto';
 import { Response } from 'express';
 import { JwtBearerGuard } from './passport/guards/jwt-bearer.guard';
 import { JwtRefreshGuard } from './passport/guards/jwt-refresh.guard';

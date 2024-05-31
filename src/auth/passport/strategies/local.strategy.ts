@@ -1,7 +1,7 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-local';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { User } from 'src/users/user.entity';
+import { User } from 'src/users/domain/user.entity';
 import { CommandBus } from '@nestjs/cqrs';
 import { UserValidationCommand } from '../../use-cases/validations/validate-user.use-case';
 

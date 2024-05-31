@@ -1,8 +1,9 @@
-import { UserDto, UserInputDto } from 'src/users/users.types';
+import { UserDto } from 'src/users/users.types';
+import { UserInputDto } from 'src/users/users.dto';
 import { add } from 'date-fns/add';
 import { v4 as uuidv4 } from 'uuid';
 import * as bcrypt from 'bcrypt';
-import { UsersRepository } from '../../../users/users.repository';
+import { UsersRepository } from '../../../users/repositories/users.repository';
 import { emailManager } from '../../mail/email.manager';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 

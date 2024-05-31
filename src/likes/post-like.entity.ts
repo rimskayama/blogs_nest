@@ -1,7 +1,7 @@
 import { Post, likeDetails } from '../posts/post.entity';
 import { likeDetailsDto } from './likes.types';
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { User } from '../users/user.entity';
+import { User } from '../users/domain/user.entity';
 
 @Entity('postLikes')
 export class PostLike {

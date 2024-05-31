@@ -1,10 +1,10 @@
-import { UserDto, UserType, emailConfirmationDto, passwordConfirmationDto } from './users.types';
+import { UserDto, UserType, emailConfirmationDto, passwordConfirmationDto } from '../users.types';
 import { v4 as uuidv4 } from 'uuid';
 import { add } from 'date-fns';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './user.entity';
+import { User } from '../domain/user.entity';
 
 @Injectable()
 export class UsersRepository {

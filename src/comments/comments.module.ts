@@ -5,7 +5,7 @@ import { CommentsRepository } from './comments.repository';
 import { CommentsQueryRepository } from './comments.query.repository';
 import { CommentLikesRepository } from '../likes/comment.likes.repository';
 import { PostsQueryRepository } from '../posts/posts.query.repository';
-import { UsersQueryRepository } from '../users/users.query.repository';
+import { UsersQueryRepository } from '../users/repositories/users.query.repository';
 import { PostLikesRepository } from '../likes/post.likes.repository';
 import { JwtBearerStrategy } from '../auth/passport/strategies/jwt-bearer.strategy';
 import { CqrsModule } from '@nestjs/cqrs';

@@ -1,4 +1,4 @@
-import { QueryParameters } from '../users/users.types';
+import { QueryParameters } from '../utils/pagination.types';
 
 export const getPagination = (query: QueryParameters) => {
 	const page: number = Number(query.pageNumber) || 1;
