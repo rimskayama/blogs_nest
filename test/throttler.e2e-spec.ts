@@ -31,17 +31,17 @@ describe('Rate Limiting (e2e)', () => {
 	it('should NOT register user, /auth/registration', async () => {
 		const data = { password: 'qwerty', email: 'blabla', login: 'login' };
 		//1
-		await request(httpServer).post('/auth/registration').send(data).expect(400);
+		await request(httpServer).post('/auth/registration').send(data).expect(HttpStatus.BAD_REQUEST);
 		//2
-		await request(httpServer).post('/auth/registration').send(data).expect(400);
+		await request(httpServer).post('/auth/registration').send(data).expect(HttpStatus.BAD_REQUEST);
 		//3
-		await request(httpServer).post('/auth/registration').send(data).expect(400);
+		await request(httpServer).post('/auth/registration').send(data).expect(HttpStatus.BAD_REQUEST);
 		//4
-		await request(httpServer).post('/auth/registration').send(data).expect(400);
+		await request(httpServer).post('/auth/registration').send(data).expect(HttpStatus.BAD_REQUEST);
 		//5
-		await request(httpServer).post('/auth/registration').send(data).expect(400);
+		await request(httpServer).post('/auth/registration').send(data).expect(HttpStatus.BAD_REQUEST);
 		//6
-		await request(httpServer).post('/auth/registration').send(data).expect(429);
+		await request(httpServer).post('/auth/registration').send(data).expect(HttpStatus.TOO_MANY_REQUESTS);
 	});
 
 	it('should NOT accept confirmation code, /auth/registration-confirmation', async () => {
@@ -49,48 +49,66 @@ describe('Rate Limiting (e2e)', () => {
 			code: 'code',
 		};
 		//1
-		await request(httpServer).post('/auth/registration-confirmation').send(data).expect(400);
+		await request(httpServer).post('/auth/registration-confirmation').send(data).expect(HttpStatus.BAD_REQUEST);
 		//2
-		await request(httpServer).post('/auth/registration-confirmation').send(data).expect(400);
+		await request(httpServer).post('/auth/registration-confirmation').send(data).expect(HttpStatus.BAD_REQUEST);
 		//3
-		await request(httpServer).post('/auth/registration-confirmation').send(data).expect(400);
+		await request(httpServer).post('/auth/registration-confirmation').send(data).expect(HttpStatus.BAD_REQUEST);
 		//4
-		await request(httpServer).post('/auth/registration-confirmation').send(data).expect(400);
+		await request(httpServer).post('/auth/registration-confirmation').send(data).expect(HttpStatus.BAD_REQUEST);
 		//5
-		await request(httpServer).post('/auth/registration-confirmation').send(data).expect(400);
+		await request(httpServer).post('/auth/registration-confirmation').send(data).expect(HttpStatus.BAD_REQUEST);
 		//6
-		await request(httpServer).post('/auth/registration-confirmation').send(data).expect(429);
+		await request(httpServer).post('/auth/registration-confirmation').send(data).expect(HttpStatus.TOO_MANY_REQUESTS);
 	});
 
 	it('should NOT send email, /auth/registration-email-resending', async () => {
 		//1
-		await request(httpServer).post('/auth/registration-email-resending').send({ email: 'blabla' }).expect(400);
+		await request(httpServer)
+			.post('/auth/registration-email-resending')
+			.send({ email: 'blabla' })
+			.expect(HttpStatus.BAD_REQUEST);
 		//2
-		await request(httpServer).post('/auth/registration-email-resending').send({ email: 'blabla' }).expect(400);
+		await request(httpServer)
+			.post('/auth/registration-email-resending')
+			.send({ email: 'blabla' })
+			.expect(HttpStatus.BAD_REQUEST);
 		//3
-		await request(httpServer).post('/auth/registration-email-resending').send({ email: 'blabla' }).expect(400);
+		await request(httpServer)
+			.post('/auth/registration-email-resending')
+			.send({ email: 'blabla' })
+			.expect(HttpStatus.BAD_REQUEST);
 		//4
-		await request(httpServer).post('/auth/registration-email-resending').send({ email: 'blabla' }).expect(400);
+		await request(httpServer)
+			.post('/auth/registration-email-resending')
+			.send({ email: 'blabla' })
+			.expect(HttpStatus.BAD_REQUEST);
 		//5
-		await request(httpServer).post('/auth/registration-email-resending').send({ email: 'blabla' }).expect(400);
+		await request(httpServer)
+			.post('/auth/registration-email-resending')
+			.send({ email: 'blabla' })
+			.expect(HttpStatus.BAD_REQUEST);
 		//6
-		await request(httpServer).post('/auth/registration-email-resending').send({ email: 'blabla' }).expect(429);
+		await request(httpServer)
+			.post('/auth/registration-email-resending')
+			.send({ email: 'blabla' })
+			.expect(HttpStatus.TOO_MANY_REQUESTS);
 	});
 
 	it('should NOT login not existing user, /auth/login', async () => {
 		const data = { password: 'qwerty5', loginOrEmail: 'login5' };
 
 		//1
-		await request(httpServer).post('/auth/login').send(data).expect(401);
+		await request(httpServer).post('/auth/login').send(data).expect(HttpStatus.UNAUTHORIZED);
 		//2
-		await request(httpServer).post('/auth/login').send(data).expect(401);
+		await request(httpServer).post('/auth/login').send(data).expect(HttpStatus.UNAUTHORIZED);
 		//3
-		await request(httpServer).post('/auth/login').send(data).expect(401);
+		await request(httpServer).post('/auth/login').send(data).expect(HttpStatus.UNAUTHORIZED);
 		//4
-		await request(httpServer).post('/auth/login').send(data).expect(401);
+		await request(httpServer).post('/auth/login').send(data).expect(HttpStatus.UNAUTHORIZED);
 		//5
-		await request(httpServer).post('/auth/login').send(data).expect(401);
+		await request(httpServer).post('/auth/login').send(data).expect(HttpStatus.UNAUTHORIZED);
 		//6
-		await request(httpServer).post('/auth/login').send(data).expect(429);
+		await request(httpServer).post('/auth/login').send(data).expect(HttpStatus.TOO_MANY_REQUESTS);
 	});
 });
