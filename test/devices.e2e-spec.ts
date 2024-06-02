@@ -84,11 +84,7 @@ describe('DevicesController (e2e)', () => {
 			loginOrEmail: 'login1',
 		};
 
-		const createResponse = await request(httpServer)
-			.post('/auth/login')
-			.set('user-agent', 'Android')
-			.send(data)
-			.expect(HttpStatus.OK);
+		await request(httpServer).post('/auth/login').set('user-agent', 'Android').send(data).expect(HttpStatus.OK);
 	});
 
 	it('should login user: 3 session, Firefox', async () => {
@@ -112,11 +108,7 @@ describe('DevicesController (e2e)', () => {
 			loginOrEmail: 'login1',
 		};
 
-		const createResponse = await request(httpServer)
-			.post('/auth/login')
-			.set('user-agent', 'iPhone')
-			.send(data)
-			.expect(HttpStatus.OK);
+		await request(httpServer).post('/auth/login').set('user-agent', 'iPhone').send(data).expect(HttpStatus.OK);
 	});
 
 	let deviceIdOfUser1 = '';
@@ -241,10 +233,7 @@ describe('DevicesController (e2e)', () => {
 	});
 
 	it('should return all sessions of user №1)', async () => {
-		const createResponse = await request(httpServer)
-			.get('/security/devices')
-			.set('Cookie', refreshTokenOfSession1)
-			.expect(HttpStatus.OK);
+		await request(httpServer).get('/security/devices').set('Cookie', refreshTokenOfSession1).expect(HttpStatus.OK);
 	});
 
 	it('should delete session 2, refreshToken of session 1', async () => {
@@ -278,10 +267,7 @@ describe('DevicesController (e2e)', () => {
 	});
 
 	it('should logout user', async () => {
-		const createResponse = await request(httpServer)
-			.post('/auth/logout')
-			.set('Cookie', refreshTokenOfSession3)
-			.expect(HttpStatus.NO_CONTENT);
+		await request(httpServer).post('/auth/logout').set('Cookie', refreshTokenOfSession3).expect(HttpStatus.NO_CONTENT);
 
 		const b = await request(httpServer).get('/security/devices').set('Cookie', refreshTokenOfSession1).expect(200);
 
