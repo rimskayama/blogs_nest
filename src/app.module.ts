@@ -18,13 +18,14 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 export const options: TypeOrmModuleOptions = {
 	type: 'postgres',
-	host: 'localhost',
+	host: process.env.PGHOST,
 	port: 5432,
 	username: process.env.PGUSER,
 	password: process.env.PGPASSWORD,
 	database: process.env.PGDATABASE,
 	autoLoadEntities: true,
 	synchronize: true,
+	ssl: true,
 };
 
 @Module({

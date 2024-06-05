@@ -20,7 +20,7 @@ export class TestingController {
         		EXECUTE 'TRUNCATE TABLE ' || quote_ident(stmt.tablename) || ' CASCADE;';
     		END LOOP;
 		END;
-		$$ LANGUAGE plpgsql;
-		SELECT truncate_tables('rimskayama');`);
+		$$ LANGUAGE plpgsql; 
+		SELECT truncate_tables('BlogsPlatform_owner');`);
 	}
 }
